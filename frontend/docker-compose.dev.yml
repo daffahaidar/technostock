@@ -1,0 +1,38 @@
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: technorider-frontend-dev
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.development
+    volumes:
+      # Mount source code for hot reload
+      - .:/app
+      # Prevent host node_modules from overwriting container's
+      - /app/node_modules
+      # Persist .next build cache across restarts
+      - next_cache:/app/.next
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true   # Needed for file-watch inside Docker on some systems
+      - WATCHPACK_POLLING=true     # Next.js webpack watcher polling fallback
+      # Override server-side variables: inside Docker, "localhost" refers to the container
+      # itself — use host.docker.internal to reach services running on the host machine.
+      - DATABASE_URL=postgres://postgres:admin@host.docker.internal:5433/technorider
+      - SERVER_API_URL=http://host.docker.internal:8000
+      - BETTER_AUTH_URL=http://localhost:3000
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_WS_API_URL=ws://localhost:8001
+      - NEXT_PUBLIC_GOLANG_API=http://localhost:8002
+      - NEXT_PUBLIC_APP_URL=http://localhost:3000
+    # Allows the container to resolve host.docker.internal on Linux.
+    # On Docker Desktop (Mac/Windows) this is automatic.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  next_cache:

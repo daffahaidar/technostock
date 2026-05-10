@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  rust-auth:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8000:8000"
+      - "50051:50051"
+    volumes:
+      - .:/app
+      # Cache cargo registry to speed up builds
+      - cargo-cache:/usr/local/cargo/registry
+      # Use a separate target dir for Linux build
+      - target-cache:/app/target
+    env_file:
+      - .env
+    environment:
+      # Override localhost to host.docker.internal to connect to host's database
+      - DATABASE_URL=postgres://postgres:admin@host.docker.internal:5433/technorider
+
+volumes:
+  cargo-cache:
+  target-cache:

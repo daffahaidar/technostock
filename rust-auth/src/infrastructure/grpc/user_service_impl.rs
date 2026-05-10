@@ -1,0 +1,99 @@
+use tonic::{Request, Response, Status};
+use std::sync::Arc;
+
+pub mod user_proto {
+    // The string specified here must match the proto package name
+    tonic::include_proto!("user"); 
+}
+
+use user_proto::user_service_server::UserService;
+use user_proto::{GetUsersRequest, GetUsersResponse, UpdateLastReadRequest, ValidateTokenRequest, ValidateTokenResponse, Empty, User};
+use crate::infrastructure::repositories::postgres_user_repository::PostgresUserRepository;
+use crate::domain::repositories::user_repository::UserRepository;
+use crate::infrastructure::auth::jwt::JwtService;
+
+pub struct UserServiceImpl {
+    pub user_repository: Arc<PostgresUserRepository>,
+    pub jwt_service: Arc<JwtService>,
+}
+
+#[tonic::async_trait]
+impl UserService for UserServiceImpl {
+    async fn get_users(
+        &self,
+        request: Request<GetUsersRequest>,
+    ) -> Result<Response<GetUsersResponse>, Status> {
+        let user_ids: Vec<uuid::Uuid> = request
+            .into_inner()
+            .user_ids
+            .into_iter()
+            .filter_map(|id| uuid::Uuid::parse_str(&id).ok())
+            .collect();
+
+        let mut users = std::collections::HashMap::new();
+        
+        for id in user_ids {
+            if let Ok(Some(user)) = self.user_repository.find_by_id(id).await {
+                users.insert(id.to_string(), User {
+                    id: user.id.to_string(),
+                    name: user.name,
+                    role: format!("{:?}", user.role),
+                    avatar_url: user.avatar_url,
+                    last_read_at: user.last_read_at.map(|ts| ts.timestamp_millis()),
+                });
+            }
+        }
+
+        Ok(Response::new(GetUsersResponse { users }))
+    }
+
+    async fn update_last_read(
+        &self,
+        request: Request<UpdateLastReadRequest>,
+    ) -> Result<Response<Empty>, Status> {
+        let req = request.into_inner();
+        let user_id = uuid::Uuid::parse_str(&req.user_id)
+            .map_err(|_| Status::invalid_argument("Invalid user_id format"))?;
+
+        self.user_repository.update_last_read_at(user_id).await
+            .map_err(|_| Status::internal("Failed to update last_read_at"))?;
+
+        Ok(Response::new(Empty {}))
+    }
+
+    async fn validate_token(
+        &self,
+        request: Request<ValidateTokenRequest>,
+    ) -> Result<Response<ValidateTokenResponse>, Status> {
+        let token = request.into_inner().token;
+
+        match self.jwt_service.verify_token(&token) {
+            Ok(token_data) => {
+                // Ensure it is an access token
+                if token_data.claims.token_type != "access" {
+                    return Ok(Response::new(ValidateTokenResponse {
+                        is_valid: false,
+                        user_id: "".to_string(),
+                        role: "".to_string(),
+                        error_message: "Invalid token type".to_string(),
+                    }));
+                }
+
+                Ok(Response::new(ValidateTokenResponse {
+                    is_valid: true,
+                    user_id: token_data.claims.sub.to_string(),
+                    role: format!("{:?}", token_data.claims.role),
+                    error_message: "".to_string(),
+                }))
+            }
+            Err(e) => {
+                Ok(Response::new(ValidateTokenResponse {
+                    is_valid: false,
+                    user_id: "".to_string(),
+                    role: "".to_string(),
+                    error_message: format!("Token validation failed: {:?}", e),
+                }))
+            }
+        }
+    }
+}

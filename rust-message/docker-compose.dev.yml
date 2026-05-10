@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  rust-message:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8001:8001"
+    volumes:
+      - .:/app
+      # Cache cargo registry to speed up builds
+      - cargo-cache:/usr/local/cargo/registry
+      # Use a separate target dir for Linux build
+      - target-cache:/app/target
+    env_file:
+      - .env
+    environment:
+      # Override localhost to host.docker.internal to connect to host's services
+      - DATABASE_URL=postgres://postgres:admin@host.docker.internal:5433/technorider
+      - REDIS_HOST=host.docker.internal
+      - RABBITMQ_HOST=host.docker.internal
+      - AUTH_GRPC_URL=http://host.docker.internal:50051
+
+volumes:
+  cargo-cache:
+  target-cache:

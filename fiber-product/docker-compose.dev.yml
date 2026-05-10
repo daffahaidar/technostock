@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  fiber-product:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8002:8002"
+    volumes:
+      - .:/app
+      - go-cache:/root/.cache/go-build
+      - go-mod-cache:/go/pkg/mod
+    env_file:
+      - .env
+    environment:
+      # Override localhost to host.docker.internal to connect to host's services
+      - DATABASE_URL=postgres://postgres:admin@host.docker.internal:5433/technorider
+      - AUTH_GRPC_URL=host.docker.internal:50051
+
+volumes:
+  go-cache:
+  go-mod-cache:

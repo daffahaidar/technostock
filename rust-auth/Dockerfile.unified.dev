@@ -1,0 +1,22 @@
+# ─── Unified Dev Dockerfile untuk rust-auth ───────────────────────────────────
+# Build context: root project (agar proto/ tersedia)
+# CATATAN: Source code & target/ TIDAK di-copy ke image.
+#          Semuanya disediakan via volume mount saat runtime:
+#            - ./rust-auth:/app       (source code)
+#            - ./proto:/proto         (proto files)
+#            - rust-auth-target-cache (build cache)
+FROM rust:latest
+
+WORKDIR /app
+
+# Install protoc untuk gRPC codegen (build.rs)
+RUN apt-get update && apt-get install -y protobuf-compiler && rm -rf /var/lib/apt/lists/*
+
+# Install dev tools — layer ini di-cache setelah build pertama
+RUN cargo install cargo-watch --version 8.4.1 --locked && \
+    cargo install sqlx-cli --no-default-features --features postgres
+
+EXPOSE 8000 50051
+
+# Source & proto disediakan via volume. Jalankan migrasi dulu lalu watch.
+CMD ["sh", "-c", "sqlx migrate run && cargo watch -c -x run"]

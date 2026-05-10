@@ -1,0 +1,11 @@
+# Frontend .dockerignore
+# Exclude folder besar yang tidak dibutuhkan di image
+
+node_modules/
+.next/
+.git/
+*.md
+.DS_Store
+.vscode/
+.gemini/
+tsconfig.tsbuildinfo

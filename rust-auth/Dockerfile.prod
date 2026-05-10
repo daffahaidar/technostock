@@ -1,0 +1,28 @@
+FROM rust:latest AS builder
+
+WORKDIR /app
+
+# Install protoc untuk gRPC codegen di build.rs
+RUN apt-get update && apt-get install -y protobuf-compiler && rm -rf /var/lib/apt/lists/*
+
+COPY . .
+
+RUN cargo build --release && \
+    cargo install sqlx-cli --no-default-features --features postgres
+
+FROM debian:bookworm-slim
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y ca-certificates libpq5 && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /app/target/release/rust-auth .
+COPY --from=builder /usr/local/cargo/bin/sqlx /usr/local/bin/sqlx
+COPY --from=builder /app/migrations ./migrations
+COPY --from=builder /app/.env .
+COPY entrypoint.sh .
+RUN chmod +x entrypoint.sh
+
+EXPOSE 8000 50051
+
+CMD ["./entrypoint.sh"]

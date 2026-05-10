@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  fiber-product:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    ports:
+      - "8002:8002"
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgres://postgres:admin@host.docker.internal:5433/technorider
+      - AUTH_GRPC_URL=host.docker.internal:50051

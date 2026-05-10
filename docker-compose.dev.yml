@@ -1,0 +1,232 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# Technorider Dev — Unified Docker Compose
+# Jalankan: make dev  atau  docker compose -f docker-compose.dev.yml up --build
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: technorider-dev
+
+networks:
+  technorider-network:
+    driver: bridge
+
+volumes:
+  pgdata:
+  redis_data:
+  rabbitmq_data:
+  minio_data:
+  rust-auth-cargo-cache:
+  rust-auth-target-cache:
+  rust-message-cargo-cache:
+  rust-message-target-cache:
+  fiber-product-go-cache:
+  fiber-product-go-mod-cache:
+  next_cache:
+
+services:
+
+  # ─── Infrastructure ───────────────────────────────────────────────────────────
+
+  postgres:
+    image: postgres:17-alpine
+    container_name: technorider-postgres-dev
+    restart: unless-stopped
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: technorider
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - technorider-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: technorider-redis-dev
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --requirepass daffahaidarnz27 --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "daffahaidarnz27", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - technorider-network
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: technorider-rabbitmq-dev
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: daffahaidar
+      RABBITMQ_DEFAULT_PASS: daffahaidarnz27
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+    networks:
+      - technorider-network
+
+  minio:
+    image: quay.io/minio/minio
+    container_name: technorider-minio-dev
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: daffahaidar
+      MINIO_ROOT_PASSWORD: daffahaidarnz27
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    networks:
+      - technorider-network
+
+  # ─── rust-auth ────────────────────────────────────────────────────────────────
+
+  rust-auth:
+    build:
+      context: .   # Root project — agar folder proto/ tersedia untuk build.rs
+      dockerfile: rust-auth/Dockerfile.unified.dev
+    container_name: technorider-rust-auth-dev
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+      - "50051:50051"
+    volumes:
+      - ./rust-auth:/app
+      - ./proto:/proto  # Proto juga di-mount agar cargo-watch bisa detect perubahan
+      - rust-auth-cargo-cache:/usr/local/cargo/registry
+      - rust-auth-target-cache:/app/target
+    env_file:
+      - ./rust-auth/.env
+    environment:
+      - DATABASE_URL=postgres://postgres:admin@postgres:5432/technorider
+      - MINIO_ENDPOINT=minio
+      - RABBITMQ_HOST=rabbitmq
+      - REDIS_HOST=redis
+      - SQLX_OFFLINE=false
+    # Jalankan migrasi dulu, baru start dengan hot-reload
+    command: sh -c "sqlx migrate run && cargo watch -c -x run"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - technorider-network
+
+  # ─── rust-message ─────────────────────────────────────────────────────────────
+
+  rust-message:
+    build:
+      context: .   # Root project — agar folder proto/ tersedia untuk build.rs
+      dockerfile: rust-message/Dockerfile.unified.dev
+    container_name: technorider-rust-message-dev
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./rust-message:/app
+      - ./proto:/proto  # Proto juga di-mount agar cargo-watch bisa detect perubahan
+      - rust-message-cargo-cache:/usr/local/cargo/registry
+      - rust-message-target-cache:/app/target
+    env_file:
+      - ./rust-message/.env
+    environment:
+      - DATABASE_URL=postgres://postgres:admin@postgres:5432/technorider
+      - REDIS_HOST=redis
+      - RABBITMQ_HOST=rabbitmq
+      - AUTH_GRPC_URL=http://rust-auth:50051
+      - MINIO_ENDPOINT=minio
+      - SQLX_OFFLINE=false
+    # Jalankan migrasi dulu, baru start dengan hot-reload
+    command: sh -c "sqlx migrate run && cargo watch -c -x run"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      rust-auth:
+        condition: service_started
+    networks:
+      - technorider-network
+
+  # ─── fiber-product ────────────────────────────────────────────────────────────
+
+  fiber-product:
+    build:
+      context: ./fiber-product
+      dockerfile: Dockerfile.dev
+    container_name: technorider-fiber-product-dev
+    restart: unless-stopped
+    ports:
+      - "8002:8002"
+    volumes:
+      - ./fiber-product:/app
+      - fiber-product-go-cache:/root/.cache/go-build
+      - fiber-product-go-mod-cache:/go/pkg/mod
+    env_file:
+      - ./fiber-product/.env
+    environment:
+      - DATABASE_URL=postgres://postgres:admin@postgres:5432/technorider
+      - AUTH_GRPC_URL=rust-auth:50051
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rust-auth:
+        condition: service_started
+    networks:
+      - technorider-network
+
+  # ─── frontend ─────────────────────────────────────────────────────────────────
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: technorider-frontend-dev
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - next_cache:/app/.next
+    env_file:
+      - ./frontend/.env.development
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+      # Server-side: gunakan nama service internal
+      - DATABASE_URL=postgres://postgres:admin@postgres:5432/technorider
+      - SERVER_API_URL=http://rust-auth:8000
+      - BETTER_AUTH_URL=http://localhost:3000
+      # Client-side (browser): tetap localhost karena diakses dari browser user
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_WS_API_URL=ws://localhost:8001
+      - NEXT_PUBLIC_GOLANG_API=http://localhost:8002
+      - NEXT_PUBLIC_APP_URL=http://localhost:3000
+    depends_on:
+      - rust-auth
+      - rust-message
+      - fiber-product
+    networks:
+      - technorider-network

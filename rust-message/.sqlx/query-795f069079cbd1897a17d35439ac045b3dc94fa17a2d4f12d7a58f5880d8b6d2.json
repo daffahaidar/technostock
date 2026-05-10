@@ -1,0 +1,61 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            INSERT INTO message.messages (sender_id, content, reply_to_id, image_url) \n            VALUES ($1, $2, $3, $4) \n            RETURNING id, sender_id, content, created_at, reply_to_id, image_url, is_edited\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "sender_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "content",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 4,
+        "name": "reply_to_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 5,
+        "name": "image_url",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 6,
+        "name": "is_edited",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      false
+    ]
+  },
+  "hash": "795f069079cbd1897a17d35439ac045b3dc94fa17a2d4f12d7a58f5880d8b6d2"
+}

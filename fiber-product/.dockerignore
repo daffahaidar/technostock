@@ -1,0 +1,5 @@
+.git/
+tmp/
+main
+node_modules/
+.env

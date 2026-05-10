@@ -1,0 +1,6 @@
+CREATE SCHEMA IF NOT EXISTS users;
+CREATE SCHEMA IF NOT EXISTS message;
+
+ALTER TABLE users SET SCHEMA users;
+ALTER TABLE messages SET SCHEMA message;
+ALTER TABLE message_reactions SET SCHEMA message;

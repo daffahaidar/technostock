@@ -1,0 +1,42 @@
+syntax = "proto3";
+package user;
+option go_package = "fiber-product/pb;pb";
+
+service UserService {
+    rpc GetUsers (GetUsersRequest) returns (GetUsersResponse);
+    rpc UpdateLastRead (UpdateLastReadRequest) returns (Empty);
+    rpc ValidateToken (ValidateTokenRequest) returns (ValidateTokenResponse);
+}
+
+message GetUsersRequest {
+    repeated string user_ids = 1;
+}
+
+message User {
+    string id = 1;
+    string name = 2;
+    string role = 3;
+    optional string avatar_url = 4;
+    optional int64 last_read_at = 5; // Unix timestamp
+}
+
+message GetUsersResponse {
+    map<string, User> users = 1;
+}
+
+message UpdateLastReadRequest {
+    string user_id = 1;
+}
+
+message ValidateTokenRequest {
+    string token = 1;
+}
+
+message ValidateTokenResponse {
+    bool is_valid = 1;
+    string user_id = 2;
+    string role = 3;
+    string error_message = 4;
+}
+
+message Empty {}

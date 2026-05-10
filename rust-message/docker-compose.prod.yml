@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  rust-message:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    ports:
+      - "8001:8001"
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgres://postgres:admin@host.docker.internal:5433/technorider
+      - REDIS_HOST=host.docker.internal
+      - RABBITMQ_HOST=host.docker.internal
+      - AUTH_GRPC_URL=http://host.docker.internal:50051
