@@ -16,7 +16,6 @@ WORKDIR /app
 RUN apk add --no-cache ca-certificates
 
 COPY --from=builder /app/main .
-COPY .env .
 
 EXPOSE 8002
 

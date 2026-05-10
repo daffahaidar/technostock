@@ -19,7 +19,6 @@ RUN apt-get update && apt-get install -y ca-certificates libpq5 && rm -rf /var/l
 COPY --from=builder /app/target/release/rust-auth .
 COPY --from=builder /usr/local/cargo/bin/sqlx /usr/local/bin/sqlx
 COPY --from=builder /app/migrations ./migrations
-COPY --from=builder /app/.env .
 COPY entrypoint.sh .
 RUN chmod +x entrypoint.sh
 
