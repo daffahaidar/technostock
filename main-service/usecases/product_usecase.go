@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"fiber-product/domain/entities"
+	"main-service/domain/entities"
 
 	"github.com/google/uuid"
 	"github.com/midtrans/midtrans-go"

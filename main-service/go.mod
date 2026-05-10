@@ -1,4 +1,4 @@
-module fiber-product
+module main-service
 
 go 1.25.3
 

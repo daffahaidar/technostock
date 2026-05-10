@@ -3,13 +3,13 @@ package main
 import (
 	"log"
 
-	"fiber-product/config"
-	"fiber-product/domain/entities"
-	"fiber-product/handlers"
-	"fiber-product/infrastructure/database"
-	"fiber-product/infrastructure/grpc"
-	"fiber-product/routes"
-	"fiber-product/usecases"
+	"main-service/config"
+	"main-service/domain/entities"
+	"main-service/handlers"
+	"main-service/infrastructure/database"
+	"main-service/infrastructure/grpc"
+	"main-service/routes"
+	"main-service/usecases"
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/cors"

@@ -3,9 +3,9 @@ package handlers
 import (
 	"strings"
 
-	"fiber-product/domain/entities"
-	"fiber-product/usecases"
-	"fiber-product/utils"
+	"main-service/domain/entities"
+	"main-service/usecases"
+	"main-service/utils"
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/google/uuid"

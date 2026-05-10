@@ -18,8 +18,8 @@
 Cargo.lock.bk
 
 # ─── Go ───────────────────────────────────────────────────────────────────────
-fiber-product/tmp/
-fiber-product/main
+main-service/tmp/
+main-service/main
 
 # ─── Node.js / Next.js ────────────────────────────────────────────────────────
 **/node_modules/

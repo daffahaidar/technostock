@@ -1,7 +1,7 @@
 package usecases
 
 import (
-	"fiber-product/domain/entities"
+	"main-service/domain/entities"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"

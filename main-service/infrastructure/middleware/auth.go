@@ -3,8 +3,8 @@ package middleware
 import (
 	"strings"
 
-	"fiber-product/infrastructure/grpc"
-	"fiber-product/utils"
+	"main-service/infrastructure/grpc"
+	"main-service/utils"
 
 	"github.com/gofiber/fiber/v3"
 )

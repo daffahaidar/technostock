@@ -15,7 +15,7 @@ Technorider adalah platform hardware technology berbasis microservices. Monorepo
        │ HTTP :8000        │ WebSocket :8001   │ HTTP :8002
        │ gRPC :50051       │                   │
 ┌──────▼──────┐    ┌───────▼───────┐   ┌──────▼──────────────┐
-│  auth-service  │    │ realtime-service  │   │   fiber-product      │
+│  auth-service  │    │ realtime-service  │   │   main-service      │
 │  :8000      │◄───│  :8001        │   │   :8002  (Go/Fiber)  │
 │  :50051     │    │  (Rust/Axum)  │   └──────────────────────┘
 │  (Rust)     │    └───────┬───────┘
@@ -34,7 +34,7 @@ Technorider adalah platform hardware technology berbasis microservices. Monorepo
 | `frontend` | Next.js 15 | 3000 | UI utama aplikasi |
 | `auth-service` | Rust + Axum | 8000, 50051 | Autentikasi, JWT, OAuth (gRPC server) |
 | `realtime-service` | Rust + Axum | 8001 | Real-time chat via WebSocket (gRPC client) |
-| `fiber-product` | Go + Fiber | 8002 | Manajemen produk & pembayaran Midtrans |
+| `main-service` | Go + Fiber | 8002 | Manajemen produk & pembayaran Midtrans |
 
 ## Prerequisites
 
@@ -113,7 +113,7 @@ make down-dev-volumes  # Hentikan + hapus semua data volume dev
 | http://localhost:3000 | Frontend |
 | http://localhost:8000 | auth-service API |
 | http://localhost:8001 | realtime-service WebSocket |
-| http://localhost:8002 | fiber-product API |
+| http://localhost:8002 | main-service API |
 | http://localhost:15672 | RabbitMQ Management UI |
 | http://localhost:9001 | MinIO Console |
 | `localhost:5433` | PostgreSQL |
@@ -185,10 +185,10 @@ cargo watch -c -x run
 
 Service berjalan di: `http://localhost:8001`
 
-#### 2.4 fiber-product
+#### 2.4 main-service
 
 ```bash
-cd fiber-product
+cd main-service
 
 # 1. Buat file .env
 cp .env.example .env   # edit sesuai kebutuhan
@@ -306,7 +306,7 @@ REDIS_PORT=6379
 REDIS_PASSWORD=daffahaidarnz27
 ```
 
-### `fiber-product/.env`
+### `main-service/.env`
 
 ```env
 # ─── Database ─────────────────────────────────────────────────
@@ -419,7 +419,7 @@ technorider/
 │   ├── .env                  # ← perlu diisi (tidak di-commit)
 │   └── src/
 │
-├── fiber-product/            # Go Product Service
+├── main-service/            # Go Product Service
 │   ├── Dockerfile.dev
 │   ├── Dockerfile.prod
 │   ├── .env                  # ← perlu diisi (tidak di-commit)

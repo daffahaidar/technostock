@@ -18,8 +18,8 @@ volumes:
   auth-service-target-cache:
   realtime-service-cargo-cache:
   realtime-service-target-cache:
-  fiber-product-go-cache:
-  fiber-product-go-mod-cache:
+  main-service-go-cache:
+  main-service-go-mod-cache:
   next_cache:
 
 services:
@@ -168,22 +168,22 @@ services:
     networks:
       - technorider-network
 
-  # ─── fiber-product ────────────────────────────────────────────────────────────
+  # ─── main-service ────────────────────────────────────────────────────────────
 
-  fiber-product:
+  main-service:
     build:
-      context: ./fiber-product
+      context: ./main-service
       dockerfile: Dockerfile.dev
-    container_name: technorider-fiber-product-dev
+    container_name: technorider-main-service-dev
     restart: unless-stopped
     ports:
       - "8002:8002"
     volumes:
-      - ./fiber-product:/app
-      - fiber-product-go-cache:/root/.cache/go-build
-      - fiber-product-go-mod-cache:/go/pkg/mod
+      - ./main-service:/app
+      - main-service-go-cache:/root/.cache/go-build
+      - main-service-go-mod-cache:/go/pkg/mod
     env_file:
-      - ./fiber-product/.env
+      - ./main-service/.env
     environment:
       - DATABASE_URL=postgres://postgres:admin@postgres:5432/technorider
       - AUTH_GRPC_URL=auth-service:50051
@@ -227,6 +227,6 @@ services:
     depends_on:
       - auth-service
       - realtime-service
-      - fiber-product
+      - main-service
     networks:
       - technorider-network

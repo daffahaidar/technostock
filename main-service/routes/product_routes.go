@@ -1,9 +1,9 @@
 package routes
 
 import (
-	"fiber-product/handlers"
-	"fiber-product/infrastructure/grpc"
-	"fiber-product/infrastructure/middleware"
+	"main-service/handlers"
+	"main-service/infrastructure/grpc"
+	"main-service/infrastructure/middleware"
 
 	"github.com/gofiber/fiber/v3"
 )
