@@ -3731,6 +3731,46 @@ dependencies = [
 ]
 
 [[package]]
+name = "realtime-service"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "argon2",
+ "async-trait",
+ "aws-config",
+ "aws-sdk-s3",
+ "axum 0.8.8",
+ "axum-extra",
+ "axum_typed_multipart",
+ "chrono",
+ "dashmap",
+ "deadpool-lapin",
+ "dotenvy",
+ "futures",
+ "futures-util",
+ "jsonwebtoken",
+ "lapin 3.7.2",
+ "prost",
+ "redis",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "thiserror",
+ "time",
+ "tokio",
+ "tokio-amqp",
+ "tonic",
+ "tonic-build",
+ "tower-http",
+ "tracing",
+ "tracing-subscriber",
+ "urlencoding",
+ "uuid",
+ "validator",
+]
+
+[[package]]
 name = "redis"
 version = "0.27.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3928,46 +3968,6 @@ dependencies = [
  "spki 0.7.3",
  "subtle",
  "zeroize",
-]
-
-[[package]]
-name = "realtime-service"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "argon2",
- "async-trait",
- "aws-config",
- "aws-sdk-s3",
- "axum 0.8.8",
- "axum-extra",
- "axum_typed_multipart",
- "chrono",
- "dashmap",
- "deadpool-lapin",
- "dotenvy",
- "futures",
- "futures-util",
- "jsonwebtoken",
- "lapin 3.7.2",
- "prost",
- "redis",
- "reqwest",
- "serde",
- "serde_json",
- "sqlx",
- "thiserror",
- "time",
- "tokio",
- "tokio-amqp",
- "tonic",
- "tonic-build",
- "tower-http",
- "tracing",
- "tracing-subscriber",
- "urlencoding",
- "uuid",
- "validator",
 ]
 
 [[package]]
