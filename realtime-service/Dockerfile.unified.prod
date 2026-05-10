@@ -1,4 +1,4 @@
-# ─── Unified Prod Dockerfile untuk rust-message ───────────────────────────────
+# ─── Unified Prod Dockerfile untuk realtime-service ───────────────────────────────
 # Build context: root project (agar proto/ tersedia untuk build.rs)
 # Multi-stage: builder (compile) → runner (minimal image)
 
@@ -17,7 +17,7 @@ RUN cargo install sqlx-cli --no-default-features --features postgres
 COPY proto/ /proto/
 
 # Source service
-COPY rust-message/ .
+COPY realtime-service/ .
 
 # SQLX_OFFLINE=true agar cargo build tidak butuh koneksi database saat image build
 ENV SQLX_OFFLINE=true
@@ -31,13 +31,13 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y ca-certificates libpq5 && rm -rf /var/lib/apt/lists/* && apt-get clean
 
 # Copy hanya binary, sqlx, migrations, dan entrypoint — TIDAK copy .env
-COPY --from=builder /app/target/release/rust-message .
+COPY --from=builder /app/target/release/realtime-service .
 COPY --from=builder /usr/local/cargo/bin/sqlx /usr/local/bin/sqlx
 COPY --from=builder /app/migrations ./migrations
-COPY rust-message/entrypoint.sh .
+COPY realtime-service/entrypoint.sh .
 RUN chmod +x entrypoint.sh
 
 EXPOSE 8001
 
-# entrypoint.sh: sqlx migrate run && ./rust-message
+# entrypoint.sh: sqlx migrate run && ./realtime-service
 CMD ["./entrypoint.sh"]

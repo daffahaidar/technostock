@@ -10,7 +10,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("cargo:rerun-if-changed=../proto/user.proto");
     tonic_build::configure()
         .build_server(true)
-        .build_client(false) // rust-auth is the server
+        .build_client(false) // auth-service is the server
         .compile_protos(&["../proto/user.proto"], &["../proto"])?;
     Ok(())
 }

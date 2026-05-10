@@ -1,9 +1,9 @@
 # Root .dockerignore — digunakan saat build context = root project
-# (untuk auth-service/Dockerfile.unified.dev dan rust-message/Dockerfile.unified.dev)
+# (untuk auth-service/Dockerfile.unified.dev dan realtime-service/Dockerfile.unified.dev)
 
 # Rust build artifacts (sangat besar, tidak dibutuhkan)
 auth-service/target/
-rust-message/target/
+realtime-service/target/
 
 # Node.js
 frontend/node_modules/

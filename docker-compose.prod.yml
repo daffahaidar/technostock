@@ -117,18 +117,18 @@ services:
     networks:
       - technorider-network
 
-  # ─── rust-message ─────────────────────────────────────────────────────────────
+  # ─── realtime-service ─────────────────────────────────────────────────────────────
 
-  rust-message:
+  realtime-service:
     build:
       context: .   # Root project — agar folder proto/ tersedia untuk build.rs
-      dockerfile: rust-message/Dockerfile.unified.prod
-    container_name: technorider-rust-message-prod
+      dockerfile: realtime-service/Dockerfile.unified.prod
+    container_name: technorider-realtime-service-prod
     restart: always
     ports:
       - "8001:8001"
     env_file:
-      - ./rust-message/.env
+      - ./realtime-service/.env
     environment:
       - DATABASE_URL=postgres://postgres:admin@postgres:5432/technorider
       - REDIS_HOST=redis
@@ -189,7 +189,7 @@ services:
       - SERVER_API_URL=http://auth-service:8000
     depends_on:
       - auth-service
-      - rust-message
+      - realtime-service
       - fiber-product
     networks:
       - technorider-network

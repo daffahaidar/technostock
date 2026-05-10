@@ -9,7 +9,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
     tonic_build::configure()
         .build_server(false) 
-        .build_client(true) // rust-message is the client
+        .build_client(true) // realtime-service is the gRPC client
         .compile_protos(&["../proto/user.proto"], &["../proto"])?;
     Ok(())
 }

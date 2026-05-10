@@ -1,10 +1,10 @@
-# ─── Unified Dev Dockerfile untuk rust-message ───────────────────────────────
+# ─── Unified Dev Dockerfile untuk realtime-service ───────────────────────────────
 # Build context: root project (agar proto/ tersedia)
 # CATATAN: Source code & target/ TIDAK di-copy ke image.
 #          Semuanya disediakan via volume mount saat runtime:
-#            - ./rust-message:/app       (source code)
+#            - ./realtime-service:/app       (source code)
 #            - ./proto:/proto            (proto files)
-#            - rust-message-target-cache (build cache)
+#            - realtime-service-target-cache (build cache)
 FROM rust:latest
 
 WORKDIR /app

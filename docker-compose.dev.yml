@@ -16,8 +16,8 @@ volumes:
   minio_data:
   auth-service-cargo-cache:
   auth-service-target-cache:
-  rust-message-cargo-cache:
-  rust-message-target-cache:
+  realtime-service-cargo-cache:
+  realtime-service-target-cache:
   fiber-product-go-cache:
   fiber-product-go-mod-cache:
   next_cache:
@@ -132,23 +132,23 @@ services:
     networks:
       - technorider-network
 
-  # ─── rust-message ─────────────────────────────────────────────────────────────
+  # ─── realtime-service ─────────────────────────────────────────────────────────────
 
-  rust-message:
+  realtime-service:
     build:
       context: .   # Root project — agar folder proto/ tersedia untuk build.rs
-      dockerfile: rust-message/Dockerfile.unified.dev
-    container_name: technorider-rust-message-dev
+      dockerfile: realtime-service/Dockerfile.unified.dev
+    container_name: technorider-realtime-service-dev
     restart: unless-stopped
     ports:
       - "8001:8001"
     volumes:
-      - ./rust-message:/app
+      - ./realtime-service:/app
       - ./proto:/proto  # Proto juga di-mount agar cargo-watch bisa detect perubahan
-      - rust-message-cargo-cache:/usr/local/cargo/registry
-      - rust-message-target-cache:/app/target
+      - realtime-service-cargo-cache:/usr/local/cargo/registry
+      - realtime-service-target-cache:/app/target
     env_file:
-      - ./rust-message/.env
+      - ./realtime-service/.env
     environment:
       - DATABASE_URL=postgres://postgres:admin@postgres:5432/technorider
       - REDIS_HOST=redis
@@ -226,7 +226,7 @@ services:
       - NEXT_PUBLIC_APP_URL=http://localhost:3000
     depends_on:
       - auth-service
-      - rust-message
+      - realtime-service
       - fiber-product
     networks:
       - technorider-network

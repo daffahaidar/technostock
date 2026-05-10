@@ -15,7 +15,7 @@ Technorider adalah platform hardware technology berbasis microservices. Monorepo
        │ HTTP :8000        │ WebSocket :8001   │ HTTP :8002
        │ gRPC :50051       │                   │
 ┌──────▼──────┐    ┌───────▼───────┐   ┌──────▼──────────────┐
-│  auth-service  │    │ rust-message  │   │   fiber-product      │
+│  auth-service  │    │ realtime-service  │   │   fiber-product      │
 │  :8000      │◄───│  :8001        │   │   :8002  (Go/Fiber)  │
 │  :50051     │    │  (Rust/Axum)  │   └──────────────────────┘
 │  (Rust)     │    └───────┬───────┘
@@ -33,7 +33,7 @@ Technorider adalah platform hardware technology berbasis microservices. Monorepo
 |---|---|---|---|
 | `frontend` | Next.js 15 | 3000 | UI utama aplikasi |
 | `auth-service` | Rust + Axum | 8000, 50051 | Autentikasi, JWT, OAuth (gRPC server) |
-| `rust-message` | Rust + Axum | 8001 | Real-time chat via WebSocket (gRPC client) |
+| `realtime-service` | Rust + Axum | 8001 | Real-time chat via WebSocket (gRPC client) |
 | `fiber-product` | Go + Fiber | 8002 | Manajemen produk & pembayaran Midtrans |
 
 ## Prerequisites
@@ -112,7 +112,7 @@ make down-dev-volumes  # Hentikan + hapus semua data volume dev
 |---|---|
 | http://localhost:3000 | Frontend |
 | http://localhost:8000 | auth-service API |
-| http://localhost:8001 | rust-message WebSocket |
+| http://localhost:8001 | realtime-service WebSocket |
 | http://localhost:8002 | fiber-product API |
 | http://localhost:15672 | RabbitMQ Management UI |
 | http://localhost:9001 | MinIO Console |
@@ -165,10 +165,10 @@ Service berjalan di:
 - HTTP: `http://localhost:8000`
 - gRPC: `localhost:50051`
 
-#### 2.3 rust-message
+#### 2.3 realtime-service
 
 ```bash
-cd rust-message
+cd realtime-service
 
 # 1. Buat file .env
 cp .env.example .env   # edit sesuai kebutuhan
@@ -276,9 +276,9 @@ REDIS_PORT=6379
 REDIS_PASSWORD=daffahaidarnz27
 ```
 
-### `rust-message/.env`
+### `realtime-service/.env`
 
-> Sama dengan `auth-service/.env` di atas. Pastikan `JWT_PUBLIC_KEY` sama persis dengan yang ada di `auth-service` karena rust-message memverifikasi token yang dibuat oleh auth-service.
+> Sama dengan `auth-service/.env` di atas. Pastikan `JWT_PUBLIC_KEY` sama persis dengan yang ada di `auth-service` karena realtime-service memverifikasi token yang dibuat oleh auth-service.
 
 ```env
 DATABASE_URL=postgres://postgres:admin@localhost:5433/technorider
@@ -411,7 +411,7 @@ technorider/
 │   ├── .env                  # ← perlu diisi (tidak di-commit)
 │   └── src/
 │
-├── rust-message/             # Rust Message Service
+├── realtime-service/             # Rust Message Service
 │   ├── Dockerfile.dev
 │   ├── Dockerfile.unified.dev
 │   ├── Dockerfile.prod

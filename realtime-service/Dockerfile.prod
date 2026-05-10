@@ -16,7 +16,7 @@ WORKDIR /app
 
 RUN apt-get update && apt-get install -y ca-certificates libpq5 && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /app/target/release/rust-message .
+COPY --from=builder /app/target/release/realtime-service .
 COPY --from=builder /usr/local/cargo/bin/sqlx /usr/local/bin/sqlx
 COPY --from=builder /app/migrations ./migrations
 COPY entrypoint.sh .
