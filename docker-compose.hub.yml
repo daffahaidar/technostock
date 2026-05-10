@@ -1,0 +1,196 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# Technorider — Docker Hub Deployment Compose
+# Dipakai di server/VPS: menggunakan image yang sudah di-push ke Docker Hub
+# Jalankan: make deploy  atau  docker compose -f docker-compose.hub.yml up -d
+#
+# Sebelum menjalankan:
+#   1. Buat file .env untuk setiap service
+#   2. Login ke Docker Hub: docker login
+#   3. Pull image: make pull  atau  docker compose -f docker-compose.hub.yml pull
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: technorider-hub
+
+# Ubah VERSION sesuai tag yang ingin dipakai (default: latest)
+x-image-version: &image-version latest
+x-hub-prefix: &hub-prefix daffahaidarnz/technorider
+
+networks:
+  technorider-network:
+    driver: bridge
+
+volumes:
+  pgdata:
+  redis_data:
+  rabbitmq_data:
+  minio_data:
+
+services:
+
+  # ─── Infrastructure ───────────────────────────────────────────────────────────
+
+  postgres:
+    image: postgres:17-alpine
+    container_name: technorider-postgres
+    restart: always
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: technorider
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - technorider-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: technorider-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    command: redis-server --requirepass daffahaidarnz27 --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "daffahaidarnz27", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - technorider-network
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: technorider-rabbitmq
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: daffahaidar
+      RABBITMQ_DEFAULT_PASS: daffahaidarnz27
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+    networks:
+      - technorider-network
+
+  minio:
+    image: quay.io/minio/minio
+    container_name: technorider-minio
+    restart: always
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: daffahaidar
+      MINIO_ROOT_PASSWORD: daffahaidarnz27
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    networks:
+      - technorider-network
+
+  # ─── auth-service ─────────────────────────────────────────────────────────────
+
+  auth-service:
+    image: daffahaidarnz/technorider:auth-service-latest  # ganti 'latest' jika pakai VERSION
+    container_name: technorider-auth-service
+    restart: always
+    ports:
+      - "8000:8000"
+      - "50051:50051"
+    env_file:
+      - ./auth-service/.env
+    environment:
+      - DATABASE_URL=postgres://postgres:admin@postgres:5432/technorider
+      - MINIO_ENDPOINT=minio
+      - RABBITMQ_HOST=rabbitmq
+      - REDIS_HOST=redis
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - technorider-network
+
+  # ─── realtime-service ─────────────────────────────────────────────────────────
+
+  realtime-service:
+    image: daffahaidarnz/technorider:realtime-service-latest
+    container_name: technorider-realtime-service
+    restart: always
+    ports:
+      - "8001:8001"
+    env_file:
+      - ./realtime-service/.env
+    environment:
+      - DATABASE_URL=postgres://postgres:admin@postgres:5432/technorider
+      - REDIS_HOST=redis
+      - RABBITMQ_HOST=rabbitmq
+      - AUTH_GRPC_URL=http://auth-service:50051
+      - MINIO_ENDPOINT=minio
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
+    networks:
+      - technorider-network
+
+  # ─── main-service ─────────────────────────────────────────────────────────────
+
+  main-service:
+    image: daffahaidarnz/technorider:main-service-latest
+    container_name: technorider-main-service
+    restart: always
+    ports:
+      - "8002:8002"
+    env_file:
+      - ./main-service/.env
+    environment:
+      - DATABASE_URL=postgres://postgres:admin@postgres:5432/technorider
+      - AUTH_GRPC_URL=auth-service:50051
+    depends_on:
+      postgres:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
+    networks:
+      - technorider-network
+
+  # ─── frontend ─────────────────────────────────────────────────────────────────
+
+  frontend:
+    image: daffahaidarnz/technorider:frontend-latest
+    container_name: technorider-frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./frontend/.env.production
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - HOSTNAME=0.0.0.0
+      - DATABASE_URL=postgres://postgres:admin@postgres:5432/technorider
+      - SERVER_API_URL=http://auth-service:8000
+    depends_on:
+      - auth-service
+      - realtime-service
+      - main-service
+    networks:
+      - technorider-network
