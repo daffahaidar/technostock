@@ -58,7 +58,7 @@ impl GitHubOAuthClient {
             .http_client
             .get("https://api.github.com/user")
             .header("Authorization", format!("Bearer {}", access_token))
-            .header("User-Agent", "rust-auth-app")
+            .header("User-Agent", "auth-service-app")
             .send()
             .await
             .map_err(|e| AppError::OAuthError(format!("Failed to fetch user info: {}", e)))?
@@ -72,7 +72,7 @@ impl GitHubOAuthClient {
                 .http_client
                 .get("https://api.github.com/user/emails")
                 .header("Authorization", format!("Bearer {}", access_token))
-                .header("User-Agent", "rust-auth-app")
+                .header("User-Agent", "auth-service-app")
                 .send()
                 .await
                 .map_err(|e| AppError::OAuthError(format!("Failed to fetch emails: {}", e)))?

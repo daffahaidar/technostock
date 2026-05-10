@@ -14,8 +14,8 @@ volumes:
   redis_data:
   rabbitmq_data:
   minio_data:
-  rust-auth-cargo-cache:
-  rust-auth-target-cache:
+  auth-service-cargo-cache:
+  auth-service-target-cache:
   rust-message-cargo-cache:
   rust-message-target-cache:
   fiber-product-go-cache:
@@ -100,24 +100,24 @@ services:
     networks:
       - technorider-network
 
-  # ─── rust-auth ────────────────────────────────────────────────────────────────
+  # ─── auth-service ────────────────────────────────────────────────────────────────
 
-  rust-auth:
+  auth-service:
     build:
       context: .   # Root project — agar folder proto/ tersedia untuk build.rs
-      dockerfile: rust-auth/Dockerfile.unified.dev
-    container_name: technorider-rust-auth-dev
+      dockerfile: auth-service/Dockerfile.unified.dev
+    container_name: technorider-auth-service-dev
     restart: unless-stopped
     ports:
       - "8000:8000"
       - "50051:50051"
     volumes:
-      - ./rust-auth:/app
+      - ./auth-service:/app
       - ./proto:/proto  # Proto juga di-mount agar cargo-watch bisa detect perubahan
-      - rust-auth-cargo-cache:/usr/local/cargo/registry
-      - rust-auth-target-cache:/app/target
+      - auth-service-cargo-cache:/usr/local/cargo/registry
+      - auth-service-target-cache:/app/target
     env_file:
-      - ./rust-auth/.env
+      - ./auth-service/.env
     environment:
       - DATABASE_URL=postgres://postgres:admin@postgres:5432/technorider
       - MINIO_ENDPOINT=minio
@@ -153,7 +153,7 @@ services:
       - DATABASE_URL=postgres://postgres:admin@postgres:5432/technorider
       - REDIS_HOST=redis
       - RABBITMQ_HOST=rabbitmq
-      - AUTH_GRPC_URL=http://rust-auth:50051
+      - AUTH_GRPC_URL=http://auth-service:50051
       - MINIO_ENDPOINT=minio
       - SQLX_OFFLINE=false
     # Jalankan migrasi dulu, baru start dengan hot-reload
@@ -163,7 +163,7 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-      rust-auth:
+      auth-service:
         condition: service_started
     networks:
       - technorider-network
@@ -186,11 +186,11 @@ services:
       - ./fiber-product/.env
     environment:
       - DATABASE_URL=postgres://postgres:admin@postgres:5432/technorider
-      - AUTH_GRPC_URL=rust-auth:50051
+      - AUTH_GRPC_URL=auth-service:50051
     depends_on:
       postgres:
         condition: service_healthy
-      rust-auth:
+      auth-service:
         condition: service_started
     networks:
       - technorider-network
@@ -217,7 +217,7 @@ services:
       - WATCHPACK_POLLING=true
       # Server-side: gunakan nama service internal
       - DATABASE_URL=postgres://postgres:admin@postgres:5432/technorider
-      - SERVER_API_URL=http://rust-auth:8000
+      - SERVER_API_URL=http://auth-service:8000
       - BETTER_AUTH_URL=http://localhost:3000
       # Client-side (browser): tetap localhost karena diakses dari browser user
       - NEXT_PUBLIC_API_URL=http://localhost:8000
@@ -225,7 +225,7 @@ services:
       - NEXT_PUBLIC_GOLANG_API=http://localhost:8002
       - NEXT_PUBLIC_APP_URL=http://localhost:3000
     depends_on:
-      - rust-auth
+      - auth-service
       - rust-message
       - fiber-product
     networks:

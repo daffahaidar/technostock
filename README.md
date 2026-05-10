@@ -15,7 +15,7 @@ Technorider adalah platform hardware technology berbasis microservices. Monorepo
        │ HTTP :8000        │ WebSocket :8001   │ HTTP :8002
        │ gRPC :50051       │                   │
 ┌──────▼──────┐    ┌───────▼───────┐   ┌──────▼──────────────┐
-│  rust-auth  │    │ rust-message  │   │   fiber-product      │
+│  auth-service  │    │ rust-message  │   │   fiber-product      │
 │  :8000      │◄───│  :8001        │   │   :8002  (Go/Fiber)  │
 │  :50051     │    │  (Rust/Axum)  │   └──────────────────────┘
 │  (Rust)     │    └───────┬───────┘
@@ -32,7 +32,7 @@ Technorider adalah platform hardware technology berbasis microservices. Monorepo
 | Service | Stack | Port | Deskripsi |
 |---|---|---|---|
 | `frontend` | Next.js 15 | 3000 | UI utama aplikasi |
-| `rust-auth` | Rust + Axum | 8000, 50051 | Autentikasi, JWT, OAuth (gRPC server) |
+| `auth-service` | Rust + Axum | 8000, 50051 | Autentikasi, JWT, OAuth (gRPC server) |
 | `rust-message` | Rust + Axum | 8001 | Real-time chat via WebSocket (gRPC client) |
 | `fiber-product` | Go + Fiber | 8002 | Manajemen produk & pembayaran Midtrans |
 
@@ -111,7 +111,7 @@ make down-dev-volumes  # Hentikan + hapus semua data volume dev
 | URL | Service |
 |---|---|
 | http://localhost:3000 | Frontend |
-| http://localhost:8000 | rust-auth API |
+| http://localhost:8000 | auth-service API |
 | http://localhost:8001 | rust-message WebSocket |
 | http://localhost:8002 | fiber-product API |
 | http://localhost:15672 | RabbitMQ Management UI |
@@ -142,10 +142,10 @@ cd tools/rabbitmq && docker compose up -d && cd ../..
 cd tools/minio && docker compose up -d && cd ../..
 ```
 
-#### 2.2 rust-auth
+#### 2.2 auth-service
 
 ```bash
-cd rust-auth
+cd auth-service
 
 # 1. Buat file .env (lihat bagian Environment Variables)
 cp .env.example .env   # edit sesuai kebutuhan
@@ -232,7 +232,7 @@ Frontend berjalan di: `http://localhost:3000`
 
 > ⚠️ **Jangan commit file `.env`** — sudah di-exclude oleh `.gitignore`. File `.env.example` di root bisa dijadikan referensi.
 
-### `rust-auth/.env`
+### `auth-service/.env`
 
 ```env
 # ─── Database ─────────────────────────────────────────────────
@@ -278,7 +278,7 @@ REDIS_PASSWORD=daffahaidarnz27
 
 ### `rust-message/.env`
 
-> Sama dengan `rust-auth/.env` di atas. Pastikan `JWT_PUBLIC_KEY` sama persis dengan yang ada di `rust-auth` karena rust-message memverifikasi token yang dibuat oleh rust-auth.
+> Sama dengan `auth-service/.env` di atas. Pastikan `JWT_PUBLIC_KEY` sama persis dengan yang ada di `auth-service` karena rust-message memverifikasi token yang dibuat oleh auth-service.
 
 ```env
 DATABASE_URL=postgres://postgres:admin@localhost:5433/technorider
@@ -315,7 +315,7 @@ DATABASE_URL=postgres://postgres:admin@localhost:5433/technorider
 # ─── Server ───────────────────────────────────────────────────
 PORT=8002
 
-# ─── gRPC ke rust-auth ────────────────────────────────────────
+# ─── gRPC ke auth-service ────────────────────────────────────────
 AUTH_GRPC_URL=localhost:50051
 
 # ─── Midtrans Payment Gateway ─────────────────────────────────
@@ -342,7 +342,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 # ─── Database (dipakai oleh Better Auth server-side) ──────────
 DATABASE_URL=postgres://postgres:admin@localhost:5433/technorider
 
-# ─── JWT Public Key (untuk verifikasi token dari rust-auth) ───
+# ─── JWT Public Key (untuk verifikasi token dari auth-service) ───
 JWT_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----\n...\n-----END PUBLIC KEY-----"
 
 # ─── OAuth — GitHub ───────────────────────────────────────────
@@ -403,7 +403,7 @@ technorider/
 │   ├── .env.development      # ← perlu diisi
 │   └── .env.production       # ← perlu diisi
 │
-├── rust-auth/                # Rust Auth Service
+├── auth-service/                # Rust Auth Service
 │   ├── Dockerfile.dev
 │   ├── Dockerfile.unified.dev  # Dipakai oleh root compose
 │   ├── Dockerfile.prod

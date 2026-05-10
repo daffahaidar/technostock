@@ -93,19 +93,19 @@ services:
     networks:
       - technorider-network
 
-  # ─── rust-auth ────────────────────────────────────────────────────────────────
+  # ─── auth-service ────────────────────────────────────────────────────────────────
 
-  rust-auth:
+  auth-service:
     build:
       context: .   # Root project — agar folder proto/ tersedia untuk build.rs
-      dockerfile: rust-auth/Dockerfile.unified.prod
-    container_name: technorider-rust-auth-prod
+      dockerfile: auth-service/Dockerfile.unified.prod
+    container_name: technorider-auth-service-prod
     restart: always
     ports:
       - "8000:8000"
       - "50051:50051"
     env_file:
-      - ./rust-auth/.env
+      - ./auth-service/.env
     environment:
       - DATABASE_URL=postgres://postgres:admin@postgres:5432/technorider
       - MINIO_ENDPOINT=minio
@@ -133,14 +133,14 @@ services:
       - DATABASE_URL=postgres://postgres:admin@postgres:5432/technorider
       - REDIS_HOST=redis
       - RABBITMQ_HOST=rabbitmq
-      - AUTH_GRPC_URL=http://rust-auth:50051
+      - AUTH_GRPC_URL=http://auth-service:50051
       - MINIO_ENDPOINT=minio
     depends_on:
       postgres:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-      rust-auth:
+      auth-service:
         condition: service_started
     networks:
       - technorider-network
@@ -159,11 +159,11 @@ services:
       - ./fiber-product/.env
     environment:
       - DATABASE_URL=postgres://postgres:admin@postgres:5432/technorider
-      - AUTH_GRPC_URL=rust-auth:50051
+      - AUTH_GRPC_URL=auth-service:50051
     depends_on:
       postgres:
         condition: service_healthy
-      rust-auth:
+      auth-service:
         condition: service_started
     networks:
       - technorider-network
@@ -186,9 +186,9 @@ services:
       - HOSTNAME=0.0.0.0
       # Server-side: gunakan nama service internal
       - DATABASE_URL=postgres://postgres:admin@postgres:5432/technorider
-      - SERVER_API_URL=http://rust-auth:8000
+      - SERVER_API_URL=http://auth-service:8000
     depends_on:
-      - rust-auth
+      - auth-service
       - rust-message
       - fiber-product
     networks:
