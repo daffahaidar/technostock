@@ -14,9 +14,9 @@ impl<R: UserRepository> GetUsersUseCase<R> {
     }
 
     pub async fn execute(&self, role: Role) -> Result<Vec<UserResponseDto>, AppError> {
-        // Authorize: Only Admin and SuperAdmin can get all users
+        // Authorize: Only Admin and Maintainer can get all users
         match role {
-            Role::Admin | Role::SuperAdmin => {},
+            Role::Admin | Role::Maintainer => {},
             _ => return Err(AppError::InvalidToken), // Or create a Forbidden error
         }
 

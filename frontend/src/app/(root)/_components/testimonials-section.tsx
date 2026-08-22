@@ -5,39 +5,39 @@ import { useEffect, useRef } from "react";
 const testimonials = [
   {
     quote:
-      "Technorider's queue system completely transformed our bank branch operations. Customer wait times dropped by 35% in the first month alone.",
+      "Kelas Technostock benar-benar membuka mata saya. Dari yang awalnya sering boncos tebak-tebakan, sekarang saya bisa konsisten profit 5-10% tiap bulan berkat ilmunya.",
     author: "Budi Santoso",
-    role: "Operations Director",
-    company: "Bank Mandiri Regional",
+    role: "Trader Pemula",
+    company: "Alumni Angkatan 3",
     initials: "BS",
   },
   {
     quote:
-      "The digital weighing integration with our ERP saved us hours of manual data entry every day. The precision is outstanding — no more disputes with suppliers.",
+      "Penjelasan teknikalnya sangat mudah dipahami bahkan untuk orang awam. Grup VIP-nya juga sangat aktif dan mentor selalu stand-by menjawab pertanyaan.",
     author: "Siti Rahayu",
-    role: "Head of Logistics",
-    company: "Gudang Garam Distribution",
+    role: "Ibu Rumah Tangga",
+    company: "Alumni Angkatan 5",
     initials: "SR",
   },
   {
     quote:
-      "Our cold storage facility is now fully automated. ClimaGuard sends instant alerts if anything drifts even slightly. The ROI was immediate.",
+      "Materi money management adalah life saver! Dulu saya trading tanpa perhitungan resiko, sekarang semua by data dan trading jadi jauh lebih tenang.",
     author: "Ahmad Fauzi",
-    role: "Facility Manager",
-    company: "Indofood Cold Chain",
+    role: "Karyawan Swasta",
+    company: "Alumni Angkatan 2",
     initials: "AF",
   },
 ];
 
 const clients = [
-  "Bank Mandiri",
-  "Grab",
-  "Tokopedia",
-  "Indofood",
-  "Mayora",
-  "BCA",
-  "Astra Group",
-  "Telkom",
+  "Mirae Asset",
+  "IndoPremier",
+  "Ajaib",
+  "Stockbit",
+  "Mandiri Sekuritas",
+  "BNI Sekuritas",
+  "Trimegah",
+  "Phillip Sekuritas",
 ];
 
 export default function TestimonialsSection() {
@@ -64,21 +64,23 @@ export default function TestimonialsSection() {
     <section
       id="testimonials"
       ref={sectionRef}
-      className="relative overflow-hidden bg-black py-32"
+      className="relative overflow-hidden bg-luxury-black py-32"
     >
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_40%_at_50%_0%,rgba(255,255,255,0.03),transparent)]" />
+      <div className="absolute top-1/4 -right-20 w-96 h-96 bg-[#D4AF37]/5 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-1/4 -left-20 w-[500px] h-[500px] bg-[#F3CA52]/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_40%_at_50%_0%,rgba(212,175,55,0.05),transparent)]" />
 
       <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-8">
         {/* Header */}
         <div className="reveal mb-20 translate-y-8 text-center opacity-0 transition-all duration-700">
-          <span className="mb-5 inline-block text-xs font-semibold tracking-[0.2em] text-white/40 uppercase">
-            Client Stories
+          <span className="mb-5 inline-block text-xs font-semibold tracking-[0.2em] text-[#D4AF37] uppercase">
+            Kisah Sukses
           </span>
           <h2 className="text-4xl font-bold tracking-tight text-white lg:text-6xl">
-            Trusted by
+            Dipercaya oleh
             <br />
-            <span className="bg-gradient-to-r from-white to-white/40 bg-clip-text text-transparent">
-              industry leaders.
+            <span className="text-gradient-gold">
+              ribuan trader.
             </span>
           </h2>
         </div>
@@ -88,11 +90,11 @@ export default function TestimonialsSection() {
           {testimonials.map((t, i) => (
             <div
               key={t.author}
-              className="reveal translate-y-8 rounded-3xl border border-white/10 bg-white/[0.03] p-8 opacity-0 transition-all duration-300 hover:border-white/20 hover:bg-white/[0.06]"
+              className="reveal translate-y-8 rounded-3xl p-8 opacity-0 transition-all duration-300 glass-card-gold hover:border-[#D4AF37]/40 hover:bg-[#D4AF37]/5 hover:shadow-[0_10px_40px_rgba(212,175,55,0.15)]"
               style={{ transitionDelay: `${i * 120}ms` }}
             >
               {/* Quote marks */}
-              <div className="mb-4 font-serif text-6xl leading-none text-white/20">
+              <div className="mb-4 font-serif text-6xl leading-none text-[#D4AF37]/20">
                 &ldquo;
               </div>
 
@@ -100,8 +102,8 @@ export default function TestimonialsSection() {
                 {t.quote}
               </p>
 
-              <div className="flex items-center gap-4 border-t border-white/10 pt-6">
-                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-white/20 to-white/5 text-sm font-semibold text-white">
+              <div className="flex items-center gap-4 border-t border-[#D4AF37]/10 pt-6">
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#D4AF37]/20 to-[#D4AF37]/5 text-sm font-semibold text-[#D4AF37] border border-[#D4AF37]/30">
                   {t.initials}
                 </div>
                 <div>
@@ -117,14 +119,14 @@ export default function TestimonialsSection() {
 
         {/* Client logos / names */}
         <div className="reveal translate-y-8 opacity-0 transition-all duration-700">
-          <p className="mb-8 text-center text-xs font-semibold tracking-widest text-white/30 uppercase">
-            Trusted by companies across Indonesia
+          <p className="mb-8 text-center text-xs font-semibold tracking-widest text-[#D4AF37]/40 uppercase">
+            Anggota komunitas kami menggunakan platform broker terkemuka
           </p>
           <div className="flex flex-wrap justify-center gap-x-10 gap-y-4">
             {clients.map((client) => (
               <span
                 key={client}
-                className="cursor-default text-sm font-semibold text-white/25 transition-colors duration-200 hover:text-white/50"
+                className="cursor-default text-sm font-semibold text-[#D4AF37]/30 transition-colors duration-200 hover:text-[#D4AF37]/70"
               >
                 {client}
               </span>

@@ -11,7 +11,7 @@ import (
 func ConnectPostgres(databaseURL string) *gorm.DB {
 	db, err := gorm.Open(postgres.Open(databaseURL), &gorm.Config{
 		NamingStrategy: schema.NamingStrategy{
-			TablePrefix:   "product.", // schema name
+			TablePrefix:   "main.", // schema name
 			SingularTable: false,
 		},
 	})
@@ -20,7 +20,7 @@ func ConnectPostgres(databaseURL string) *gorm.DB {
 	}
 
 	// Create schema if it doesn't exist
-	db.Exec("CREATE SCHEMA IF NOT EXISTS product;")
+	db.Exec("CREATE SCHEMA IF NOT EXISTS main;")
 
 	log.Println("Connected to PostgreSQL database")
 	return db

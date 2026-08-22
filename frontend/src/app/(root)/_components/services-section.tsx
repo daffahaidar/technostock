@@ -19,12 +19,12 @@ const services = [
         />
       </svg>
     ),
-    title: "Queue Machine Systems",
+    title: "Kelas Saham Pemula",
     description:
-      "Intelligent ticketing and digital queue displays that streamline customer flow in banks, clinics, retail, and government offices. Reduce wait times by up to 40%.",
-    tags: ["Touchscreen Kiosk", "LED Display", "Cloud-Connected"],
-    accent: "from-blue-500 to-cyan-500",
-    glow: "group-hover:shadow-blue-500/20",
+      "Materi terstruktur dari dasar. Pahami cara kerja pasar modal, membuat akun broker, hingga cara membeli saham pertama Anda tanpa kebingungan.",
+    tags: ["Fundamental", "Mindset", "Money Management"],
+    accent: "from-gold-400 to-gold-600",
+    glow: "group-hover:shadow-[0_0_30px_rgba(212,175,55,0.15)]",
   },
   {
     icon: (
@@ -42,12 +42,12 @@ const services = [
         />
       </svg>
     ),
-    title: "Digital Weighing Solutions",
+    title: "Analisa Teknikal Profesional",
     description:
-      "High-precision industrial and retail digital scales with automatic data capture, seamless ERP integration, and anti-tampering certification for factories and warehouses.",
-    tags: ["High Precision", "ERP Integration", "Anti-Tamper"],
-    accent: "from-violet-500 to-purple-500",
-    glow: "group-hover:shadow-violet-500/20",
+      "Kuasai seni membaca chart. Pelajari indikator teknikal, price action, pola candlestick, dan cara menentukan titik beli/jual yang presisi dengan akurasi tinggi.",
+    tags: ["Chart Patterns", "Indikator", "Price Action"],
+    accent: "from-gold-300 to-gold-500",
+    glow: "group-hover:shadow-[0_0_30px_rgba(212,175,55,0.15)]",
   },
   {
     icon: (
@@ -65,12 +65,12 @@ const services = [
         />
       </svg>
     ),
-    title: "Climate Control Systems",
+    title: "Mentoring Private",
     description:
-      "Smart IoT-based temperature and humidity monitoring for cold storage, server rooms, and production floors — with real-time alerts and automated response protocols.",
-    tags: ["IoT Sensors", "Real-time Alerts", "Remote Control"],
-    accent: "from-emerald-500 to-teal-500",
-    glow: "group-hover:shadow-emerald-500/20",
+      "Bimbingan intensif 1-on-1 dengan mentor profesional. Dapatkan feedback langsung atas trading plan Anda dan akses VIP eksklusif ke live trading session.",
+    tags: ["1-on-1 Mentoring", "Live Trading", "Review Portofolio"],
+    accent: "from-gold-500 to-gold-700",
+    glow: "group-hover:shadow-[0_0_30px_rgba(212,175,55,0.15)]",
   },
 ];
 
@@ -102,27 +102,31 @@ export default function ServicesSection() {
     <section
       id="services"
       ref={sectionRef}
-      className="relative overflow-hidden bg-black py-32"
+      className="relative overflow-hidden bg-luxury-black py-32"
     >
+      {/* Background orbs for glass effect */}
+      <div className="absolute top-1/3 -left-40 w-96 h-96 bg-[#D4AF37]/10 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-1/3 -right-40 w-96 h-96 bg-[#D4AF37]/5 rounded-full blur-[100px] pointer-events-none" />
+
       {/* Subtle separator line */}
-      <div className="absolute top-0 left-1/2 h-20 w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-white/20 to-transparent" />
+      <div className="absolute top-0 left-1/2 h-20 w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-[#D4AF37]/50 to-transparent" />
 
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         {/* Header */}
         <div className="reveal mb-20 translate-y-8 text-center opacity-0 transition-all duration-700">
-          <span className="mb-5 inline-block text-xs font-semibold tracking-[0.2em] text-white/40 uppercase">
-            What We Do
+          <span className="mb-5 inline-block text-xs font-semibold tracking-[0.2em] text-[#D4AF37] uppercase">
+            Layanan Kami
           </span>
           <h2 className="text-4xl leading-tight font-bold tracking-tight text-white lg:text-6xl">
-            Solutions Built for
+            Edukasi Terlengkap
             <br />
-            <span className="bg-gradient-to-r from-white to-white/40 bg-clip-text text-transparent">
-              Enterprise Scale.
+            <span className="text-gradient-gold">
+              untuk Trading Anda.
             </span>
           </h2>
           <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-white/50">
-            We design and deploy hardware systems that integrate seamlessly into
-            your operations, reducing friction and increasing throughput.
+            Kami menyediakan berbagai pilihan kelas dan layanan mentoring yang dirancang khusus 
+            untuk mempercepat kurva belajar Anda di pasar saham.
           </p>
         </div>
 
@@ -131,14 +135,14 @@ export default function ServicesSection() {
           {services.map((service, index) => (
             <div
               key={service.title}
-              className={`reveal group relative translate-y-8 cursor-pointer rounded-3xl border border-white/10 bg-white/[0.03] p-8 opacity-0 transition-all duration-300 hover:border-white/20 hover:bg-white/[0.06] hover:shadow-2xl ${service.glow}`}
+              className={`reveal group relative translate-y-8 cursor-pointer rounded-3xl p-8 opacity-0 transition-all duration-300 glass-card-gold hover:border-[#D4AF37]/50 hover:bg-[#D4AF37]/5 ${service.glow}`}
               style={{ transitionDelay: `${index * 120}ms` }}
             >
               {/* Icon */}
               <div
-                className={`inline-flex rounded-2xl bg-gradient-to-br p-3 ${service.accent} bg-opacity-10 mb-6 text-white transition-transform duration-300 group-hover:scale-110`}
+                className={`inline-flex rounded-2xl bg-gradient-to-br p-3 ${service.accent} bg-opacity-10 mb-6 text-[#D4AF37] transition-transform duration-300 group-hover:scale-110`}
                 style={{
-                  background: `linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))`,
+                  background: `linear-gradient(135deg, rgba(212,175,55,0.15), rgba(212,175,55,0.05))`,
                 }}
               >
                 <span
@@ -161,7 +165,7 @@ export default function ServicesSection() {
                 {service.tags.map((tag) => (
                   <span
                     key={tag}
-                    className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs font-medium text-white/50"
+                    className="rounded-full border border-[#D4AF37]/20 bg-[#D4AF37]/5 px-3 py-1 text-xs font-medium text-[#F9E596]"
                   >
                     {tag}
                   </span>
@@ -171,7 +175,7 @@ export default function ServicesSection() {
               {/* Hover arrow */}
               <div className="absolute top-8 right-8 -translate-x-2 opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100">
                 <svg
-                  className="h-5 w-5 text-white/60"
+                  className="h-5 w-5 text-[#D4AF37]"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"

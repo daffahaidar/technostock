@@ -6,7 +6,7 @@ use crate::domain::dtos::{CreateUserDto, UpdateUserDto, UpdateUserStatusDto, Use
 use crate::infrastructure::auth::password::hash_password;
 use crate::infrastructure::errors::AppError;
 
-/// Create User Use Case - Admin + SuperAdmin only
+/// Create User Use Case - Admin + Maintainer only
 pub struct CreateUserUseCase<R: UserRepository> {
     user_repository: Arc<R>,
 }
@@ -17,9 +17,9 @@ impl<R: UserRepository> CreateUserUseCase<R> {
     }
 
     pub async fn execute(&self, requester_role: Role, dto: CreateUserDto) -> Result<UserResponseDto, AppError> {
-        // Check permissions: Only Admin and SuperAdmin can create users
+        // Check permissions: Only Admin and Maintainer can create users
         match requester_role {
-            Role::Admin | Role::SuperAdmin => {},
+            Role::Admin | Role::Maintainer => {},
             _ => return Err(AppError::Forbidden),
         }
 
@@ -53,7 +53,7 @@ impl<R: UserRepository> CreateUserUseCase<R> {
     }
 }
 
-/// Update User Use Case - SuperAdmin only
+/// Update User Use Case - Maintainer only
 pub struct UpdateUserUseCase<R: UserRepository> {
     user_repository: Arc<R>,
 }
@@ -64,8 +64,8 @@ impl<R: UserRepository> UpdateUserUseCase<R> {
     }
 
     pub async fn execute(&self, requester_role: Role, user_id: Uuid, dto: UpdateUserDto) -> Result<UserResponseDto, AppError> {
-        // Check permissions: Only SuperAdmin can update users
-        if requester_role != Role::SuperAdmin {
+        // Check permissions: Only Maintainer can update users
+        if requester_role != Role::Maintainer {
             return Err(AppError::Forbidden);
         }
 
@@ -101,7 +101,7 @@ impl<R: UserRepository> UpdateUserUseCase<R> {
     }
 }
 
-/// Delete User Use Case - SuperAdmin only, cannot delete self
+/// Delete User Use Case - Maintainer only, cannot delete self
 pub struct DeleteUserUseCase<R: UserRepository> {
     user_repository: Arc<R>,
 }
@@ -112,8 +112,8 @@ impl<R: UserRepository> DeleteUserUseCase<R> {
     }
 
     pub async fn execute(&self, requester_id: Uuid, requester_role: Role, user_id: Uuid) -> Result<(), AppError> {
-        // Check permissions: Only SuperAdmin can delete users
-        if requester_role != Role::SuperAdmin {
+        // Check permissions: Only Maintainer can delete users
+        if requester_role != Role::Maintainer {
             return Err(AppError::Forbidden);
         }
 
@@ -134,7 +134,7 @@ impl<R: UserRepository> DeleteUserUseCase<R> {
     }
 }
 
-/// Suspend/Activate User Use Case - Admin + SuperAdmin
+/// Suspend/Activate User Use Case - Admin + Maintainer
 pub struct UpdateUserStatusUseCase<R: UserRepository> {
     user_repository: Arc<R>,
 }
@@ -145,9 +145,9 @@ impl<R: UserRepository> UpdateUserStatusUseCase<R> {
     }
 
     pub async fn execute(&self, requester_role: Role, user_id: Uuid, dto: UpdateUserStatusDto) -> Result<UserResponseDto, AppError> {
-        // Check permissions: Admin and SuperAdmin can suspend users
+        // Check permissions: Admin and Maintainer can suspend users
         match requester_role {
-            Role::Admin | Role::SuperAdmin => {},
+            Role::Admin | Role::Maintainer => {},
             _ => return Err(AppError::Forbidden),
         }
 

@@ -14,41 +14,33 @@ import {
 
 import mainMenu from "@/constants/main-menu";
 import profileMenu from "@/constants/profile-menu";
+import maintainerMenu from "@/constants/maintainer-menu";
+import adminMenu from "@/constants/admin-menu";
 
 const data = {
   roles: [
     {
-      name: "Technorider",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
+      name: "Technostock",
       logo: Command,
-      plan: "Free",
+      plan: "Admin Panel",
     },
   ],
 };
 
 import { GlobalNotificationHandler } from "@/components/context/global-notification-handler";
-import managementMenu from "@/constants/management-menu";
-
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
-  menu: "main" | "profile" | "management";
+  menu: "main" | "profile" | "admin" | "maintainer";
 }
 
 export function AppSidebar({ menu, ...props }: AppSidebarProps) {
   const activeMenu =
     menu === "profile"
       ? profileMenu
-      : menu === "management"
-        ? managementMenu
-        : mainMenu;
+      : menu === "admin"
+        ? adminMenu
+        : menu === "maintainer"
+          ? maintainerMenu
+          : mainMenu;
 
   return (
     <>

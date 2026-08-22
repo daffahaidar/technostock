@@ -37,7 +37,7 @@ pub struct UpdateUserStatusRequest {
     pub status: crate::domain::entities::user::UserStatus,
 }
 
-/// POST /api/v1/users - Create user (Admin + SuperAdmin)
+/// POST /api/v1/users - Create user (Admin + Maintainer)
 pub async fn create_user(
     State(state): State<AppState>,
     auth_user: AuthUser,
@@ -65,7 +65,7 @@ pub async fn create_user(
     Ok(crate::utils::response::success_response_one(user))
 }
 
-/// PUT /api/v1/users/:id - Update user (SuperAdmin only)
+/// PUT /api/v1/users/:id - Update user (Maintainer only)
 pub async fn update_user(
     State(state): State<AppState>,
     auth_user: AuthUser,
@@ -91,7 +91,7 @@ pub async fn update_user(
     Ok(crate::utils::response::success_response_one(user))
 }
 
-/// DELETE /api/v1/users/:id - Delete user (SuperAdmin only, not self)
+/// DELETE /api/v1/users/:id - Delete user (Maintainer only, not self)
 pub async fn delete_user(
     State(state): State<AppState>,
     auth_user: AuthUser,
@@ -109,7 +109,7 @@ pub async fn delete_user(
     Ok(crate::utils::response::success_response((), "User deleted successfully"))
 }
 
-/// PATCH /api/v1/users/:id/status - Suspend/activate user (Admin + SuperAdmin)
+/// PATCH /api/v1/users/:id/status - Suspend/activate user (Admin + Maintainer)
 pub async fn update_user_status(
     State(state): State<AppState>,
     auth_user: AuthUser,

@@ -22,12 +22,6 @@ const mainMenu = [
     group: "Member Area",
     menus: [
       {
-        title: "Member Discussion",
-        url: "/forum/discussion",
-        icon: MessagesSquare,
-        isActive: false,
-      },
-      {
         title: "Market News",
         url: "/forum/market-news",
         icon: ChartCandlestick,

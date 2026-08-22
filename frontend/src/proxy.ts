@@ -5,19 +5,18 @@ import { decodeJwt } from "jose";
 // Define protected routes and their required roles
 // Using simpler string matching here, but could use regex for more complex patterns
 const PROTECTED_ROUTES = [
-  { path: "/management", role: "SuperAdmin" },
   { path: "/admin", role: "Admin" },
   { path: "/maintainer", role: "Maintainer" },
-  { path: "/forum", role: "User" },
+  { path: "/forum", role: "Member" },
   { path: "/user", role: null }, // Requires login, any role can access
 ];
 
 // Role-based dashboard mapping
 const ROLE_DASHBOARDS: Record<string, string> = {
-  SuperAdmin: "/management/dashboard",
-  Admin: "/admin/dashboard",
   Maintainer: "/maintainer/dashboard",
-  User: "/forum/dashboard",
+  Admin: "/admin/dashboard",
+  Member: "/forum/dashboard",
+  User: "/",
 };
 
 export async function proxy(request: NextRequest) {
@@ -26,7 +25,6 @@ export async function proxy(request: NextRequest) {
   // 1. Check if the route is protected or if it's an auth route we want to redirect away from if logged in
   const isAuthRoute = pathname.startsWith("/auth");
   const isProtectedRoute =
-    pathname.startsWith("/management") ||
     pathname.startsWith("/admin") ||
     pathname.startsWith("/maintainer") ||
     pathname.startsWith("/forum") ||
@@ -133,17 +131,17 @@ export async function proxy(request: NextRequest) {
       // Check specific role requirements
       let finalResponse = NextResponse.next();
 
-      if (pathname.startsWith("/management") && userRole !== "SuperAdmin") {
-        finalResponse = NextResponse.redirect(
-          new URL(ROLE_DASHBOARDS[userRole] || "/", request.url),
-        );
-      } else if (pathname.startsWith("/admin") && userRole !== "Admin") {
+      if (pathname.startsWith("/admin") && userRole !== "Admin") {
         finalResponse = NextResponse.redirect(
           new URL(ROLE_DASHBOARDS[userRole] || "/", request.url),
         );
       } else if (pathname.startsWith("/maintainer") && userRole !== "Maintainer") {
         finalResponse = NextResponse.redirect(
           new URL(ROLE_DASHBOARDS[userRole] || "/", request.url),
+        );
+      } else if (pathname.startsWith("/forum") && !["Maintainer", "Admin", "Member"].includes(userRole)) {
+        finalResponse = NextResponse.redirect(
+          new URL("/", request.url), // Redirect User directly to /
         );
       }
 

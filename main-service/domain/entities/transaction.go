@@ -20,7 +20,6 @@ type Transaction struct {
 	UserID          string            `gorm:"type:varchar(255);not null;index" json:"user_id"`
 	PlanID          uuid.UUID         `gorm:"type:uuid;not null;index" json:"plan_id"`
 	Plan            ProductPlan       `gorm:"foreignKey:PlanID" json:"plan,omitempty"`
-	SerialNumber    string            `gorm:"type:varchar(50);not null" json:"serial_number"`
 	PaymentToken    string            `gorm:"type:varchar(255);not null;uniqueIndex" json:"payment_token"`
 	ExternalID      string            `gorm:"type:varchar(255);not null;uniqueIndex" json:"external_id"`
 	Amount          float64           `gorm:"type:numeric(10,2);not null" json:"amount"`

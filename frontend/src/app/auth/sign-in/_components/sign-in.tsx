@@ -51,21 +51,23 @@ export default function SignInForm() {
   });
 
   const { isPending, mutate: signIn } = useSignIn({
-    onSuccess: (data: Record<string, any>) => {
-      switch (data.user.role) {
-        case "SuperAdmin":
-          router.push("/management/dashboard");
+    onSuccess: (result: any) => {
+      const role = result.data.results.role || "User";
+      switch (role) {
+        case "Maintainer":
+          router.push(callbackUrl || "/maintainer/dashboard");
           break;
         case "Admin":
-          router.push("/admin/dashboard");
+          router.push(callbackUrl || "/admin/dashboard");
           break;
-        case "Maintainer":
-          router.push("/maintainer/dashboard");
+        case "Member":
+          router.push(callbackUrl || "/forum/dashboard");
           break;
         case "User":
-        default:
-          router.push(callbackUrl);
+          router.push(callbackUrl || "/");
           break;
+        default:
+          router.push("/");
       }
     },
     onError: (error: any) => {
@@ -98,7 +100,7 @@ export default function SignInForm() {
   }, [searchParams]);
 
   return (
-    <Card className="overflow-hidden p-0">
+    <Card className="overflow-hidden p-0 glass-panel-gold shadow-[0_20px_50px_rgba(0,0,0,0.5)] border-[#D4AF37]/30">
       <CardContent className="p-0">
         <Form {...form}>
           <form
@@ -109,9 +111,14 @@ export default function SignInForm() {
           >
             <FieldGroup>
               <div className="flex flex-col items-center gap-2 text-center">
-                <h1 className="text-2xl font-bold">Welcome back</h1>
-                <p className="text-muted-foreground text-balance">
-                  Sign in to your Acme Inc account
+                <div className="w-12 h-12 bg-gradient-gold rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(212,175,55,0.4)] mb-2">
+                  <svg viewBox="0 0 24 24" className="w-6 h-6 text-black fill-current">
+                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                  </svg>
+                </div>
+                <h1 className="text-2xl font-bold text-[#F9E596]">Welcome back</h1>
+                <p className="text-white/60 text-balance text-sm">
+                  Sign in to your Technostock account
                 </p>
               </div>
 
@@ -120,9 +127,13 @@ export default function SignInForm() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel className="text-white/80">Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="example@mail.com" {...field} />
+                      <Input 
+                        placeholder="example@mail.com" 
+                        {...field} 
+                        className="bg-[#0a0a0a]/50 border-[#D4AF37]/20 text-[#F9E596] placeholder:text-white/30 focus-visible:border-[#D4AF37]/50 focus-visible:ring-[#D4AF37]/30"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -133,26 +144,26 @@ export default function SignInForm() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel className="text-white/80">Password</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Input
                           placeholder="Your password"
                           type={showPassword ? "text" : "password"}
-                          className="pr-10"
+                          className="pr-10 bg-[#0a0a0a]/50 border-[#D4AF37]/20 text-[#F9E596] placeholder:text-white/30 focus-visible:border-[#D4AF37]/50 focus-visible:ring-[#D4AF37]/30"
                           {...field}
                         />
                         <Button
                           type="button"
                           variant="ghost"
                           size="icon"
-                          className="absolute top-0 right-0 h-full px-3 py-2 hover:bg-transparent"
+                          className="absolute top-0 right-0 h-full px-3 py-2 hover:bg-transparent text-white/50 hover:text-white/80"
                           onClick={() => setShowPassword(!showPassword)}
                         >
                           {showPassword ? (
-                            <EyeOff className="text-muted-foreground h-4 w-4" />
+                            <EyeOff className="h-4 w-4" />
                           ) : (
-                            <Eye className="text-muted-foreground h-4 w-4" />
+                            <Eye className="h-4 w-4" />
                           )}
                           <span className="sr-only">
                             {showPassword ? "Hide password" : "Show password"}
@@ -166,11 +177,15 @@ export default function SignInForm() {
               />
 
               <Field>
-                <Button type="submit" disabled={isPending}>
+                <Button 
+                  type="submit" 
+                  disabled={isPending}
+                  className="w-full bg-gradient-gold text-black font-bold hover:brightness-110 gold-glow transition-all"
+                >
                   {isPending ? "Signing In..." : "Sign In"}
                 </Button>
               </Field>
-              <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">
+              <FieldSeparator className="text-white/40 *:data-[slot=field-separator-content]:bg-[#121212] *:data-[slot=field-separator-content]:px-2 text-xs before:bg-white/10 after:bg-white/10">
                 Atau lanjutkan dengan
               </FieldSeparator>
               <Field className="grid grid-cols-2 gap-4">
@@ -179,6 +194,7 @@ export default function SignInForm() {
                   type="button"
                   disabled={isPending}
                   onClick={() => signIn({ provider: "github" })}
+                  className="border-[#D4AF37]/20 text-white/80 hover:bg-[#D4AF37]/10 hover:border-[#D4AF37]/40 hover:text-[#D4AF37] transition-all bg-transparent"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                     <path
@@ -193,6 +209,7 @@ export default function SignInForm() {
                   type="button"
                   disabled={isPending}
                   onClick={() => signIn({ provider: "google" })}
+                  className="border-[#D4AF37]/20 text-white/80 hover:bg-[#D4AF37]/10 hover:border-[#D4AF37]/40 hover:text-[#D4AF37] transition-all bg-transparent"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                     <path
@@ -203,8 +220,8 @@ export default function SignInForm() {
                   <span className="sr-only">Sign in with Google</span>
                 </Button>
               </Field>
-              <FieldDescription className="text-center">
-                Don&apos;t have an account? <a href="#">Sign up</a>
+              <FieldDescription className="text-center text-white/50 text-xs">
+                Don&apos;t have an account? <a href="#" className="text-[#D4AF37] hover:text-[#F3CA52] font-medium transition-colors ml-1">Sign up</a>
               </FieldDescription>
             </FieldGroup>
           </form>

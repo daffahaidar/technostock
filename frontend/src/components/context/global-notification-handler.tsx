@@ -34,7 +34,7 @@ export function GlobalNotificationHandler() {
       .then((data) => {
         if (data?.meta?.status === "success" && typeof data?.results?.count === "number") {
           // If we are currently NOT on the discussion page, set the loaded unread count.
-          if (!window.location.pathname.startsWith("/forum/discussion")) {
+          if (!window.location.pathname.startsWith("/maintainer/discussion")) {
             // Note: we might want to just set it to the count exactly.
             // Since `useNotificationStore` only has increment and reset, we'll augment it!
             // Wait, we need a setUnread method in the store. Let's just do it directly if needed,
@@ -52,7 +52,7 @@ export function GlobalNotificationHandler() {
         const payload = JSON.parse(event.data);
         // Only trigger badge for New Messages not from the current user
         if (payload.type === "NewMessage" && payload.sender_id !== currentUserId) {
-          if (!window.location.pathname.startsWith("/forum/discussion")) {
+          if (!window.location.pathname.startsWith("/maintainer/discussion")) {
             incrementUnread();
           }
         }
@@ -74,7 +74,7 @@ export function GlobalNotificationHandler() {
 
   // Reset immediately if the user navigates into the discussion page
   useEffect(() => {
-    if (pathname?.startsWith("/forum/discussion")) {
+    if (pathname?.startsWith("/maintainer/discussion")) {
       resetUnread();
     }
   }, [pathname, resetUnread]);

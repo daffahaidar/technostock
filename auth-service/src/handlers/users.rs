@@ -6,7 +6,7 @@ use crate::usecases::users::GetUsersUseCase;
 use crate::domain::repositories::user_repository::UserRepository;
 
 
-/// Handler for GET /users - restricted to Admin and SuperAdmin only
+/// Handler for GET /users - restricted to Admin and Maintainer only
 pub async fn get_users(
     State(state): State<AppState>,
     auth_user: AuthUser,

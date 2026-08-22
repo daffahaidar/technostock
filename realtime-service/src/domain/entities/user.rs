@@ -5,10 +5,10 @@ use chrono::{DateTime, Utc};
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, sqlx::Type)]
 #[sqlx(type_name = "varchar", rename_all = "PascalCase")]
 pub enum Role {
-    Admin,
-    SuperAdmin,
-    User,
     Maintainer,
+    Admin,
+    Member,
+    User,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, sqlx::Type)]

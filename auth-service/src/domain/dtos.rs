@@ -29,7 +29,7 @@ pub struct AuthResponseDto {
     pub expires_in: usize,
 }
 
-/// Request DTO for creating a user (Admin/SuperAdmin)
+/// Request DTO for creating a user (Admin/Maintainer)
 #[derive(Debug, Deserialize)]
 pub struct CreateUserDto {
     pub name: String,
@@ -39,7 +39,7 @@ pub struct CreateUserDto {
     pub role: Role,
 }
 
-/// Request DTO for updating a user (SuperAdmin only)
+/// Request DTO for updating a user (Maintainer only)
 #[derive(Debug, Deserialize)]
 pub struct UpdateUserDto {
     pub name: Option<String>,

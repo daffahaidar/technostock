@@ -5,25 +5,25 @@ import Image from "next/image";
 
 const products = [
   {
-    name: "QueuePro X1",
-    category: "Queue Management",
-    description: "Touchscreen kiosk with thermal printer and cloud dashboard.",
+    name: "Saham Mastery 101",
+    category: "Pemula",
+    description: "Pelajari dasar-dasar trading saham, investasi jangka panjang, dan analisis fundamental dari nol.",
     badge: "Best Seller",
-    badgeColor: "bg-blue-500",
+    badgeColor: "bg-gradient-to-r from-gold-400 to-gold-500 text-black shadow-[0_0_10px_rgba(243,202,82,0.4)]",
   },
   {
-    name: "ScaleMaster Pro",
-    category: "Digital Weighing",
-    description: "Industrial precision scale with auto-tare and ERP sync.",
-    badge: "New",
-    badgeColor: "bg-emerald-500",
+    name: "Technical Analysis Pro",
+    category: "Lanjutan",
+    description: "Kuasai cara membaca chart, menggunakan indikator teknikal, dan memahami price action.",
+    badge: "Populer",
+    badgeColor: "bg-gradient-to-r from-gold-500 to-gold-600 text-black shadow-[0_0_10px_rgba(212,175,55,0.4)]",
   },
   {
-    name: "ClimaGuard IoT",
-    category: "Climate Control",
-    description: "Multi-sensor climate monitor with automated HVAC control.",
-    badge: "Popular",
-    badgeColor: "bg-violet-500",
+    name: "VIP Mentoring",
+    category: "Eksklusif",
+    description: "Bimbingan langsung 1-on-1 dengan mentor profesional dan akses eksklusif ke sesi live trading.",
+    badge: "Premium",
+    badgeColor: "bg-gradient-to-r from-gold-600 to-gold-700 text-white shadow-[0_0_10px_rgba(170,140,44,0.4)]",
   },
 ];
 
@@ -51,34 +51,37 @@ export default function ProductShowcase() {
     <section
       id="products"
       ref={sectionRef}
-      className="relative overflow-hidden bg-black py-32"
+      className="relative overflow-hidden bg-luxury-black py-32"
     >
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_60%_at_50%_100%,rgba(99,102,241,0.08),transparent)]" />
+      {/* Orbs for glass background */}
+      <div className="absolute top-1/4 right-0 w-[500px] h-[500px] bg-[#D4AF37]/5 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-1/4 left-0 w-[400px] h-[400px] bg-[#F3CA52]/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_60%_at_50%_100%,rgba(212,175,55,0.08),transparent)]" />
 
       <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-8">
         {/* Header */}
         <div className="reveal mb-20 translate-y-8 text-center opacity-0 transition-all duration-700">
-          <span className="mb-5 inline-block text-xs font-semibold tracking-[0.2em] text-white/40 uppercase">
-            Product Lineup
+          <span className="mb-5 inline-block text-xs font-semibold tracking-[0.2em] text-[#D4AF37] uppercase">
+            Katalog Kelas
           </span>
           <h2 className="text-4xl font-bold tracking-tight text-white lg:text-6xl">
-            The hardware that
+            Edukasi yang akan
             <br />
-            <span className="bg-gradient-to-r from-white to-white/40 bg-clip-text text-transparent">
-              runs your business.
+            <span className="text-gradient-gold">
+              mengubah trading Anda.
             </span>
           </h2>
         </div>
 
         {/* Featured showcase */}
         <div className="reveal mb-12 translate-y-8 opacity-0 transition-all duration-700">
-          <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/[0.04] to-white/[0.01]">
+          <div className="relative overflow-hidden rounded-3xl glass-panel-gold">
             <div className="grid gap-0 lg:grid-cols-2">
               {/* Image */}
               <div className="relative flex min-h-[400px] items-center justify-center bg-zinc-900/50 p-12 lg:min-h-[500px]">
                 <Image
-                  src="/product-showcase.png"
-                  alt="Technorider Product Lineup"
+                  src="/product-showcase-class.jpg"
+                  alt="Technostock Class Lineup"
                   width={500}
                   height={400}
                   className="w-full max-w-md object-contain drop-shadow-2xl transition-transform duration-700 hover:scale-105"
@@ -87,31 +90,31 @@ export default function ProductShowcase() {
 
               {/* Info */}
               <div className="flex flex-col justify-center p-12">
-                <span className="mb-4 text-xs font-semibold tracking-widest text-white/40 uppercase">
-                  Complete System
+                <span className="mb-4 text-xs font-semibold tracking-widest text-[#D4AF37] uppercase">
+                  Program Lengkap
                 </span>
                 <h3 className="mb-4 text-3xl leading-tight font-bold text-white">
-                  The Technorider
+                  Technostock
                   <br />
-                  Business Suite
+                  Masterclass
                 </h3>
                 <p className="mb-8 leading-relaxed text-white/50">
-                  Three integrated hardware solutions working together in
-                  harmony. Queue, weigh, and monitor — all from one unified
-                  platform with a single dashboard to rule them all.
+                  Tiga tingkat kelas komprehensif yang dirancang untuk memandu Anda dari 
+                  pemula hingga menjadi trader mandiri. Pelajari fundamental, teknikal, 
+                  dan psikologi trading dari para profesional.
                 </p>
 
                 <div className="mb-8 space-y-4">
                   {[
-                    "Unified management dashboard",
-                    "Cross-device data sync",
-                    "Enterprise API access",
-                    "24/7 remote monitoring",
+                    "Akses materi seumur hidup",
+                    "Sesi live trading mingguan",
+                    "Grup diskusi VIP eksklusif",
+                    "Sertifikat kelulusan kelas",
                   ].map((feature) => (
                     <div key={feature} className="flex items-center gap-3">
-                      <div className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/10">
+                      <div className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border border-[#D4AF37]/30 bg-[#D4AF37]/10">
                         <svg
-                          className="h-3 w-3 text-white"
+                          className="h-3 w-3 text-[#D4AF37]"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
@@ -131,9 +134,9 @@ export default function ProductShowcase() {
 
                 <a
                   href="#contact"
-                  className="inline-flex items-center gap-2 self-start rounded-full bg-white px-6 py-3 text-sm font-semibold text-black transition-all duration-200 hover:scale-105 hover:bg-white/90"
+                  className="inline-flex items-center gap-2 self-start rounded-full bg-gradient-gold px-6 py-3 text-sm font-bold text-black transition-all duration-300 hover:scale-105 hover:brightness-110 gold-glow"
                 >
-                  Request a Demo
+                  Lihat Detail Kelas
                   <svg
                     className="h-4 w-4"
                     fill="none"
@@ -158,12 +161,12 @@ export default function ProductShowcase() {
           {products.map((product, i) => (
             <div
               key={product.name}
-              className="reveal group relative translate-y-8 cursor-pointer rounded-2xl border border-white/10 bg-white/[0.03] p-6 opacity-0 transition-all duration-700 hover:border-white/20 hover:bg-white/[0.06]"
+              className="reveal group relative translate-y-8 cursor-pointer rounded-2xl p-6 opacity-0 transition-all duration-700 glass-card-gold hover:border-[#D4AF37]/40 hover:bg-[#D4AF37]/5 hover:shadow-[0_10px_40px_rgba(212,175,55,0.15)]"
               style={{ transitionDelay: `${i * 150}ms` }}
             >
               <div className="mb-4 flex items-start justify-between">
                 <div>
-                  <p className="mb-1 text-xs font-medium tracking-wider text-white/40 uppercase">
+                  <p className="mb-1 text-xs font-medium tracking-wider text-[#D4AF37]/70 uppercase">
                     {product.category}
                   </p>
                   <h3 className="text-lg font-semibold text-white">
@@ -179,7 +182,7 @@ export default function ProductShowcase() {
               <p className="text-sm leading-relaxed text-white/50">
                 {product.description}
               </p>
-              <div className="mt-5 flex items-center gap-2 text-xs text-white/40 transition-colors group-hover:text-white/60">
+              <div className="mt-5 flex items-center gap-2 text-xs text-[#D4AF37]/70 transition-colors group-hover:text-[#D4AF37]">
                 Learn more
                 <svg
                   className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1"

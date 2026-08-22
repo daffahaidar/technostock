@@ -6,9 +6,8 @@ import TanstackQueryProvider from "@/components/context/tanstack-query";
 import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
-  title: "Technorider - Layanan Hardware Terbaik",
-  description:
-    "Menyediakan layanan hardware seperti mesin antrian, timbangan digital, dan climate control.",
+  title: "Technostock - Platform Edukasi Trading Saham",
+  description: "Platform edukasi trading saham terdepan di Indonesia.",
 };
 
 export default function GlobalLayout({

@@ -2,6 +2,14 @@
 
 import { cookies } from "next/headers";
 import { decodeJwt } from "jose";
+import { redirect } from "next/navigation";
+
+export async function logout() {
+  const cookieStore = await cookies();
+  cookieStore.delete("access_token");
+  cookieStore.delete("refresh_token");
+  redirect("/auth/sign-in");
+}
 
 export async function getSession() {
   const cookieStore = await cookies();

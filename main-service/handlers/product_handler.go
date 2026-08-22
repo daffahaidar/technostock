@@ -29,10 +29,7 @@ func (h *ProductHandler) CreateProduct(c fiber.Ctx) error {
 		return utils.SendError(c, fiber.StatusBadRequest, "Bad Request", "category_id is required")
 	}
 
-	if product.SerialNumber == "" {
-		return utils.SendError(c, fiber.StatusBadRequest, "Bad Request", "serial_number is required")
-	}
-
+	// Removed serial_number check
 	if err := h.useCase.CreateProduct(&product); err != nil {
 		return utils.SendError(c, fiber.StatusBadRequest, "Error", err.Error())
 	}
@@ -119,8 +116,8 @@ func (h *ProductHandler) BuyProduct(c fiber.Ctx) error {
 		return utils.SendError(c, fiber.StatusBadRequest, "Bad Request", err.Error())
 	}
 
-	if req.SerialNumber == "" || req.CategorySlug == "" || req.PlanSlug == "" {
-		return utils.SendError(c, fiber.StatusBadRequest, "Bad Request", "serial_number, category, and plan are required")
+	if req.CategorySlug == "" || req.PlanSlug == "" {
+		return utils.SendError(c, fiber.StatusBadRequest, "Bad Request", "category and plan are required")
 	}
 
 	userID, ok := c.Locals("user_id").(string)

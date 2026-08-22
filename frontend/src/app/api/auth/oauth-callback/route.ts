@@ -3,10 +3,10 @@ import { NextRequest, NextResponse } from "next/server";
 const RUST_API_URL = process.env.SERVER_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 const ROLE_DASHBOARDS: Record<string, string> = {
-  SuperAdmin: "/management/dashboard",
-  Admin: "/admin/dashboard",
   Maintainer: "/maintainer/dashboard",
-  User: "/forum/dashboard",
+  Admin: "/admin/dashboard",
+  Member: "/forum/dashboard",
+  User: "/",
 };
 
 function decodeJwt(token: string): Record<string, unknown> | null {

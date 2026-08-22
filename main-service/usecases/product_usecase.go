@@ -87,7 +87,6 @@ type CheckoutResponse struct {
 }
 
 type BuyRequest struct {
-	SerialNumber string `json:"serial_number"`
 	CategorySlug string `json:"category"`
 	PlanSlug     string `json:"plan"`
 	ReturnURL    string `json:"return_url"`
@@ -106,15 +105,9 @@ func (u *ProductUseCase) BuyProduct(userID string, req *BuyRequest) (*CheckoutRe
 		return nil, fmt.Errorf("product plan not found")
 	}
 
-	// Check if product with this serial number already exists globally
-	var existingProduct entities.Product
-	if err := u.db.Where("serial_number = ?", req.SerialNumber).First(&existingProduct).Error; err == nil {
-		return nil, fmt.Errorf("serial number already registered")
-	}
-
-	// Check for existing pending transaction for this serial number
+	// Check for existing pending transaction for this plan and user
 	var existingTx entities.Transaction
-	result := u.db.Where("serial_number = ? AND status = ?", req.SerialNumber, entities.TransactionStatusPending).First(&existingTx)
+	result := u.db.Where("user_id = ? AND plan_id = ? AND status = ?", userID, plan.ID, entities.TransactionStatusPending).First(&existingTx)
 	if result.Error == nil {
 		// Return existing pending invoice
 		return &CheckoutResponse{
@@ -142,7 +135,7 @@ func (u *ProductUseCase) BuyProduct(userID string, req *BuyRequest) (*CheckoutRe
 				ID:    plan.ID.String(),
 				Price: int64(plan.Price),
 				Qty:   1,
-				Name:  fmt.Sprintf("%s (%s)", plan.Name, req.SerialNumber),
+				Name:  plan.Name,
 			},
 		},
 	}
@@ -156,7 +149,6 @@ func (u *ProductUseCase) BuyProduct(userID string, req *BuyRequest) (*CheckoutRe
 	transaction := entities.Transaction{
 		UserID:          userID,
 		PlanID:          plan.ID,
-		SerialNumber:    req.SerialNumber,
 		PaymentToken:    snapResp.Token,
 		ExternalID:      externalID,
 		Amount:          plan.Price,
@@ -214,8 +206,7 @@ func (u *ProductUseCase) HandleMidtransWebhook(payload *MidtransWebhookPayload) 
 
 		// Create the Product
 		newProduct := entities.Product{
-			Name:         fmt.Sprintf("%s (%s)", plan.Name, transaction.SerialNumber),
-			SerialNumber: transaction.SerialNumber,
+			Name:         fmt.Sprintf("%s Access", plan.Name),
 			CategoryID:   plan.CategoryID,
 			PlanID:       plan.ID,
 		}

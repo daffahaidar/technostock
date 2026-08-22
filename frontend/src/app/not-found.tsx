@@ -96,7 +96,7 @@ export default function NotFound() {
         {/* Divider */}
         <div className="mt-4 flex items-center gap-3 text-xs text-slate-600">
           <div className="h-px w-16 bg-white/10" />
-          <span>Technorider</span>
+          <span>Technostock</span>
           <div className="h-px w-16 bg-white/10" />
         </div>
       </div>

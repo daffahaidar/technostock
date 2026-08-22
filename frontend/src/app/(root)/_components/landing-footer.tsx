@@ -3,11 +3,11 @@
 import Link from "next/link";
 
 const footerLinks = {
-  Solutions: [
-    { label: "Queue Management", href: "#services" },
-    { label: "Digital Weighing", href: "#services" },
-    { label: "Climate Control", href: "#services" },
-    { label: "Custom Integration", href: "#contact" },
+  Kelas: [
+    { label: "Saham Pemula", href: "#products" },
+    { label: "Technical Analysis", href: "#products" },
+    { label: "Mentoring VIP", href: "#products" },
+    { label: "Webinar Gratis", href: "#contact" },
   ],
   Company: [
     { label: "About Us", href: "#" },
@@ -15,11 +15,11 @@ const footerLinks = {
     { label: "How It Works", href: "#how-it-works" },
     { label: "Contact", href: "#contact" },
   ],
-  Support: [
-    { label: "Documentation", href: "#" },
-    { label: "24/7 Helpdesk", href: "#" },
-    { label: "Maintenance Plans", href: "#" },
-    { label: "FAQs", href: "#" },
+  Bantuan: [
+    { label: "Pusat Bantuan", href: "#" },
+    { label: "Grup Komunitas", href: "#" },
+    { label: "Syarat & Ketentuan", href: "#" },
+    { label: "FAQ", href: "#" },
   ],
 };
 
@@ -64,29 +64,30 @@ const socials = [
 
 export default function LandingFooter() {
   return (
-    <footer className="bg-black border-t border-white/10">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-20">
+    <footer className="relative bg-[#050505] border-t border-[#D4AF37]/20 overflow-hidden">
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(ellipse_50%_50%_at_50%_0%,rgba(212,175,55,0.03),transparent)] pointer-events-none" />
+      <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 py-20">
         <div className="grid lg:grid-cols-5 gap-12 mb-16">
           {/* Brand */}
           <div className="lg:col-span-2">
             <Link href="/" className="flex items-center gap-2.5 mb-5 group">
-              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
+              <div className="w-8 h-8 bg-gradient-gold rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110 shadow-[0_0_15px_rgba(212,175,55,0.4)]">
                 <svg viewBox="0 0 24 24" className="w-5 h-5 text-black fill-current">
                   <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
                 </svg>
               </div>
-              <span className="text-white font-semibold text-lg tracking-tight">
-                Technorider
+              <span className="text-[#D4AF37] font-semibold text-lg tracking-tight">
+                Technostock
               </span>
             </Link>
             <p className="text-white/40 text-sm leading-relaxed max-w-xs mb-6">
-              Enterprise-grade hardware solutions for modern businesses. Queue
-              management, digital weighing, and climate control — all in one
-              ecosystem.
+              Platform edukasi trading saham terdepan di Indonesia. Belajar 
+              dari nol hingga menjadi trader mandiri yang konsisten profit 
+              bersama ahlinya.
             </p>
             <div className="flex flex-col gap-2 text-white/40 text-sm">
               <span>📍 Jakarta, Indonesia</span>
-              <span>📧 hello@technorider.id</span>
+              <span>📧 hello@technostock.id</span>
               <span>📞 +62 21 1234 5678</span>
             </div>
           </div>
@@ -94,7 +95,7 @@ export default function LandingFooter() {
           {/* Links */}
           {Object.entries(footerLinks).map(([category, links]) => (
             <div key={category}>
-              <h4 className="text-white font-semibold text-sm mb-5">
+              <h4 className="text-[#F9E596] font-semibold text-sm mb-5">
                 {category}
               </h4>
               <ul className="space-y-3">
@@ -102,7 +103,7 @@ export default function LandingFooter() {
                   <li key={link.label}>
                     <Link
                       href={link.href}
-                      className="text-white/40 hover:text-white/80 text-sm transition-colors duration-200"
+                      className="text-white/40 hover:text-[#D4AF37] text-sm transition-colors duration-200"
                     >
                       {link.label}
                     </Link>
@@ -114,9 +115,9 @@ export default function LandingFooter() {
         </div>
 
         {/* Bottom bar */}
-        <div className="border-t border-white/10 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-white/30 text-sm">
-            © {new Date().getFullYear()} Technorider. All rights reserved.
+        <div className="border-t border-[#D4AF37]/10 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-[#D4AF37]/40 text-sm">
+            © {new Date().getFullYear()} Technostock. All rights reserved.
           </p>
 
           {/* Socials */}
@@ -126,7 +127,7 @@ export default function LandingFooter() {
                 key={social.label}
                 href={social.href}
                 aria-label={social.label}
-                className="w-8 h-8 rounded-full border border-white/15 text-white/40 flex items-center justify-center hover:border-white/30 hover:text-white/70 transition-all duration-200 hover:scale-110"
+                className="w-8 h-8 rounded-full border border-[#D4AF37]/20 text-[#D4AF37]/50 flex items-center justify-center hover:border-[#D4AF37]/50 hover:text-[#D4AF37] transition-all duration-200 hover:scale-110"
               >
                 {social.icon}
               </Link>

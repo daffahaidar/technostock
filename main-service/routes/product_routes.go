@@ -38,9 +38,9 @@ func SetupRoutes(
 	categoryGroup.Get("/", categoryHandler.GetAllCategories)
 	categoryGroup.Get("/:id", categoryHandler.GetCategoryByID)
 
-	// Write routes (Only for Admin and SuperAdmin)
-	categoryWriteGroup := categoryGroup.Group("/")
-	categoryWriteGroup.Use(middleware.RequireRole("Admin", "SuperAdmin"))
+	// Write routes (Only for Admin and Maintainer)
+	categoryWriteGroup := categoryGroup.Group("")
+	categoryWriteGroup.Use(middleware.RequireRole("Admin", "Maintainer"))
 
 	categoryWriteGroup.Post("/", categoryHandler.CreateCategory)
 	categoryWriteGroup.Patch("/:id", categoryHandler.UpdateCategory)
@@ -56,8 +56,8 @@ func SetupRoutes(
 	planGroup.Get("/category/:category_id", planHandler.GetProductPlansByCategoryID)
 
 	// Write routes
-	planWriteGroup := planGroup.Group("/")
-	planWriteGroup.Use(middleware.RequireRole("Admin", "SuperAdmin"))
+	planWriteGroup := planGroup.Group("")
+	planWriteGroup.Use(middleware.RequireRole("Admin", "Maintainer"))
 
 	planWriteGroup.Post("/", planHandler.CreateProductPlan)
 	planWriteGroup.Patch("/:id", planHandler.UpdateProductPlan)
@@ -76,9 +76,9 @@ func SetupRoutes(
 	// Read routes (Available for all authenticated roles)
 	productGroup.Get("/", productHandler.GetAllProducts)
 	productGroup.Get("/:id", productHandler.GetProductByID)
-	// Write routes (Only for Admin and SuperAdmin)
-	writeGroup := productGroup.Group("/")
-	writeGroup.Use(middleware.RequireRole("Admin", "SuperAdmin"))
+	// Write routes (Only for Admin and Maintainer)
+	writeGroup := productGroup.Group("")
+	writeGroup.Use(middleware.RequireRole("Admin", "Maintainer"))
 
 	writeGroup.Post("/", productHandler.CreateProduct)
 	writeGroup.Patch("/:id", productHandler.UpdateProduct)

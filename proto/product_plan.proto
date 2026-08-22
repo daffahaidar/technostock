@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package product_plan;
+option go_package = "main-service/pb";
+
+message ProductPlan {
+    string id = 1;
+    string category_id = 2;
+    string name = 3;
+    string slug = 4;
+    string description = 5;
+    double price = 6;
+}
+
+message CreateProductPlanRequest {
+    string category_id = 1;
+    string name = 2;
+    string description = 3;
+    double price = 4;
+}
+
+message CreateProductPlanResponse {
+    ProductPlan data = 1;
+    string message = 2;
+}
+
+message GetProductPlansByCategoryIdRequest {
+    string category_id = 1;
+}
+
+message GetProductPlansResponse {
+    repeated ProductPlan data = 1;
+    string message = 2;
+}
+
+service ProductPlanService {
+    rpc CreateProductPlan(CreateProductPlanRequest) returns (CreateProductPlanResponse);
+    rpc GetProductPlansByCategoryId(GetProductPlansByCategoryIdRequest) returns (GetProductPlansResponse);
+}
