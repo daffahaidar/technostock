@@ -46,7 +46,7 @@ Technostock adalah platform hardware technology berbasis microservices. Monorepo
 ### Untuk Docker (Direkomendasikan)
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) v24+
 - [Docker Compose](https://docs.docker.com/compose/) v2.20+
-- Minimal RAM: **8 GB** (Rust compile butuh memory besar)
+- Minimal RAM: **8 GB** (Rust compile butuh memory besar. *Limit memory* pada Docker Compose dev sengaja ditiadakan untuk mencegah OOM/`SIGKILL` saat `cargo watch`).
 
 ### Untuk Manual
 - [Node.js](https://nodejs.org/) v20+ & npm
@@ -116,7 +116,7 @@ make down-dev-volumes  # Hentikan + hapus semua data volume dev
 | URL | Service |
 |---|---|
 | http://localhost:3000 | Frontend |
-| http://localhost:8080 | API Gateway (`grpc-service`) |
+| http://localhost:8080 | API Gateway (`grpc-service`) - Rute: `/api/v1/auth`, `/api/v1/main`, `/ws` |
 | http://localhost:8000 | auth-service API (Internal) |
 | http://localhost:8001 | realtime-service WebSocket (Internal) |
 | http://localhost:8002 | main-service API (Internal) |

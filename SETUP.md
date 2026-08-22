@@ -296,6 +296,6 @@ npm run dev
 ## 🌐 Akses Layanan Setelah Running
 
 - **Frontend UI:** `http://localhost:3000`
-- **API Gateway:** `http://localhost:8080` (untuk seluruh API HTTP maupun WebSocket)
+- **API Gateway:** `http://localhost:8080` (untuk seluruh API HTTP maupun WebSocket. Rute: `/api/v1/auth`, `/api/v1/main`, `/ws`)
 - **MinIO Console (Storage):** `http://localhost:9001` (Login menggunakan kredensial di `.env`)
 - **RabbitMQ Admin (Opsional):** `http://localhost:15672` (Gunakan username & password di `.env`)
