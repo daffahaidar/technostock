@@ -276,6 +276,21 @@ GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
 GOOGLE_REDIRECT_URI=http://localhost:3000/api/auth/oauth-callback?provider=google
 
+### `realtime-service/.env`
+
+> Pastikan `JWT_PUBLIC_KEY` sama persis dengan yang ada di `auth-service` karena realtime-service memverifikasi token yang dibuat oleh auth-service.
+
+```env
+# ─── Database ─────────────────────────────────────────────────
+DATABASE_URL=postgres://postgres:admin@localhost:5433/technostock
+
+# ─── JWT Keys (RSA) ───────────────────────────────────────────
+JWT_PRIVATE_KEY="..."
+JWT_PUBLIC_KEY="..."
+
+# ─── Logging ──────────────────────────────────────────────────
+RUST_LOG=info
+
 # ─── MinIO (Object Storage) ───────────────────────────────────
 MINIO_ENDPOINT=localhost
 MINIO_PORT=9000
@@ -296,34 +311,20 @@ REDIS_PORT=6379
 REDIS_PASSWORD=daffahaidarnz27
 ```
 
-### `realtime-service/.env`
-
-> Sama dengan `auth-service/.env` di atas. Pastikan `JWT_PUBLIC_KEY` sama persis dengan yang ada di `auth-service` karena realtime-service memverifikasi token yang dibuat oleh auth-service.
+### `grpc-service/.env` (API Gateway)
 
 ```env
+# ─── Database ─────────────────────────────────────────────────
 DATABASE_URL=postgres://postgres:admin@localhost:5433/technostock
+
+# ─── JWT Keys (RSA) ───────────────────────────────────────────
 JWT_PRIVATE_KEY="..."
 JWT_PUBLIC_KEY="..."
-RUST_LOG=info
-GITHUB_CLIENT_ID=
-GITHUB_CLIENT_SECRET=
-GITHUB_REDIRECT_URI=http://localhost:3000/api/auth/oauth-callback?provider=github
-GOOGLE_CLIENT_ID=
-GOOGLE_CLIENT_SECRET=
-GOOGLE_REDIRECT_URI=http://localhost:3000/api/auth/oauth-callback?provider=google
-MINIO_ENDPOINT=localhost
-MINIO_PORT=9000
-MINIO_USE_SSL=false
-MINIO_ACCESS_KEY=daffahaidar
-MINIO_SECRET_KEY=daffahaidarnz27
-MINIO_BUCKET=technostock
-RABBITMQ_HOST=localhost
-RABBITMQ_PORT=5672
-RABBITMQ_USER=daffahaidar
-RABBITMQ_PASS=daffahaidarnz27
-REDIS_HOST=localhost
-REDIS_PORT=6379
-REDIS_PASSWORD=daffahaidarnz27
+
+# ─── Routing ──────────────────────────────────────────────────
+AUTH_SERVICE_URL=http://localhost:8000
+MAIN_SERVICE_URL=http://localhost:8002
+REALTIME_SERVICE_WS_URL=ws://localhost:8001
 ```
 
 ### `main-service/.env`

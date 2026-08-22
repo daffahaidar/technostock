@@ -140,9 +140,6 @@ services:
       - ./auth-service/.env
     environment:
       - DATABASE_URL=postgres://postgres:admin@postgres:5432/technostock
-      - MINIO_ENDPOINT=minio
-      - RABBITMQ_HOST=rabbitmq
-      - REDIS_HOST=redis
       - SQLX_OFFLINE=false
       - MALLOC_ARENA_MAX=2
     deploy:
