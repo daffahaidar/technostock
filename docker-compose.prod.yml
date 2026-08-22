@@ -150,10 +150,14 @@ services:
     restart: always
     ports:
       - "50051:50051"
+      - "8080:8080"
     env_file:
       - ./grpc-service/.env
     environment:
       - DATABASE_URL=postgres://postgres:admin@postgres:5432/technostock
+      - AUTH_SERVICE_URL=http://auth-service:8000
+      - MAIN_SERVICE_URL=http://main-service:8002
+      - REALTIME_SERVICE_WS_URL=ws://realtime-service:8001
       - MALLOC_ARENA_MAX=2
     deploy:
       resources:

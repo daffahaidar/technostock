@@ -25,9 +25,8 @@ services:
       - DATABASE_URL=postgres://postgres:admin@host.docker.internal:5433/technostock
       - SERVER_API_URL=http://host.docker.internal:8000
       - BETTER_AUTH_URL=http://localhost:3000
-      - NEXT_PUBLIC_API_URL=http://localhost:8000
-      - NEXT_PUBLIC_WS_API_URL=ws://localhost:8001
-      - NEXT_PUBLIC_GOLANG_API=http://localhost:8002
+      - NEXT_PUBLIC_API_URL=http://localhost:8080
+      - NEXT_PUBLIC_WS_API_URL=ws://localhost:8080
       - NEXT_PUBLIC_APP_URL=http://localhost:3000
     # Allows the container to resolve host.docker.internal on Linux.
     # On Docker Desktop (Mac/Windows) this is automatic.

@@ -4,25 +4,29 @@ Technostock adalah platform hardware technology berbasis microservices. Monorepo
 
 ## Arsitektur
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────┐
-│                        Client (Browser)                      │
+│                        Client (Browser)                     │
 └──────────────────────────┬──────────────────────────────────┘
                            │ HTTP / WebSocket
 ┌──────────────────────────▼──────────────────────────────────┐
-│                   frontend  :3000  (Next.js)                 │
+│                   frontend  :3000  (Next.js)                │
+└──────┬──────────────────────────────────────────────────────┘
+       │ HTTP / WS (ke :8080)
+┌──────▼──────────────────────────────────────────────────────┐
+│             grpc-service (API Gateway) :8080                │
 └──────┬──────────────────┬──────────────────┬────────────────┘
-       │ HTTP :8000        │ WebSocket :8001   │ HTTP :8002
-       │ gRPC :50051       │                   │
-┌──────▼──────┐    ┌───────▼───────┐   ┌──────▼──────────────┐
-│  auth-service  │    │ realtime-service  │   │   main-service      │
-│  :8000      │◄───│  :8001        │   │   :8002  (Go/Fiber)  │
-│  :50051     │    │  (Rust/Axum)  │   └──────────────────────┘
-│  (Rust)     │    └───────┬───────┘
-└──────┬──────┘            │
-       │                   │
-┌──────▼───────────────────▼──────────────────────────────────┐
-│              Infrastructure                                   │
+       │ HTTP :8000       │ WS :8001         │ HTTP :8002
+       │                  │                  │
+┌──────▼──────┐   ┌───────▼───────┐  ┌───────▼──────────────┐
+│  auth-service  │   │ realtime-service │  │   main-service      │
+│  :8000      │◄──│  :8001        │  │   :8002  (Go/Fiber)  │
+│  :50051     │   │  (Rust/Axum)  │  └──────────────────────┘
+│  (Rust)     │   └───────┬───────┘
+└──────┬──────┘           │
+       │                  │
+┌──────▼──────────────────▼───────────────────────────────────┐
+│              Infrastructure                                 │
 │   PostgreSQL :5433 │ Redis :6379 │ RabbitMQ :5672 │ MinIO :9000 │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -32,6 +36,7 @@ Technostock adalah platform hardware technology berbasis microservices. Monorepo
 | Service | Stack | Port | Deskripsi |
 |---|---|---|---|
 | `frontend` | Next.js 15 | 3000 | UI utama aplikasi |
+| `grpc-service` | Rust + Axum | 8080 | API Gateway (Reverse Proxy untuk HTTP & WebSocket) |
 | `auth-service` | Rust + Axum | 8000, 50051 | Autentikasi, JWT, OAuth (gRPC server) |
 | `realtime-service` | Rust + Axum | 8001 | Real-time chat via WebSocket (gRPC client) |
 | `main-service` | Go + Fiber | 8002 | Manajemen produk & pembayaran Midtrans |
@@ -111,9 +116,10 @@ make down-dev-volumes  # Hentikan + hapus semua data volume dev
 | URL | Service |
 |---|---|
 | http://localhost:3000 | Frontend |
-| http://localhost:8000 | auth-service API |
-| http://localhost:8001 | realtime-service WebSocket |
-| http://localhost:8002 | main-service API |
+| http://localhost:8080 | API Gateway (`grpc-service`) |
+| http://localhost:8000 | auth-service API (Internal) |
+| http://localhost:8001 | realtime-service WebSocket (Internal) |
+| http://localhost:8002 | main-service API (Internal) |
 | http://localhost:15672 | RabbitMQ Management UI |
 | http://localhost:9001 | MinIO Console |
 | `localhost:5433` | PostgreSQL |
@@ -205,7 +211,21 @@ air
 
 Service berjalan di: `http://localhost:8002`
 
-#### 2.5 frontend
+#### 2.5 grpc-service (API Gateway)
+
+```bash
+cd grpc-service
+
+# 1. Buat file .env
+cp .env.example .env   # edit sesuai kebutuhan
+
+# 2. Jalankan service
+cargo run
+```
+
+Service berjalan di: `http://localhost:8080`
+
+#### 2.6 frontend
 
 ```bash
 cd frontend
@@ -334,9 +354,9 @@ BETTER_AUTH_SECRET=
 BETTER_AUTH_URL=http://localhost:3000
 
 # ─── API URLs (Client-side, diakses dari browser) ─────────────
-NEXT_PUBLIC_API_URL=http://localhost:8000
-NEXT_PUBLIC_WS_API_URL=ws://localhost:8001
-NEXT_PUBLIC_GOLANG_API=http://localhost:8002
+# Aplikasi frontend sekarang terhubung ke API Gateway (grpc-service) di port 8080
+NEXT_PUBLIC_API_URL=http://localhost:8080
+NEXT_PUBLIC_WS_API_URL=ws://localhost:8080
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 # ─── Database (dipakai oleh Better Auth server-side) ──────────
@@ -425,6 +445,11 @@ technostock/
 │   ├── .env                  # ← perlu diisi (tidak di-commit)
 │   └── cmd/
 │
+├── grpc-service/             # API Gateway
+│   ├── src/
+│   ├── Cargo.toml
+│   └── .env                  # ← perlu diisi (tidak di-commit)
+│
 ├── proto/                    # Shared Protobuf definitions
 │   └── user.proto
 │
@@ -442,6 +467,7 @@ technostock/
 | Layer | Teknologi |
 |---|---|
 | Frontend | Next.js 15, TypeScript, Tailwind CSS, Better Auth |
+| API Gateway | Rust, Axum (`grpc-service`) |
 | Auth Service | Rust, Axum, sqlx, tonic (gRPC), JWT RS256 |
 | Message Service | Rust, Axum, WebSocket, RabbitMQ, sqlx |
 | Product Service | Go, Fiber, GORM, Midtrans |

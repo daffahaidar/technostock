@@ -112,9 +112,8 @@ Variabel dengan awalan `NEXT_PUBLIC_` terekspos ke browser (client-side).
 | Variabel | Penjelasan |
 |---|---|
 | `NEXT_PUBLIC_APP_URL` | Base URL public dari frontend (misal: `http://localhost:3000`). Digunakan untuk callback & redirect absolut. |
-| `NEXT_PUBLIC_API_URL` | URL backend Auth & Message (Rust). Misal: `http://localhost:8000`. |
-| `NEXT_PUBLIC_WS_API_URL` | URL Web Socket (Rust). Misal: `ws://localhost:8001`. |
-| `NEXT_PUBLIC_GOLANG_API`| URL backend Product (Golang). Misal: `http://localhost:8002`. |
+| `NEXT_PUBLIC_API_URL` | URL API Gateway untuk backend Auth & Message (Rust). Misal: `http://localhost:8080`. |
+| `NEXT_PUBLIC_WS_API_URL` | URL API Gateway untuk Web Socket (Rust). Misal: `ws://localhost:8080`. |
 
 #### 3. Database & Payment Gateway
 
