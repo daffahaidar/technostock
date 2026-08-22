@@ -21,7 +21,7 @@ services:
 
   postgres:
     image: postgres:17-alpine
-    container_name: technostock-postgres-prod
+    container_name: postgres
     restart: always
     ports:
       - "5433:5432"
@@ -42,7 +42,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: technostock-redis-prod
+    container_name: redis
     restart: always
     ports:
       - "6379:6379"
@@ -59,7 +59,7 @@ services:
 
   rabbitmq:
     image: rabbitmq:3-management
-    container_name: technostock-rabbitmq-prod
+    container_name: rabbitmq
     restart: always
     ports:
       - "5672:5672"
@@ -79,7 +79,7 @@ services:
 
   minio:
     image: quay.io/minio/minio
-    container_name: technostock-minio-prod
+    container_name: minio
     restart: always
     ports:
       - "9000:9000"
@@ -99,7 +99,8 @@ services:
     build:
       context: .   # Root project — agar folder proto/ tersedia untuk build.rs
       dockerfile: auth-service/Dockerfile.unified.prod
-    container_name: technostock-auth-service-prod
+    container_name: auth-service
+    image: auth-service
     restart: always
     ports:
       - "8000:8000"
@@ -122,7 +123,8 @@ services:
     build:
       context: .   # Root project — agar folder proto/ dan shared-core tersedia
       dockerfile: grpc-service/Dockerfile.unified.prod
-    container_name: technostock-grpc-service-prod
+    container_name: grpc-service
+    image: grpc-service
     restart: always
     ports:
       - "50051:50051"
@@ -142,7 +144,8 @@ services:
     build:
       context: .   # Root project — agar folder proto/ tersedia untuk build.rs
       dockerfile: realtime-service/Dockerfile.unified.prod
-    container_name: technostock-realtime-service-prod
+    container_name: realtime-service
+    image: realtime-service
     restart: always
     ports:
       - "8001:8001"
@@ -172,7 +175,8 @@ services:
     build:
       context: ./main-service
       dockerfile: Dockerfile.prod
-    container_name: technostock-main-service-prod
+    container_name: main-service
+    image: main-service
     restart: always
     ports:
       - "8002:8002"
@@ -197,7 +201,8 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile.prod
-    container_name: technostock-frontend-prod
+    container_name: frontend
+    image: frontend
     restart: always
     ports:
       - "3000:3000"

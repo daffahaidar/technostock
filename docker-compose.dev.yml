@@ -30,7 +30,7 @@ services:
 
   postgres:
     image: postgres:17-alpine
-    container_name: technostock-postgres-dev
+    container_name: postgres
     restart: unless-stopped
     ports:
       - "5433:5432"
@@ -51,7 +51,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: technostock-redis-dev
+    container_name: redis
     restart: unless-stopped
     ports:
       - "6379:6379"
@@ -68,7 +68,7 @@ services:
 
   rabbitmq:
     image: rabbitmq:3-management
-    container_name: technostock-rabbitmq-dev
+    container_name: rabbitmq
     restart: unless-stopped
     ports:
       - "5672:5672"
@@ -88,7 +88,7 @@ services:
 
   minio:
     image: quay.io/minio/minio
-    container_name: technostock-minio-dev
+    container_name: minio
     restart: unless-stopped
     ports:
       - "9000:9000"
@@ -108,7 +108,8 @@ services:
     build:
       context: .   # Root project — agar folder proto/ tersedia untuk build.rs
       dockerfile: auth-service/Dockerfile.unified.dev
-    container_name: technostock-auth-service-dev
+    container_name: auth-service
+    image: auth-service
     restart: unless-stopped
     ports:
       - "8000:8000"
@@ -139,7 +140,8 @@ services:
     build:
       context: .   # Root project — agar folder proto/ dan shared-core tersedia
       dockerfile: grpc-service/Dockerfile.unified.dev
-    container_name: technostock-grpc-service-dev
+    container_name: grpc-service
+    image: grpc-service
     restart: unless-stopped
     ports:
       - "50051:50051"
@@ -167,7 +169,8 @@ services:
     build:
       context: .   # Root project — agar folder proto/ tersedia untuk build.rs
       dockerfile: realtime-service/Dockerfile.unified.dev
-    container_name: technostock-realtime-service-dev
+    container_name: realtime-service
+    image: realtime-service
     restart: unless-stopped
     ports:
       - "8001:8001"
@@ -205,7 +208,8 @@ services:
     build:
       context: ./main-service
       dockerfile: Dockerfile.dev
-    container_name: technostock-main-service-dev
+    container_name: main-service
+    image: main-service
     restart: unless-stopped
     ports:
       - "8002:8002"
@@ -234,7 +238,8 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile.dev
-    container_name: technostock-frontend-dev
+    container_name: frontend
+    image: frontend
     restart: unless-stopped
     ports:
       - "3000:3000"

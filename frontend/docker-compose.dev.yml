@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dev
-    container_name: technostock-frontend-dev
+    container_name: frontend
     restart: unless-stopped
     ports:
       - "3000:3000"

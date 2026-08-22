@@ -101,7 +101,7 @@ push: push-auth push-grpc push-realtime push-main push-frontend
 push-auth:
 	@echo "🔨 Building auth-service..."
 	$(COMPOSE) -f docker-compose.prod.yml build auth-service
-	$(DOCKER) tag technostock-auth-service-prod:latest $(AUTH_IMAGE)
+	$(DOCKER) tag auth-service:latest $(AUTH_IMAGE)
 	@echo "📤 Pushing $(AUTH_IMAGE)..."
 	$(DOCKER) push $(AUTH_IMAGE)
 
@@ -109,7 +109,7 @@ push-auth:
 push-grpc:
 	@echo "🔨 Building grpc-service..."
 	$(COMPOSE) -f docker-compose.prod.yml build grpc-service
-	$(DOCKER) tag technostock-grpc-service-prod:latest $(GRPC_IMAGE)
+	$(DOCKER) tag grpc-service:latest $(GRPC_IMAGE)
 	@echo "📤 Pushing $(GRPC_IMAGE)..."
 	$(DOCKER) push $(GRPC_IMAGE)
 
@@ -117,7 +117,7 @@ push-grpc:
 push-realtime:
 	@echo "🔨 Building realtime-service..."
 	$(COMPOSE) -f docker-compose.prod.yml build realtime-service
-	$(DOCKER) tag technostock-realtime-service-prod:latest $(REALTIME_IMAGE)
+	$(DOCKER) tag realtime-service:latest $(REALTIME_IMAGE)
 	@echo "📤 Pushing $(REALTIME_IMAGE)..."
 	$(DOCKER) push $(REALTIME_IMAGE)
 
@@ -125,7 +125,7 @@ push-realtime:
 push-main:
 	@echo "🔨 Building main-service..."
 	$(COMPOSE) -f docker-compose.prod.yml build main-service
-	$(DOCKER) tag technostock-main-service-prod:latest $(MAIN_IMAGE)
+	$(DOCKER) tag main-service:latest $(MAIN_IMAGE)
 	@echo "📤 Pushing $(MAIN_IMAGE)..."
 	$(DOCKER) push $(MAIN_IMAGE)
 
@@ -133,7 +133,7 @@ push-main:
 push-frontend:
 	@echo "🔨 Building frontend..."
 	$(COMPOSE) -f docker-compose.prod.yml build frontend
-	$(DOCKER) tag technostock-frontend-prod:latest $(FRONTEND_IMAGE)
+	$(DOCKER) tag frontend:latest $(FRONTEND_IMAGE)
 	@echo "📤 Pushing $(FRONTEND_IMAGE)..."
 	$(DOCKER) push $(FRONTEND_IMAGE)
 
