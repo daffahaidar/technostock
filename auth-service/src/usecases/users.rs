@@ -1,8 +1,8 @@
 use std::sync::Arc;
-use crate::domain::entities::user::Role;
-use crate::domain::repositories::user_repository::UserRepository;
-use crate::domain::dtos::UserResponseDto;
-use crate::infrastructure::errors::AppError;
+use shared_core::domain::entities::user::Role;
+use shared_core::domain::repositories::user_repository::UserRepository;
+use shared_core::domain::dtos::UserResponseDto;
+use shared_core::infrastructure::errors::AppError;
 
 pub struct GetUsersUseCase<R: UserRepository> {
     user_repository: Arc<R>,

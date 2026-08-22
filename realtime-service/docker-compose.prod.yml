@@ -10,7 +10,7 @@ services:
     env_file:
       - .env
     environment:
-      - DATABASE_URL=postgres://postgres:admin@host.docker.internal:5433/technorider
+      - DATABASE_URL=postgres://postgres:admin@host.docker.internal:5433/technostock
       - REDIS_HOST=host.docker.internal
       - RABBITMQ_HOST=host.docker.internal
       - AUTH_GRPC_URL=http://host.docker.internal:50051

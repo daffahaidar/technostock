@@ -1,0 +1,24 @@
+[package]
+name = "grpc-service"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tokio = { version = "1.43.0", features = ["full"] }
+tonic = "0.12"
+prost = "0.13"
+dotenvy = "0.15.7"
+tracing = "0.1.41"
+tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
+uuid = { version = "1.12.1", features = ["serde", "v4"] }
+sqlx = { version = "0.8.3", features = [
+    "runtime-tokio-rustls",
+    "postgres",
+    "uuid",
+    "chrono",
+    "migrate",
+] }
+shared-core = { path = "../shared-core" }
+
+[build-dependencies]
+tonic-build = "0.12"

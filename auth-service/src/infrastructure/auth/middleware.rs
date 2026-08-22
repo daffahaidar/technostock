@@ -10,8 +10,8 @@ use axum_extra::{
 };
 use jsonwebtoken::TokenData;
 use crate::AppState;
-use crate::infrastructure::auth::jwt::Claims;
-use crate::infrastructure::errors::AppError;
+use shared_core::infrastructure::auth::jwt::Claims;
+use shared_core::infrastructure::errors::AppError;
 
 pub struct AuthUser {
     pub claims: TokenData<Claims>,

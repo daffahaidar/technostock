@@ -1,7 +1,7 @@
 use axum::{extract::{State, Query}, response::{IntoResponse, Redirect}, Json};
 use validator::Validate;
-use crate::infrastructure::errors::AppError;
-use crate::domain::dtos::RegisterUserDto;
+use shared_core::infrastructure::errors::AppError;
+use shared_core::domain::dtos::RegisterUserDto;
 use crate::usecases::auth::{RegisterUseCase, LoginUseCase, RefreshTokenUseCase, GitHubCallbackUseCase, GoogleCallbackUseCase};
 use crate::utils::validation::validate_request;
 use crate::AppState;

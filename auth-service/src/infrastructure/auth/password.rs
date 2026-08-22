@@ -5,7 +5,7 @@ use argon2::{
     },
     Argon2
 };
-use crate::infrastructure::errors::AppError;
+use shared_core::infrastructure::errors::AppError;
 
 pub fn hash_password(password: &str) -> Result<String, AppError> {
     let salt = SaltString::generate(&mut OsRng);

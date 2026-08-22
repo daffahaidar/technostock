@@ -1,6 +1,6 @@
-# Technorider Frontend
+# Technostock Frontend
 
-Aplikasi frontend Next.js untuk ekosistem Technorider. Frontend ini telah dikonfigurasi untuk berjalan di local menggunakan Node.js maupun secara terisolasi menggunakan Docker.
+Aplikasi frontend Next.js untuk ekosistem Technostock. Frontend ini telah dikonfigurasi untuk berjalan di local menggunakan Node.js maupun secara terisolasi menggunakan Docker.
 
 ## Prasyarat
 

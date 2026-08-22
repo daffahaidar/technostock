@@ -1,6 +1,6 @@
 use reqwest::Client;
-use crate::domain::dtos::{GoogleTokenResponse, GoogleUserInfo};
-use crate::infrastructure::errors::AppError;
+use shared_core::domain::dtos::{GoogleTokenResponse, GoogleUserInfo};
+use shared_core::infrastructure::errors::AppError;
 
 pub struct GoogleOAuthClient {
     client_id: String,

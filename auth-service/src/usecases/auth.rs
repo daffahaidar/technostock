@@ -1,14 +1,14 @@
-use crate::domain::dtos::{RegisterUserDto, AuthResponseDto, UserResponseDto};
-use crate::infrastructure::errors::AppError;
+use shared_core::domain::dtos::{RegisterUserDto, AuthResponseDto, UserResponseDto};
+use shared_core::infrastructure::errors::AppError;
 use std::sync::Arc;
 use uuid::Uuid;
-use crate::domain::entities::user::{User, Role};
-use crate::domain::repositories::user_repository::UserRepository;
-use crate::infrastructure::auth::jwt::JwtService;
+use shared_core::domain::entities::user::{User, Role};
+use shared_core::domain::repositories::user_repository::UserRepository;
+use shared_core::infrastructure::auth::jwt::JwtService;
 use crate::infrastructure::auth::password::{hash_password, verify_password};
 use crate::infrastructure::auth::github::GitHubOAuthClient;
 use crate::infrastructure::auth::google::GoogleOAuthClient;
-use crate::domain::dtos::GitHubUserInfo;
+use shared_core::domain::dtos::GitHubUserInfo;
 
 const ACCESS_TOKEN_EXPIRY_SECONDS: usize = 900; // 15 minutes
 
@@ -32,7 +32,7 @@ impl<R: UserRepository> RegisterUseCase<R> {
             email: dto.email,
             password_hash: Some(password_hash),
             role: Role::User,
-            status: crate::domain::entities::user::UserStatus::default(),
+            status: shared_core::domain::entities::user::UserStatus::default(),
             github_id: None,
             google_id: None,
             avatar_url: None,
@@ -172,7 +172,7 @@ impl<R: UserRepository> GitHubCallbackUseCase<R> {
                     email,
                     password_hash: None,
                     role: Role::User,
-                    status: crate::domain::entities::user::UserStatus::default(),
+                    status: shared_core::domain::entities::user::UserStatus::default(),
                     github_id: Some(github_user.id),
                     google_id: None,
                     avatar_url: github_user.avatar_url,
@@ -245,7 +245,7 @@ impl<R: UserRepository> GoogleCallbackUseCase<R> {
                     email,
                     password_hash: None,
                     role: Role::User,
-                    status: crate::domain::entities::user::UserStatus::default(),
+                    status: shared_core::domain::entities::user::UserStatus::default(),
                     github_id: None,
                     google_id: Some(google_user.id),
                     avatar_url: google_user.picture,

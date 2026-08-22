@@ -1,6 +1,6 @@
 use reqwest::Client;
-use crate::domain::dtos::{GitHubTokenResponse, GitHubUserInfo, GitHubEmail};
-use crate::infrastructure::errors::AppError;
+use shared_core::domain::dtos::{GitHubTokenResponse, GitHubUserInfo, GitHubEmail};
+use shared_core::infrastructure::errors::AppError;
 
 pub struct GitHubOAuthClient {
     client_id: String,

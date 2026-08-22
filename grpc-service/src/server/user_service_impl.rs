@@ -8,9 +8,9 @@ pub mod user_proto {
 
 use user_proto::user_service_server::UserService;
 use user_proto::{GetUsersRequest, GetUsersResponse, UpdateLastReadRequest, ValidateTokenRequest, ValidateTokenResponse, Empty, User};
-use crate::infrastructure::repositories::postgres_user_repository::PostgresUserRepository;
-use crate::domain::repositories::user_repository::UserRepository;
-use crate::infrastructure::auth::jwt::JwtService;
+use shared_core::infrastructure::repositories::postgres_user_repository::PostgresUserRepository;
+use shared_core::domain::repositories::user_repository::UserRepository;
+use shared_core::infrastructure::auth::jwt::JwtService;
 
 pub struct UserServiceImpl {
     pub user_repository: Arc<PostgresUserRepository>,

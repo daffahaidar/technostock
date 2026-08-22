@@ -1,10 +1,10 @@
 use std::sync::Arc;
 use uuid::Uuid;
-use crate::domain::entities::user::{User, Role, UserStatus};
-use crate::domain::repositories::user_repository::UserRepository;
-use crate::domain::dtos::{CreateUserDto, UpdateUserDto, UpdateUserStatusDto, UserResponseDto};
+use shared_core::domain::entities::user::{User, Role, UserStatus};
+use shared_core::domain::repositories::user_repository::UserRepository;
+use shared_core::domain::dtos::{CreateUserDto, UpdateUserDto, UpdateUserStatusDto, UserResponseDto};
 use crate::infrastructure::auth::password::hash_password;
-use crate::infrastructure::errors::AppError;
+use shared_core::infrastructure::errors::AppError;
 
 /// Create User Use Case - Admin + Maintainer only
 pub struct CreateUserUseCase<R: UserRepository> {

@@ -1,5 +1,5 @@
 use validator::Validate;
-use crate::infrastructure::errors::AppError;
+use shared_core::infrastructure::errors::AppError;
 
 pub fn validate_request<T: Validate>(payload: &T) -> Result<(), AppError> {
     payload

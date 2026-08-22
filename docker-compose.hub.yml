@@ -1,5 +1,5 @@
 # ═══════════════════════════════════════════════════════════════════════════════
-# Technorider — Docker Hub Deployment Compose
+# Technostock — Docker Hub Deployment Compose
 # Dipakai di server/VPS: menggunakan image yang sudah di-push ke Docker Hub
 # Jalankan: make deploy  atau  docker compose -f docker-compose.hub.yml up -d
 #
@@ -9,14 +9,14 @@
 #   3. Pull image: make pull  atau  docker compose -f docker-compose.hub.yml pull
 # ═══════════════════════════════════════════════════════════════════════════════
 
-name: technorider-hub
+name: technostock-hub
 
 # Ubah VERSION sesuai tag yang ingin dipakai (default: latest)
 x-image-version: &image-version latest
-x-hub-prefix: &hub-prefix daffahaidarnz/technorider
+x-hub-prefix: &hub-prefix daffahaidarnz/technostock
 
 networks:
-  technorider-network:
+  technostock-network:
     driver: bridge
 
 volumes:
@@ -31,14 +31,14 @@ services:
 
   postgres:
     image: postgres:17-alpine
-    container_name: technorider-postgres
+    container_name: technostock-postgres
     restart: always
     ports:
       - "5433:5432"
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: admin
-      POSTGRES_DB: technorider
+      POSTGRES_DB: technostock
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -48,11 +48,11 @@ services:
       retries: 10
       start_period: 30s
     networks:
-      - technorider-network
+      - technostock-network
 
   redis:
     image: redis:7-alpine
-    container_name: technorider-redis
+    container_name: technostock-redis
     restart: always
     ports:
       - "6379:6379"
@@ -65,11 +65,11 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - technorider-network
+      - technostock-network
 
   rabbitmq:
     image: rabbitmq:3-management
-    container_name: technorider-rabbitmq
+    container_name: technostock-rabbitmq
     restart: always
     ports:
       - "5672:5672"
@@ -85,11 +85,11 @@ services:
       timeout: 10s
       retries: 5
     networks:
-      - technorider-network
+      - technostock-network
 
   minio:
     image: quay.io/minio/minio
-    container_name: technorider-minio
+    container_name: technostock-minio
     restart: always
     ports:
       - "9000:9000"
@@ -101,21 +101,20 @@ services:
       - minio_data:/data
     command: server /data --console-address ":9001"
     networks:
-      - technorider-network
+      - technostock-network
 
   # ─── auth-service ─────────────────────────────────────────────────────────────
 
   auth-service:
-    image: daffahaidarnz/technorider:auth-service-latest  # ganti 'latest' jika pakai VERSION
-    container_name: technorider-auth-service
+    image: daffahaidarnz/technostock:auth-service-latest  # ganti 'latest' jika pakai VERSION
+    container_name: technostock-auth-service
     restart: always
     ports:
       - "8000:8000"
-      - "50051:50051"
     env_file:
       - ./auth-service/.env
     environment:
-      - DATABASE_URL=postgres://postgres:admin@postgres:5432/technorider
+      - DATABASE_URL=postgres://postgres:admin@postgres:5432/technostock
       - MINIO_ENDPOINT=minio
       - RABBITMQ_HOST=rabbitmq
       - REDIS_HOST=redis
@@ -123,23 +122,41 @@ services:
       postgres:
         condition: service_healthy
     networks:
-      - technorider-network
+      - technostock-network
+
+  # ─── grpc-service ─────────────────────────────────────────────────────────────
+
+  grpc-service:
+    image: daffahaidarnz/technostock:grpc-service-latest
+    container_name: technostock-grpc-service
+    restart: always
+    ports:
+      - "50051:50051"
+    env_file:
+      - ./grpc-service/.env
+    environment:
+      - DATABASE_URL=postgres://postgres:admin@postgres:5432/technostock
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - technostock-network
 
   # ─── realtime-service ─────────────────────────────────────────────────────────
 
   realtime-service:
-    image: daffahaidarnz/technorider:realtime-service-latest
-    container_name: technorider-realtime-service
+    image: daffahaidarnz/technostock:realtime-service-latest
+    container_name: technostock-realtime-service
     restart: always
     ports:
       - "8001:8001"
     env_file:
       - ./realtime-service/.env
     environment:
-      - DATABASE_URL=postgres://postgres:admin@postgres:5432/technorider
+      - DATABASE_URL=postgres://postgres:admin@postgres:5432/technostock
       - REDIS_HOST=redis
       - RABBITMQ_HOST=rabbitmq
-      - AUTH_GRPC_URL=http://auth-service:50051
+      - AUTH_GRPC_URL=http://grpc-service:50051
       - MINIO_ENDPOINT=minio
     depends_on:
       postgres:
@@ -148,35 +165,39 @@ services:
         condition: service_healthy
       auth-service:
         condition: service_started
+      grpc-service:
+        condition: service_started
     networks:
-      - technorider-network
+      - technostock-network
 
   # ─── main-service ─────────────────────────────────────────────────────────────
 
   main-service:
-    image: daffahaidarnz/technorider:main-service-latest
-    container_name: technorider-main-service
+    image: daffahaidarnz/technostock:main-service-latest
+    container_name: technostock-main-service
     restart: always
     ports:
       - "8002:8002"
     env_file:
       - ./main-service/.env
     environment:
-      - DATABASE_URL=postgres://postgres:admin@postgres:5432/technorider
-      - AUTH_GRPC_URL=auth-service:50051
+      - DATABASE_URL=postgres://postgres:admin@postgres:5432/technostock
+      - AUTH_GRPC_URL=grpc-service:50051
     depends_on:
       postgres:
         condition: service_healthy
       auth-service:
         condition: service_started
+      grpc-service:
+        condition: service_started
     networks:
-      - technorider-network
+      - technostock-network
 
   # ─── frontend ─────────────────────────────────────────────────────────────────
 
   frontend:
-    image: daffahaidarnz/technorider:frontend-latest
-    container_name: technorider-frontend
+    image: daffahaidarnz/technostock:frontend-latest
+    container_name: technostock-frontend
     restart: always
     ports:
       - "3000:3000"
@@ -186,11 +207,11 @@ services:
       - NODE_ENV=production
       - PORT=3000
       - HOSTNAME=0.0.0.0
-      - DATABASE_URL=postgres://postgres:admin@postgres:5432/technorider
+      - DATABASE_URL=postgres://postgres:admin@postgres:5432/technostock
       - SERVER_API_URL=http://auth-service:8000
     depends_on:
       - auth-service
       - realtime-service
       - main-service
     networks:
-      - technorider-network
+      - technostock-network

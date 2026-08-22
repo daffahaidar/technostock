@@ -1,6 +1,6 @@
-# Technorider
+# Technostock
 
-Technorider adalah platform hardware technology berbasis microservices. Monorepo ini terdiri dari 4 service utama yang berkomunikasi satu sama lain melalui REST API, WebSocket, dan gRPC.
+Technostock adalah platform hardware technology berbasis microservices. Monorepo ini terdiri dari 4 service utama yang berkomunikasi satu sama lain melalui REST API, WebSocket, dan gRPC.
 
 ## Arsitektur
 
@@ -61,8 +61,8 @@ Cara termudah untuk menjalankan seluruh stack sekaligus.
 
 **1. Clone repository**
 ```bash
-git clone https://github.com/daffahaidar/technorider.git
-cd technorider
+git clone https://github.com/daffahaidar/technostock.git
+cd technostock
 ```
 
 **2. Siapkan environment variables**
@@ -236,7 +236,7 @@ Frontend berjalan di: `http://localhost:3000`
 
 ```env
 # ─── Database ─────────────────────────────────────────────────
-DATABASE_URL=postgres://postgres:admin@localhost:5433/technorider
+DATABASE_URL=postgres://postgres:admin@localhost:5433/technostock
 
 # ─── JWT Keys (RSA) ───────────────────────────────────────────
 # Generate dengan: openssl genrsa -out private.pem 2048 && openssl rsa -in private.pem -pubout -out public.pem
@@ -262,7 +262,7 @@ MINIO_PORT=9000
 MINIO_USE_SSL=false
 MINIO_ACCESS_KEY=daffahaidar
 MINIO_SECRET_KEY=daffahaidarnz27
-MINIO_BUCKET=technorider
+MINIO_BUCKET=technostock
 
 # ─── RabbitMQ ─────────────────────────────────────────────────
 RABBITMQ_HOST=localhost
@@ -281,7 +281,7 @@ REDIS_PASSWORD=daffahaidarnz27
 > Sama dengan `auth-service/.env` di atas. Pastikan `JWT_PUBLIC_KEY` sama persis dengan yang ada di `auth-service` karena realtime-service memverifikasi token yang dibuat oleh auth-service.
 
 ```env
-DATABASE_URL=postgres://postgres:admin@localhost:5433/technorider
+DATABASE_URL=postgres://postgres:admin@localhost:5433/technostock
 JWT_PRIVATE_KEY="..."
 JWT_PUBLIC_KEY="..."
 RUST_LOG=info
@@ -296,7 +296,7 @@ MINIO_PORT=9000
 MINIO_USE_SSL=false
 MINIO_ACCESS_KEY=daffahaidar
 MINIO_SECRET_KEY=daffahaidarnz27
-MINIO_BUCKET=technorider
+MINIO_BUCKET=technostock
 RABBITMQ_HOST=localhost
 RABBITMQ_PORT=5672
 RABBITMQ_USER=daffahaidar
@@ -310,7 +310,7 @@ REDIS_PASSWORD=daffahaidarnz27
 
 ```env
 # ─── Database ─────────────────────────────────────────────────
-DATABASE_URL=postgres://postgres:admin@localhost:5433/technorider
+DATABASE_URL=postgres://postgres:admin@localhost:5433/technostock
 
 # ─── Server ───────────────────────────────────────────────────
 PORT=8002
@@ -340,7 +340,7 @@ NEXT_PUBLIC_GOLANG_API=http://localhost:8002
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 # ─── Database (dipakai oleh Better Auth server-side) ──────────
-DATABASE_URL=postgres://postgres:admin@localhost:5433/technorider
+DATABASE_URL=postgres://postgres:admin@localhost:5433/technostock
 
 # ─── JWT Public Key (untuk verifikasi token dari auth-service) ───
 JWT_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----\n...\n-----END PUBLIC KEY-----"
@@ -390,7 +390,7 @@ cat public.pem  | awk '{printf "%s\\n", $0}' | sed 's/\\n$//'
 ## Struktur Monorepo
 
 ```
-technorider/
+technostock/
 ├── docker-compose.dev.yml    # Unified dev (semua service + infra)
 ├── docker-compose.prod.yml   # Unified prod
 ├── Makefile                  # Shortcut: make dev, make prod, dst.

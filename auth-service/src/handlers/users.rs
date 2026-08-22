@@ -1,9 +1,9 @@
 use axum::{extract::State, response::IntoResponse};
 use crate::AppState;
-use crate::infrastructure::errors::AppError;
+use shared_core::infrastructure::errors::AppError;
 use crate::infrastructure::auth::middleware::AuthUser;
 use crate::usecases::users::GetUsersUseCase;
-use crate::domain::repositories::user_repository::UserRepository;
+use shared_core::domain::repositories::user_repository::UserRepository;
 
 
 /// Handler for GET /users - restricted to Admin and Maintainer only

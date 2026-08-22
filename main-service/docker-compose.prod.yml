@@ -10,5 +10,5 @@ services:
     env_file:
       - .env
     environment:
-      - DATABASE_URL=postgres://postgres:admin@host.docker.internal:5433/technorider
+      - DATABASE_URL=postgres://postgres:admin@host.docker.internal:5433/technostock
       - AUTH_GRPC_URL=host.docker.internal:50051

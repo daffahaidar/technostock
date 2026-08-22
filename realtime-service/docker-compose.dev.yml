@@ -17,7 +17,7 @@ services:
       - .env
     environment:
       # Override localhost to host.docker.internal to connect to host's services
-      - DATABASE_URL=postgres://postgres:admin@host.docker.internal:5433/technorider
+      - DATABASE_URL=postgres://postgres:admin@host.docker.internal:5433/technostock
       - REDIS_HOST=host.docker.internal
       - RABBITMQ_HOST=host.docker.internal
       - AUTH_GRPC_URL=http://host.docker.internal:50051

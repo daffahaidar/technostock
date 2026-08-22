@@ -2,10 +2,10 @@ use axum::{extract::{State, Path}, response::IntoResponse};
 use validator::Validate;
 use uuid::Uuid;
 use crate::AppState;
-use crate::infrastructure::errors::AppError;
+use shared_core::infrastructure::errors::AppError;
 use crate::infrastructure::auth::middleware::AuthUser;
-use crate::domain::repositories::user_repository::UserRepository;
-use crate::domain::dtos::{CreateUserDto, UpdateUserDto, UpdateUserStatusDto};
+use shared_core::domain::repositories::user_repository::UserRepository;
+use shared_core::domain::dtos::{CreateUserDto, UpdateUserDto, UpdateUserStatusDto};
 use crate::usecases::user_management::{
     CreateUserUseCase, UpdateUserUseCase, DeleteUserUseCase, UpdateUserStatusUseCase
 };
@@ -20,7 +20,7 @@ pub struct CreateUserRequest {
     pub email: String,
     #[validate(length(min = 8, message = "Password must be at least 8 characters"))]
     pub password: String,
-    pub role: crate::domain::entities::user::Role,
+    pub role: shared_core::domain::entities::user::Role,
 }
 
 #[derive(serde::Deserialize)]
@@ -29,12 +29,12 @@ pub struct UpdateUserRequest {
     pub phone: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub email: Option<String>,
-    pub role: Option<crate::domain::entities::user::Role>,
+    pub role: Option<shared_core::domain::entities::user::Role>,
 }
 
 #[derive(serde::Deserialize)]
 pub struct UpdateUserStatusRequest {
-    pub status: crate::domain::entities::user::UserStatus,
+    pub status: shared_core::domain::entities::user::UserStatus,
 }
 
 /// POST /api/v1/users - Create user (Admin + Maintainer)

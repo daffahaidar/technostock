@@ -1,5 +1,3 @@
-mod config;
-mod domain;
 mod handlers;
 mod infrastructure;
 mod routes;
@@ -15,11 +13,11 @@ use tower_http::cors::{Any, CorsLayer};
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-use crate::infrastructure::auth::jwt::JwtService;
+use shared_core::infrastructure::auth::jwt::JwtService;
 use crate::infrastructure::auth::github::GitHubOAuthClient;
 use crate::infrastructure::auth::google::GoogleOAuthClient;
-use crate::infrastructure::database::postgres::Database;
-use crate::infrastructure::repositories::postgres_user_repository::PostgresUserRepository;
+use shared_core::infrastructure::database::postgres::Database;
+use shared_core::infrastructure::repositories::postgres_user_repository::PostgresUserRepository;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -70,23 +68,6 @@ async fn main() {
         google_client_secret,
         google_redirect_uri,
     ));
-
-    let addr = "0.0.0.0:50051".parse().unwrap();
-    let user_service = crate::infrastructure::grpc::user_service_impl::UserServiceImpl {
-        user_repository: user_repository.clone(),
-        jwt_service: jwt_service.clone(),
-    };
-
-    tracing::info!("gRPC Server listening on {}", addr);
-    
-    // Spawn gRPC server
-    tokio::spawn(async move {
-        tonic::transport::Server::builder()
-            .add_service(crate::infrastructure::grpc::user_service_impl::user_proto::user_service_server::UserServiceServer::new(user_service))
-            .serve(addr)
-            .await
-            .unwrap();
-    });
 
     let state = AppState {
         user_repository,
