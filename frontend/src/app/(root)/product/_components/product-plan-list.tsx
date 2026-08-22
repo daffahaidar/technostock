@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useQueryData } from "@/hooks/use-query";
 import { ENDPOINT } from "@/endpoint";
-import { golangBackend } from "@/libs/axios";
+import { externalBackend } from "@/libs/axios";
 import { CheckCircle2, Zap, Star, Shield } from "lucide-react";
 
 // ─── Icon mapping per plan index ────────────────────────────────────────────
@@ -187,7 +187,7 @@ export default function ProductPlanList({
   const { data: dataPlan, isLoading } = useQueryData({
     queryKey: ["get-product-plan-by-category", categorySlug],
     endpoint: `${ENDPOINT.GOLANG_API.PUBLIC_PRODUCT_PLAN}?slug=${categorySlug}`,
-    source: golangBackend,
+    source: externalBackend,
   });
 
   const plans: any[] = dataPlan?.results || [];

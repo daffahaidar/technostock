@@ -34,7 +34,7 @@ export const clearTokenCache = () => {
   tokenExpiry = null;
 };
 
-export const rustBackend = axios.create({
+export const externalBackend = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
 });
 
@@ -51,10 +51,6 @@ const getMessageBaseUrl = () => {
 
 export const messageBackend = axios.create({
   baseURL: getMessageBaseUrl(),
-});
-
-export const golangBackend = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_GOLANG_API,
 });
 
 const setupInterceptors = (instance: AxiosInstance) => {
@@ -81,6 +77,5 @@ const setupInterceptors = (instance: AxiosInstance) => {
   );
 };
 
-setupInterceptors(rustBackend);
+setupInterceptors(externalBackend);
 setupInterceptors(messageBackend);
-setupInterceptors(golangBackend);

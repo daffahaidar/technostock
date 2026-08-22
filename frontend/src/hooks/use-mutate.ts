@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { z } from "zod";
-import { golangBackend, rustBackend, messageBackend } from "@/libs/axios";
+import { externalBackend, messageBackend } from "@/libs/axios";
 
 export const useMutateData = <TSchema extends z.ZodTypeAny>({
   onSuccess,
@@ -12,7 +12,7 @@ export const useMutateData = <TSchema extends z.ZodTypeAny>({
 }: {
   mutationKey: string[];
   endpoint: string | ((param: string | number) => string);
-  source: typeof golangBackend | typeof rustBackend | typeof messageBackend;
+  source: typeof externalBackend | typeof messageBackend;
   method: "post" | "put" | "delete" | "patch";
   schema?: TSchema;
   onSuccess?: (data: Record<string, any>) => void;

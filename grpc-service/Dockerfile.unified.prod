@@ -18,6 +18,7 @@ COPY proto/ /proto/
 
 # Source service
 COPY grpc-service/ .
+COPY shared-core/ /shared-core/
 
 # SQLX_OFFLINE=true agar cargo build tidak butuh koneksi database saat image build
 ENV SQLX_OFFLINE=true
@@ -32,12 +33,7 @@ RUN apt-get update && apt-get install -y ca-certificates libpq5 && rm -rf /var/l
 
 # Copy hanya binary, sqlx, migrations, dan entrypoint — TIDAK copy .env
 COPY --from=builder /app/target/release/grpc-service .
-COPY --from=builder /usr/local/cargo/bin/sqlx /usr/local/bin/sqlx
-COPY --from=builder /app/migrations ./migrations
-COPY grpc-service/entrypoint.sh .
-RUN chmod +x entrypoint.sh
 
-EXPOSE 8000 50051
+EXPOSE 8080 50051
 
-# entrypoint.sh: sqlx migrate run && ./grpc-service
-CMD ["./entrypoint.sh"]
+CMD ["./grpc-service"]

@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { golangBackend, rustBackend, messageBackend } from "@/libs/axios";
+import { externalBackend, messageBackend } from "@/libs/axios";
 
-type QuerySource = typeof golangBackend | typeof rustBackend | typeof messageBackend;
+type QuerySource = typeof externalBackend | typeof messageBackend;
 
 export function queryData({
   queryKey,

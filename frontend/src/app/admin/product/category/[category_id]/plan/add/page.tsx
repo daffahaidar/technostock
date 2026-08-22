@@ -3,12 +3,14 @@ import { SidebarDispatcher } from "@/components/layout/sidebar-dispatcher";
 import { Fragment } from "react";
 import { getSession } from "@/app/auth/sign-in/_handlers/server";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 
 export default async function AddProductPlanPage({
   params,
 }: {
   params: Promise<{ category_id: string }>;
 }) {
+  await connection();
   const session = await getSession();
   const { category_id } = await params;
   

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import ProductPlanList from "../_components/product-plan-list";
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import { queryData } from "@/hooks/use-query";
-import { golangBackend } from "@/libs/axios";
+import { externalBackend } from "@/libs/axios";
 import { ENDPOINT } from "@/endpoint";
 import { getQueryClient } from "@/configs/tanstack-query";
 
@@ -106,7 +106,7 @@ async function PrefetchedProductPlan({
       queryData({
         queryKey: ["get-product-plan-by-category", category_slug],
         endpoint: `${ENDPOINT.GOLANG_API.PUBLIC_PRODUCT_PLAN}?slug=${category_slug}`,
-        source: golangBackend,
+        source: externalBackend,
       }),
     );
   } catch (error: any) {

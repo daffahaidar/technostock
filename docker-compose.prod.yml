@@ -31,6 +31,10 @@ services:
       POSTGRES_DB: technostock
     volumes:
       - pgdata:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          memory: 256M
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -49,6 +53,10 @@ services:
     command: redis-server --requirepass daffahaidarnz27 --appendonly yes
     volumes:
       - redis_data:/data
+    deploy:
+      resources:
+        limits:
+          memory: 128M
     healthcheck:
       test: ["CMD", "redis-cli", "-a", "daffahaidarnz27", "ping"]
       interval: 10s
@@ -67,8 +75,13 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: daffahaidar
       RABBITMQ_DEFAULT_PASS: daffahaidarnz27
+      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: "-+A 16"
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
+    deploy:
+      resources:
+        limits:
+          memory: 256M
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 15s
@@ -89,6 +102,10 @@ services:
       MINIO_ROOT_PASSWORD: daffahaidarnz27
     volumes:
       - minio_data:/data
+    deploy:
+      resources:
+        limits:
+          memory: 256M
     command: server /data --console-address ":9001"
     networks:
       - technostock-network
@@ -111,6 +128,11 @@ services:
       - MINIO_ENDPOINT=minio
       - RABBITMQ_HOST=rabbitmq
       - REDIS_HOST=redis
+      - MALLOC_ARENA_MAX=2
+    deploy:
+      resources:
+        limits:
+          memory: 64M
     depends_on:
       postgres:
         condition: service_healthy
@@ -132,6 +154,11 @@ services:
       - ./grpc-service/.env
     environment:
       - DATABASE_URL=postgres://postgres:admin@postgres:5432/technostock
+      - MALLOC_ARENA_MAX=2
+    deploy:
+      resources:
+        limits:
+          memory: 64M
     depends_on:
       postgres:
         condition: service_healthy
@@ -157,6 +184,11 @@ services:
       - RABBITMQ_HOST=rabbitmq
       - AUTH_GRPC_URL=http://grpc-service:50051
       - MINIO_ENDPOINT=minio
+      - MALLOC_ARENA_MAX=2
+    deploy:
+      resources:
+        limits:
+          memory: 64M
     depends_on:
       postgres:
         condition: service_healthy
@@ -185,6 +217,12 @@ services:
     environment:
       - DATABASE_URL=postgres://postgres:admin@postgres:5432/technostock
       - AUTH_GRPC_URL=grpc-service:50051
+      - GOMEMLIMIT=50MiB
+      - GOGC=50
+    deploy:
+      resources:
+        limits:
+          memory: 64M
     depends_on:
       postgres:
         condition: service_healthy
@@ -212,9 +250,14 @@ services:
       - NODE_ENV=production
       - PORT=3000
       - HOSTNAME=0.0.0.0
+      - NODE_OPTIONS=--max-old-space-size=64
       # Server-side: gunakan nama service internal
       - DATABASE_URL=postgres://postgres:admin@postgres:5432/technostock
       - SERVER_API_URL=http://auth-service:8000
+    deploy:
+      resources:
+        limits:
+          memory: 128M
     depends_on:
       - auth-service
       - realtime-service

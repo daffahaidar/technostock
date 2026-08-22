@@ -1,4 +1,5 @@
 mod server;
+mod gateway;
 
 use dotenvy::dotenv;
 use std::env;
@@ -39,6 +40,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     tracing::info!("gRPC Server listening on {}", addr);
+    
+    // Start API Gateway in background
+    tokio::spawn(async {
+        gateway::start_gateway().await;
+    });
     
     tonic::transport::Server::builder()
         .add_service(server::user_service_impl::user_proto::user_service_server::UserServiceServer::new(user_service))

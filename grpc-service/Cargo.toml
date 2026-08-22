@@ -19,6 +19,12 @@ sqlx = { version = "0.8.3", features = [
     "migrate",
 ] }
 shared-core = { path = "../shared-core" }
+axum = { version = "0.8.9", features = ["ws"] }
+reqwest = { version = "0.13.4", features = ["stream"] }
+tower-http = { version = "0.7.0", features = ["cors", "trace"] }
+tokio-tungstenite = "0.30.0"
+futures-util = "0.3.34"
+http-body-util = "0.1.5"
 
 [build-dependencies]
 tonic-build = "0.12"

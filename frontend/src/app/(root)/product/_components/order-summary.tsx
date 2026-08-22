@@ -6,7 +6,7 @@ import { useSignIn } from "@/app/auth/sign-in/_mutations/sign-in";
 import { Button } from "@/components/ui/button";
 import { ENDPOINT } from "@/endpoint";
 import { useQueryData } from "@/hooks/use-query";
-import { golangBackend } from "@/libs/axios";
+import { externalBackend } from "@/libs/axios";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -95,7 +95,7 @@ export default function OrderSummary({
   const { data: dataPlan, isLoading } = useQueryData({
     queryKey: ["get-product-plan-by-category-plan", categorySlug, planSlug],
     endpoint: `${ENDPOINT.GOLANG_API.PUBLIC_PRODUCT_PLAN_DETAIL}/${categorySlug}/${planSlug}`,
-    source: golangBackend,
+    source: externalBackend,
   });
 
   const { isPending: isSigningIn, mutate: signIn } = useSignIn({
@@ -115,7 +115,7 @@ export default function OrderSummary({
 
   const { isPending: isCheckingOut, mutate: checkout } = useMutation({
     mutationFn: async () => {
-      const { data } = await golangBackend.post(ENDPOINT.GOLANG_API.BUY_PRODUCT, {
+      const { data } = await externalBackend.post(ENDPOINT.GOLANG_API.BUY_PRODUCT, {
         serial_number: sn,
         category: categorySlug,
         plan: planSlug,
