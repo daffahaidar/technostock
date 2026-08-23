@@ -8,6 +8,8 @@ import (
 	"main-service/handlers"
 	"main-service/infrastructure/database"
 	"main-service/infrastructure/grpc"
+	"main-service/infrastructure/middleware"
+	"main-service/infrastructure/workers"
 	"main-service/pb"
 	"main-service/routes"
 	"main-service/usecases"
@@ -31,12 +33,19 @@ func main() {
 		&entities.Product{},
 		&entities.Transaction{},
 		&entities.UserProduct{},
+		&entities.AccountType{},
+		&entities.SubscriptionPlan{},
+		&entities.UserSubscription{},
 	)
 	if err != nil {
 		log.Fatalf("Failed to auto migrate: %v", err)
 	}
 
 	authClient := grpc.NewAuthClient(cfg.AuthGRPCURL)
+
+	// Start Background Workers
+	subscriptionWorker := workers.NewSubscriptionWorker(db, authClient)
+	subscriptionWorker.Start()
 
 	// Use cases
 	productUseCase := usecases.NewProductUseCase(db, cfg.MidtransServerKey)
@@ -67,6 +76,16 @@ func main() {
 		}
 	}()
 	
+	// Subscription Handlers
+	accountTypeUseCase := usecases.NewAccountTypeUseCase(db)
+	accountTypeHandler := handlers.NewAccountTypeHandler(accountTypeUseCase)
+
+	subscriptionPlanUseCase := usecases.NewSubscriptionPlanUseCase(db)
+	subscriptionPlanHandler := handlers.NewSubscriptionPlanHandler(subscriptionPlanUseCase)
+
+	userSubscriptionUseCase := usecases.NewUserSubscriptionUseCase(db)
+	userSubscriptionHandler := handlers.NewUserSubscriptionHandler(userSubscriptionUseCase, authClient)
+
 	app := fiber.New()
 
 	app.Use(logger.New())
@@ -74,6 +93,14 @@ func main() {
 	app.Use(cors.New())
 
 	routes.SetupRoutes(app, productHandler, categoryHandler, planHandler, authClient)
+	
+	api := app.Group("/api/v1")
+	routes.SetupSubscriptionRoutes(api, accountTypeHandler, subscriptionPlanHandler, authClient)
+
+	// User Subscription Route
+	subGroup := api.Group("/subscriptions")
+	subGroup.Use(middleware.AuthMiddleware(authClient))
+	subGroup.Post("/subscribe", userSubscriptionHandler.Subscribe)
 
 	log.Printf("Server listening on port %s", cfg.Port)
 	if err := app.Listen(":" + cfg.Port); err != nil {

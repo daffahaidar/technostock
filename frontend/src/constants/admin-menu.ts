@@ -13,23 +13,17 @@ const adminMenu = [
     ],
   },
   {
-    group: "Product Management",
+    group: "Subscription Management",
     menus: [
       {
-        title: "Produk",
-        url: "/admin/product",
-        icon: Package,
+        title: "Tipe Akun",
+        url: "/admin/subscriptions/account-types",
+        icon: Tag, // UserSquare not imported, using Tag for now
         isActive: false,
       },
       {
-        title: "Kategori Produk",
-        url: "/admin/product/category",
-        icon: Tag,
-        isActive: false,
-      },
-      {
-        title: "Plan Produk",
-        url: "/admin/product/plan",
+        title: "Plan Langganan",
+        url: "/admin/subscriptions/plans",
         icon: Layers,
         isActive: false,
       },

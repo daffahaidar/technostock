@@ -12,6 +12,11 @@ export function GlobalNotificationHandler() {
   const pathname = usePathname();
   const wsRef = useRef<WebSocket | null>(null);
 
+  // Early return if we are not in the maintainer path
+  if (!pathname?.startsWith("/maintainer")) {
+    return null;
+  }
+
   useEffect(() => {
     const token = data?.session?.token;
     const currentUserId = data?.session?.userId;
@@ -30,9 +35,16 @@ export function GlobalNotificationHandler() {
         Authorization: `Bearer ${token}`,
       },
     })
-      .then((res) => res.json())
+      .then(async (res) => {
+        if (!res.ok) {
+          // Fail silently to avoid Next.js dev overlay catching console.error
+          return null;
+        }
+        const text = await res.text();
+        return text ? JSON.parse(text) : null;
+      })
       .then((data) => {
-        if (data?.meta?.status === "success" && typeof data?.results?.count === "number") {
+        if (data && data?.meta?.status === "success" && typeof data?.results?.count === "number") {
           // If we are currently NOT on the discussion page, set the loaded unread count.
           if (!window.location.pathname.startsWith("/maintainer/discussion")) {
             // Note: we might want to just set it to the count exactly.
@@ -43,7 +55,9 @@ export function GlobalNotificationHandler() {
           }
         }
       })
-      .catch(console.error);
+      .catch(() => {
+        // Silently ignore connection errors when the chat service is not running
+      });
 
     const ws = new WebSocket(wsUrl);
 

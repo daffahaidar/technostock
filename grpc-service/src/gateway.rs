@@ -81,7 +81,14 @@ async fn proxy_main(
         .map(|v| v.as_str())
         .unwrap_or(path);
 
-    let uri = format!("{}{}", state.main_service_url, path_query);
+    // Strip /api/v1/main and replace with /api/v1
+    let stripped_path = if path_query.starts_with("/api/v1/main") {
+        path_query.replacen("/api/v1/main", "/api/v1", 1)
+    } else {
+        path_query.to_string()
+    };
+
+    let uri = format!("{}{}", state.main_service_url, stripped_path);
     proxy_request(state.client, req, uri).await
 }
 

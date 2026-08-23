@@ -17,4 +17,5 @@ pub trait UserRepository: Send + Sync {
     async fn find_by_google_id(&self, google_id: &str) -> Result<Option<User>, AppError>;
     async fn upsert_google_user(&self, user: &User) -> Result<User, AppError>;
     async fn update_last_read_at(&self, user_id: Uuid) -> Result<(), AppError>;
+    async fn update_role(&self, user_id: Uuid, role: crate::domain::entities::user::Role) -> Result<(), AppError>;
 }

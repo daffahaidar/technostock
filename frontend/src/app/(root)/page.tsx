@@ -8,9 +8,12 @@ import HowItWorksSection from "./_components/how-it-works-section";
 import TestimonialsSection from "./_components/testimonials-section";
 import CtaSection from "./_components/cta-section";
 import LandingFooter from "./_components/landing-footer";
+import PricingSection from "./_components/pricing-section";
+import { getPublicPricingData } from "@/modules/subscription-plan/actions/get-public-pricing";
 
 export default async function Home() {
   const session = await getSession();
+  const pricingData = await getPublicPricingData();
 
   return (
     <main className="relative">
@@ -21,6 +24,7 @@ export default async function Home() {
       <ProductShowcase />
       <HowItWorksSection />
       <TestimonialsSection />
+      <PricingSection pricingData={pricingData} />
       <CtaSection />
       <LandingFooter />
     </main>

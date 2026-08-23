@@ -44,3 +44,7 @@ func (c *AuthClient) ValidateToken(ctx context.Context, token string) (*pb.Valid
 
 	return res, nil
 }
+
+func (c *AuthClient) GetClient() pb.UserServiceClient {
+	return c.client
+}

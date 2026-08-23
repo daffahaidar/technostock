@@ -215,4 +215,14 @@ impl UserRepository for PostgresUserRepository {
             .map_err(AppError::DatabaseError)?;
         Ok(())
     }
+
+    async fn update_role(&self, user_id: Uuid, role: crate::domain::entities::user::Role) -> Result<(), AppError> {
+        sqlx::query("UPDATE users.users SET role = $1, updated_at = NOW() WHERE id = $2")
+            .bind(role)
+            .bind(user_id)
+            .execute(&self.pool)
+            .await
+            .map_err(AppError::DatabaseError)?;
+        Ok(())
+    }
 }

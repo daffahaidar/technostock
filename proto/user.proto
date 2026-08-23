@@ -6,6 +6,7 @@ service UserService {
     rpc GetUsers (GetUsersRequest) returns (GetUsersResponse);
     rpc UpdateLastRead (UpdateLastReadRequest) returns (Empty);
     rpc ValidateToken (ValidateTokenRequest) returns (ValidateTokenResponse);
+    rpc UpdateUserRole (UpdateUserRoleRequest) returns (Empty);
 }
 
 message GetUsersRequest {
@@ -37,6 +38,11 @@ message ValidateTokenResponse {
     string user_id = 2;
     string role = 3;
     string error_message = 4;
+}
+
+message UpdateUserRoleRequest {
+    string user_id = 1;
+    string role = 2;
 }
 
 message Empty {}

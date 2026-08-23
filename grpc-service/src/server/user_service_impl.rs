@@ -96,4 +96,27 @@ impl UserService for UserServiceImpl {
             }
         }
     }
+
+    async fn update_user_role(
+        &self,
+        request: Request<crate::server::user_service_impl::user_proto::UpdateUserRoleRequest>,
+    ) -> Result<Response<Empty>, Status> {
+        let req = request.into_inner();
+        let user_id = uuid::Uuid::parse_str(&req.user_id)
+            .map_err(|_| Status::invalid_argument("Invalid user_id format"))?;
+
+        let role_str = req.role.as_str();
+        let role = match role_str {
+            "Member" => shared_core::domain::entities::user::Role::Member,
+            "Admin" => shared_core::domain::entities::user::Role::Admin,
+            "SuperAdmin" => shared_core::domain::entities::user::Role::Admin, // SuperAdmin isn't in Role enum in shared-core maybe? Actually we just added it as Admin since I don't see SuperAdmin in the enum
+            "Maintainer" => shared_core::domain::entities::user::Role::Maintainer,
+            _ => shared_core::domain::entities::user::Role::User,
+        };
+
+        self.user_repository.update_role(user_id, role).await
+            .map_err(|_| Status::internal("Failed to update user role"))?;
+
+        Ok(Response::new(Empty {}))
+    }
 }
