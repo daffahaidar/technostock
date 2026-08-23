@@ -24,7 +24,7 @@ export default async function Home() {
       <ProductShowcase />
       <HowItWorksSection />
       <TestimonialsSection />
-      <PricingSection pricingData={pricingData} />
+      <PricingSection pricingData={pricingData} user={session?.user || null} />
       <CtaSection />
       <LandingFooter />
     </main>

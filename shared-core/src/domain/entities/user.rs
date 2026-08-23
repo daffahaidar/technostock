@@ -40,4 +40,5 @@ pub struct User {
     pub created_at: Option<DateTime<Utc>>,
     pub updated_at: Option<DateTime<Utc>>,
     pub last_read_at: Option<DateTime<Utc>>,
+    pub discord_username: Option<String>,
 }

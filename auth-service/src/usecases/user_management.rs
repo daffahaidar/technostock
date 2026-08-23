@@ -39,6 +39,7 @@ impl<R: UserRepository> CreateUserUseCase<R> {
             created_at: None,
             updated_at: None,
             last_read_at: None,
+            discord_username: None,
         };
 
         let created_user = self.user_repository.create(&user).await?;

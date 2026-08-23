@@ -40,6 +40,7 @@ impl UserService for UserServiceImpl {
                     role: format!("{:?}", user.role),
                     avatar_url: user.avatar_url,
                     last_read_at: user.last_read_at.map(|ts| ts.timestamp_millis()),
+                    discord_username: user.discord_username,
                 });
             }
         }
@@ -116,6 +117,20 @@ impl UserService for UserServiceImpl {
 
         self.user_repository.update_role(user_id, role).await
             .map_err(|_| Status::internal("Failed to update user role"))?;
+
+        Ok(Response::new(Empty {}))
+    }
+
+    async fn update_discord_username(
+        &self,
+        request: Request<crate::server::user_service_impl::user_proto::UpdateDiscordUsernameRequest>,
+    ) -> Result<Response<Empty>, Status> {
+        let req = request.into_inner();
+        let user_id = uuid::Uuid::parse_str(&req.user_id)
+            .map_err(|_| Status::invalid_argument("Invalid user_id format"))?;
+
+        self.user_repository.update_discord_username(user_id, req.discord_username).await
+            .map_err(|_| Status::internal("Failed to update discord username"))?;
 
         Ok(Response::new(Empty {}))
     }

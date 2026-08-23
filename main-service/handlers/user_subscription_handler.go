@@ -23,7 +23,9 @@ func NewUserSubscriptionHandler(usecase *usecases.UserSubscriptionUseCase, authC
 }
 
 type SubscribeRequest struct {
-	PlanID string `json:"plan_id"`
+	PlanID          string `json:"plan_id"`
+	DiscordUsername string `json:"discord_username"`
+	ReturnURL       string `json:"return_url"`
 }
 
 func (h *UserSubscriptionHandler) Subscribe(c fiber.Ctx) error {
@@ -63,4 +65,56 @@ func (h *UserSubscriptionHandler) Subscribe(c fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(sub)
+}
+
+func (h *UserSubscriptionHandler) Buy(c fiber.Ctx) error {
+	userStr := c.Locals("user_id")
+	if userStr == nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
+	}
+	userID := userStr.(string)
+
+	var req SubscribeRequest
+	if err := c.Bind().JSON(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request"})
+	}
+
+	planID, err := uuid.Parse(req.PlanID)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid plan ID"})
+	}
+
+	checkoutResp, err := h.usecase.BuySubscription(userID, planID, req.DiscordUsername, req.ReturnURL)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(checkoutResp)
+}
+
+func (h *UserSubscriptionHandler) MidtransWebhook(c fiber.Ctx) error {
+	var payload map[string]interface{}
+	if err := c.Bind().JSON(&payload); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request"})
+	}
+
+	if err := h.usecase.HandleMidtransWebhook(payload); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.SendStatus(fiber.StatusOK)
+}
+
+func (h *UserSubscriptionHandler) GetMyActiveSubscription(c fiber.Ctx) error {
+	userStr := c.Locals("user_id")
+	if userStr == nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized"})
+	}
+	userID := userStr.(string)
+
+	sub, err := h.usecase.GetActiveSubscription(userID)
+	if err != nil {
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": nil})
+	}
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": sub})
 }

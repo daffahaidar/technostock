@@ -85,12 +85,6 @@ export default function LandingNavbar({ user }: { user?: { name: string; role: s
 
           {/* CTA */}
           <div className="hidden md:flex items-center gap-3">
-            <Link
-              href="#contact"
-              className="text-white/80 hover:text-[#D4AF37] text-sm font-medium transition-colors duration-200"
-            >
-              Contact Us
-            </Link>
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger className="bg-[#121212] text-[#F9E596] border border-[#D4AF37]/30 text-sm font-semibold pr-4 pl-2 py-2 rounded-full flex items-center gap-2 hover:border-[#D4AF37]/60 hover:bg-[#1a1a1a] transition-all duration-200 outline-none">
@@ -114,22 +108,23 @@ export default function LandingNavbar({ user }: { user?: { name: string; role: s
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator className="bg-white/10" />
-                  <DropdownMenuItem asChild className="hover:bg-red-500/20 focus:bg-red-500/20 text-red-400 focus:text-red-400 cursor-pointer">
-                    <form action={logout}>
-                      <button type="submit" className="flex items-center gap-2 w-full">
-                        <LogOut className="h-4 w-4" />
-                        <span>Logout</span>
-                      </button>
-                    </form>
+                  <DropdownMenuItem 
+                    onClick={async () => {
+                      await logout();
+                    }}
+                    className="hover:bg-red-500/20 focus:bg-red-500/20 text-red-400 focus:text-red-400 cursor-pointer flex items-center gap-2"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    <span>Logout</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
               <Link
-                href="#services"
+                href="/auth/sign-in"
                 className="bg-gradient-gold text-black text-sm font-bold px-5 py-2.5 rounded-full hover:brightness-110 transition-all duration-200 hover:scale-105 active:scale-95 gold-glow"
               >
-                Get Started
+               Sign In
               </Link>
             )}
           </div>
@@ -191,23 +186,25 @@ export default function LandingNavbar({ user }: { user?: { name: string; role: s
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator className="bg-white/10" />
-                  <DropdownMenuItem asChild className="hover:bg-red-500/20 focus:bg-red-500/20 text-red-400 focus:text-red-400 cursor-pointer">
-                    <form action={logout} onSubmit={() => setMenuOpen(false)}>
-                      <button type="submit" className="flex items-center gap-2 w-full">
-                        <LogOut className="h-4 w-4" />
-                        <span>Logout</span>
-                      </button>
-                    </form>
+                  <DropdownMenuItem 
+                    onClick={async () => {
+                      setMenuOpen(false);
+                      await logout();
+                    }}
+                    className="hover:bg-red-500/20 focus:bg-red-500/20 text-red-400 focus:text-red-400 cursor-pointer flex items-center gap-2"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    <span>Logout</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
           ) : (
             <Link
-              href="#services"
+              href="/auth/sign-in"
               onClick={() => setMenuOpen(false)}
               className="bg-gradient-gold text-black text-sm font-bold px-5 py-3 rounded-full text-center mt-2 hover:brightness-110 gold-glow transition-all"
             >
-              Get Started
+             Sign In
             </Link>
           )}
         </div>

@@ -34,6 +34,7 @@ export async function getSession() {
         role: (claims.role as string) || "User",
         phone: (claims.phone as string) || null,
         avatar_url: (claims.avatar_url as string) || null,
+        discord_username: (claims.discord_username as string) || null,
       },
       session: {
         userId: claims.sub as string,

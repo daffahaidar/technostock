@@ -25,51 +25,30 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { useSignIn } from "../_mutations/sign-in";
+import { useSignUp } from "../_mutations/sign-up";
 import Link from "next/link";
+import { signUpSchema } from "../schema";
 
-export const signInSchema = z.object({
-  email: z.email({
-    message: "Email tidak valid.",
-  }),
-  password: z.string().min(1, {
-    message: "Password harus diisi.",
-  }),
-});
-export default function SignInForm() {
+
+
+export default function SignUpForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
 
-  const callbackUrl = searchParams.get("callbackUrl") || "/forum/dashboard";
-
-  const form = useForm<z.infer<typeof signInSchema>>({
-    resolver: zodResolver(signInSchema),
+  const form = useForm<z.infer<typeof signUpSchema>>({
+    resolver: zodResolver(signUpSchema),
     defaultValues: {
+      name: "",
       email: "",
       password: "",
     },
   });
 
-  const { isPending, mutate: signIn } = useSignIn({
+  const { isPending, mutate: signUp } = useSignUp({
     onSuccess: (result: any) => {
-      const role = result?.user?.role || "User";
-      switch (role) {
-        case "Maintainer":
-          router.push(callbackUrl || "/maintainer/dashboard");
-          break;
-        case "Admin":
-          router.push(callbackUrl || "/admin/dashboard");
-          break;
-        case "Member":
-          router.push(callbackUrl || "/forum/dashboard");
-          break;
-        case "User":
-          router.push(callbackUrl || "/");
-          break;
-        default:
-          router.push("/");
-      }
+      toast.success("Berhasil mendaftar! Silakan login.");
+      router.push("/auth/sign-in");
     },
     onError: (error: any) => {
       const message =
@@ -93,7 +72,6 @@ export default function SignInForm() {
         errorMessages[oauthError] || "Terjadi kesalahan saat login OAuth.";
       toast.error(message);
 
-      // Optional: Clear the error from URL
       const newUrl = new URL(window.location.href);
       newUrl.searchParams.delete("error");
       window.history.replaceState({}, "", newUrl.toString());
@@ -107,7 +85,7 @@ export default function SignInForm() {
           <form
             className="p-6 md:p-8"
             onSubmit={form.handleSubmit((values) =>
-              signIn({ values, provider: "email" }),
+              signUp({ values, provider: "email" }),
             )}
           >
             <FieldGroup>
@@ -117,11 +95,29 @@ export default function SignInForm() {
                     <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
                   </svg>
                 </div>
-                <h1 className="text-2xl font-bold text-[#F9E596]">Welcome back</h1>
+                <h1 className="text-2xl font-bold text-[#F9E596]">Create an account</h1>
                 <p className="text-white/60 text-balance text-sm">
-                  Sign in to your Technostock account
+                  Sign up to get started with Technostock
                 </p>
               </div>
+
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-white/80">Full Name</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="John Doe" 
+                        {...field} 
+                        className="bg-[#0a0a0a]/50 border-[#D4AF37]/20 text-[#F9E596] placeholder:text-white/30 focus-visible:border-[#D4AF37]/50 focus-visible:ring-[#D4AF37]/30"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <FormField
                 control={form.control}
@@ -140,6 +136,7 @@ export default function SignInForm() {
                   </FormItem>
                 )}
               />
+
               <FormField
                 control={form.control}
                 name="password"
@@ -183,7 +180,7 @@ export default function SignInForm() {
                   disabled={isPending}
                   className="w-full bg-gradient-gold text-black font-bold hover:brightness-110 gold-glow transition-all"
                 >
-                  {isPending ? "Signing In..." : "Sign In"}
+                  {isPending ? "Signing Up..." : "Sign Up"}
                 </Button>
               </Field>
               <FieldSeparator className="text-white/40 *:data-[slot=field-separator-content]:bg-[#121212] *:data-[slot=field-separator-content]:px-2 text-xs before:bg-white/10 after:bg-white/10">
@@ -194,7 +191,7 @@ export default function SignInForm() {
                   variant="outline"
                   type="button"
                   disabled={isPending}
-                  onClick={() => signIn({ provider: "github" })}
+                  onClick={() => signUp({ provider: "github" })}
                   className="border-[#D4AF37]/20 text-white/80 hover:bg-[#D4AF37]/10 hover:border-[#D4AF37]/40 hover:text-[#D4AF37] transition-all bg-transparent"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -209,7 +206,7 @@ export default function SignInForm() {
                   variant="outline"
                   type="button"
                   disabled={isPending}
-                  onClick={() => signIn({ provider: "google" })}
+                  onClick={() => signUp({ provider: "google" })}
                   className="border-[#D4AF37]/20 text-white/80 hover:bg-[#D4AF37]/10 hover:border-[#D4AF37]/40 hover:text-[#D4AF37] transition-all bg-transparent"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -222,7 +219,7 @@ export default function SignInForm() {
                 </Button>
               </Field>
               <FieldDescription className="text-center text-white/50 text-xs">
-                Don&apos;t have an account? <Link href="/auth/sign-up" className="text-[#D4AF37] hover:text-[#F3CA52] font-medium transition-colors ml-1">Sign Up</Link>
+                Already have an account? <Link href="/auth/sign-in" className="text-[#D4AF37] hover:text-[#F3CA52] font-medium transition-colors ml-1">Sign In</Link>
               </FieldDescription>
             </FieldGroup>
           </form>

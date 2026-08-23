@@ -15,14 +15,14 @@ impl PostgresUserRepository {
     }
 }
 
-const USER_COLUMNS: &str = "id, name, phone, email, password_hash, role, status, github_id, google_id, avatar_url, created_at, updated_at, last_read_at";
+const USER_COLUMNS: &str = "id, name, phone, email, password_hash, role, status, github_id, google_id, avatar_url, created_at, updated_at, last_read_at, discord_username";
 
 #[async_trait]
 impl UserRepository for PostgresUserRepository {
     async fn create(&self, user: &User) -> Result<User, AppError> {
         let query = format!(
-            "INSERT INTO users.users (name, phone, email, password_hash, role, status, github_id, google_id, avatar_url)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+            "INSERT INTO users.users (name, phone, email, password_hash, role, status, github_id, google_id, avatar_url, discord_username)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
              RETURNING {}", USER_COLUMNS
         );
         let rec = sqlx::query_as::<_, User>(&query)
@@ -35,6 +35,7 @@ impl UserRepository for PostgresUserRepository {
             .bind(&user.github_id)
             .bind(&user.google_id)
             .bind(&user.avatar_url)
+            .bind(&user.discord_username)
             .fetch_one(&self.pool)
             .await
             .map_err(|e| {
@@ -83,8 +84,8 @@ impl UserRepository for PostgresUserRepository {
 
     async fn update(&self, id: Uuid, user: &User) -> Result<User, AppError> {
         let query = format!(
-            "UPDATE users.users SET name = $1, phone = $2, email = $3, role = $4, github_id = $5, google_id = $6, avatar_url = $7, updated_at = NOW()
-             WHERE id = $8 RETURNING {}", USER_COLUMNS
+            "UPDATE users.users SET name = $1, phone = $2, email = $3, role = $4, github_id = $5, google_id = $6, avatar_url = $7, discord_username = $8, updated_at = NOW()
+             WHERE id = $9 RETURNING {}", USER_COLUMNS
         );
         let rec = sqlx::query_as::<_, User>(&query)
             .bind(&user.name)
@@ -94,6 +95,7 @@ impl UserRepository for PostgresUserRepository {
             .bind(&user.github_id)
             .bind(&user.google_id)
             .bind(&user.avatar_url)
+            .bind(&user.discord_username)
             .bind(id)
             .fetch_one(&self.pool)
             .await
@@ -219,6 +221,16 @@ impl UserRepository for PostgresUserRepository {
     async fn update_role(&self, user_id: Uuid, role: crate::domain::entities::user::Role) -> Result<(), AppError> {
         sqlx::query("UPDATE users.users SET role = $1, updated_at = NOW() WHERE id = $2")
             .bind(role)
+            .bind(user_id)
+            .execute(&self.pool)
+            .await
+            .map_err(AppError::DatabaseError)?;
+        Ok(())
+    }
+
+    async fn update_discord_username(&self, user_id: Uuid, username: String) -> Result<(), AppError> {
+        sqlx::query("UPDATE users.users SET discord_username = $1, updated_at = NOW() WHERE id = $2")
+            .bind(username)
             .bind(user_id)
             .execute(&self.pool)
             .await

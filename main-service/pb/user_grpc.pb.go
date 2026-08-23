@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.6.2
 // - protoc             v7.34.1
-// source: user.proto
+// source: proto/user.proto
 
 package pb
 
@@ -19,10 +19,11 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	UserService_GetUsers_FullMethodName       = "/user.UserService/GetUsers"
-	UserService_UpdateLastRead_FullMethodName = "/user.UserService/UpdateLastRead"
-	UserService_ValidateToken_FullMethodName  = "/user.UserService/ValidateToken"
-	UserService_UpdateUserRole_FullMethodName = "/user.UserService/UpdateUserRole"
+	UserService_GetUsers_FullMethodName              = "/user.UserService/GetUsers"
+	UserService_UpdateLastRead_FullMethodName        = "/user.UserService/UpdateLastRead"
+	UserService_ValidateToken_FullMethodName         = "/user.UserService/ValidateToken"
+	UserService_UpdateUserRole_FullMethodName        = "/user.UserService/UpdateUserRole"
+	UserService_UpdateDiscordUsername_FullMethodName = "/user.UserService/UpdateDiscordUsername"
 )
 
 // UserServiceClient is the client API for UserService service.
@@ -33,6 +34,7 @@ type UserServiceClient interface {
 	UpdateLastRead(ctx context.Context, in *UpdateLastReadRequest, opts ...grpc.CallOption) (*Empty, error)
 	ValidateToken(ctx context.Context, in *ValidateTokenRequest, opts ...grpc.CallOption) (*ValidateTokenResponse, error)
 	UpdateUserRole(ctx context.Context, in *UpdateUserRoleRequest, opts ...grpc.CallOption) (*Empty, error)
+	UpdateDiscordUsername(ctx context.Context, in *UpdateDiscordUsernameRequest, opts ...grpc.CallOption) (*Empty, error)
 }
 
 type userServiceClient struct {
@@ -83,6 +85,16 @@ func (c *userServiceClient) UpdateUserRole(ctx context.Context, in *UpdateUserRo
 	return out, nil
 }
 
+func (c *userServiceClient) UpdateDiscordUsername(ctx context.Context, in *UpdateDiscordUsernameRequest, opts ...grpc.CallOption) (*Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, UserService_UpdateDiscordUsername_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserServiceServer is the server API for UserService service.
 // All implementations must embed UnimplementedUserServiceServer
 // for forward compatibility.
@@ -91,6 +103,7 @@ type UserServiceServer interface {
 	UpdateLastRead(context.Context, *UpdateLastReadRequest) (*Empty, error)
 	ValidateToken(context.Context, *ValidateTokenRequest) (*ValidateTokenResponse, error)
 	UpdateUserRole(context.Context, *UpdateUserRoleRequest) (*Empty, error)
+	UpdateDiscordUsername(context.Context, *UpdateDiscordUsernameRequest) (*Empty, error)
 	mustEmbedUnimplementedUserServiceServer()
 }
 
@@ -112,6 +125,9 @@ func (UnimplementedUserServiceServer) ValidateToken(context.Context, *ValidateTo
 }
 func (UnimplementedUserServiceServer) UpdateUserRole(context.Context, *UpdateUserRoleRequest) (*Empty, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateUserRole not implemented")
+}
+func (UnimplementedUserServiceServer) UpdateDiscordUsername(context.Context, *UpdateDiscordUsernameRequest) (*Empty, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdateDiscordUsername not implemented")
 }
 func (UnimplementedUserServiceServer) mustEmbedUnimplementedUserServiceServer() {}
 func (UnimplementedUserServiceServer) testEmbeddedByValue()                     {}
@@ -206,6 +222,24 @@ func _UserService_UpdateUserRole_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserService_UpdateDiscordUsername_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateDiscordUsernameRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).UpdateDiscordUsername(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_UpdateDiscordUsername_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).UpdateDiscordUsername(ctx, req.(*UpdateDiscordUsernameRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UserService_ServiceDesc is the grpc.ServiceDesc for UserService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -229,7 +263,11 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "UpdateUserRole",
 			Handler:    _UserService_UpdateUserRole_Handler,
 		},
+		{
+			MethodName: "UpdateDiscordUsername",
+			Handler:    _UserService_UpdateDiscordUsername_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "user.proto",
+	Metadata: "proto/user.proto",
 }

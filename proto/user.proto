@@ -7,6 +7,7 @@ service UserService {
     rpc UpdateLastRead (UpdateLastReadRequest) returns (Empty);
     rpc ValidateToken (ValidateTokenRequest) returns (ValidateTokenResponse);
     rpc UpdateUserRole (UpdateUserRoleRequest) returns (Empty);
+    rpc UpdateDiscordUsername (UpdateDiscordUsernameRequest) returns (Empty);
 }
 
 message GetUsersRequest {
@@ -19,6 +20,7 @@ message User {
     string role = 3;
     optional string avatar_url = 4;
     optional int64 last_read_at = 5; // Unix timestamp
+    optional string discord_username = 6;
 }
 
 message GetUsersResponse {
@@ -43,6 +45,11 @@ message ValidateTokenResponse {
 message UpdateUserRoleRequest {
     string user_id = 1;
     string role = 2;
+}
+
+message UpdateDiscordUsernameRequest {
+    string user_id = 1;
+    string discord_username = 2;
 }
 
 message Empty {}

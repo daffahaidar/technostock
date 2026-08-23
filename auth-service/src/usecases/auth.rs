@@ -39,6 +39,7 @@ impl<R: UserRepository> RegisterUseCase<R> {
             created_at: None,
             updated_at: None,
             last_read_at: None,
+            discord_username: None,
         };
 
         let created_user = self.user_repository.create(&user).await?;
@@ -179,6 +180,7 @@ impl<R: UserRepository> GitHubCallbackUseCase<R> {
                     created_at: None,
                     updated_at: None,
                     last_read_at: None,
+                    discord_username: None,
                 };
                 self.user_repository.upsert_github_user(&new_user).await?
             }
@@ -252,6 +254,7 @@ impl<R: UserRepository> GoogleCallbackUseCase<R> {
                     created_at: None,
                     updated_at: None,
                     last_read_at: None,
+                    discord_username: None,
                 };
                 self.user_repository.upsert_google_user(&new_user).await?
             }

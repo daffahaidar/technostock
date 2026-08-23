@@ -22,6 +22,7 @@ struct AppState {
     auth_service_url: String,
     main_service_url: String,
     realtime_service_ws_url: String,
+    frontend_url: String,
 }
 
 pub async fn start_gateway() {
@@ -31,12 +32,15 @@ pub async fn start_gateway() {
         env::var("MAIN_SERVICE_URL").unwrap_or_else(|_| "http://localhost:8002".to_string());
     let realtime_service_ws_url =
         env::var("REALTIME_SERVICE_WS_URL").unwrap_or_else(|_| "ws://localhost:8001".to_string());
+    let frontend_url =
+        env::var("FRONTEND_URL").unwrap_or_else(|_| "http://localhost:3000".to_string());
 
     let state = AppState {
         client: Client::new(),
         auth_service_url,
         main_service_url,
         realtime_service_ws_url,
+        frontend_url,
     };
 
     let app = Router::new()
@@ -46,6 +50,7 @@ pub async fn start_gateway() {
         .route("/api/v1/main/{*path}", any(proxy_main))
         .route("/ws", get(proxy_ws))
         .route("/ws/{*path}", get(proxy_ws))
+        .fallback(any(proxy_frontend))
         .layer(CorsLayer::permissive())
         .layer(TraceLayer::new_for_http())
         .with_state(state);
@@ -67,6 +72,21 @@ async fn proxy_auth(
         .unwrap_or(path);
 
     let uri = format!("{}{}", state.auth_service_url, path_query);
+    proxy_request(state.client, req, uri).await
+}
+
+async fn proxy_frontend(
+    State(state): State<AppState>,
+    req: Request<Body>,
+) -> Result<Response<Body>, StatusCode> {
+    let path = req.uri().path();
+    let path_query = req
+        .uri()
+        .path_and_query()
+        .map(|v| v.as_str())
+        .unwrap_or(path);
+
+    let uri = format!("{}{}", state.frontend_url, path_query);
     proxy_request(state.client, req, uri).await
 }
 

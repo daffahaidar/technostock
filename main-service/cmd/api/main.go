@@ -8,9 +8,7 @@ import (
 	"main-service/handlers"
 	"main-service/infrastructure/database"
 	"main-service/infrastructure/grpc"
-	"main-service/infrastructure/middleware"
 	"main-service/infrastructure/workers"
-	"main-service/pb"
 	"main-service/routes"
 	"main-service/usecases"
 	"net"
@@ -28,14 +26,10 @@ func main() {
 	db := database.ConnectPostgres(cfg.DatabaseURL)
 
 	err := db.AutoMigrate(
-		&entities.ProductCategory{},
-		&entities.ProductPlan{},
-		&entities.Product{},
-		&entities.Transaction{},
-		&entities.UserProduct{},
 		&entities.AccountType{},
 		&entities.SubscriptionPlan{},
 		&entities.UserSubscription{},
+		&entities.Transaction{},
 	)
 	if err != nil {
 		log.Fatalf("Failed to auto migrate: %v", err)
@@ -47,23 +41,8 @@ func main() {
 	subscriptionWorker := workers.NewSubscriptionWorker(db, authClient)
 	subscriptionWorker.Start()
 
-	// Use cases
-	productUseCase := usecases.NewProductUseCase(db, cfg.MidtransServerKey)
-	categoryUseCase := usecases.NewProductCategoryUseCase(db)
-	planUseCase := usecases.NewProductPlanUseCase(db)
-
-	// Handlers
-	productHandler := handlers.NewProductHandler(productUseCase)
-	categoryHandler := handlers.NewProductCategoryHandler(categoryUseCase)
-	planHandler := handlers.NewProductPlanHandler(planUseCase)
-	
 	// gRPC Server setup
 	grpcServer := googleGrpc.NewServer()
-	categoryGrpcServer := grpc.NewProductCategoryGrpcServer(categoryUseCase, authClient)
-	pb.RegisterProductCategoryServiceServer(grpcServer, categoryGrpcServer)
-
-	planGrpcServer := grpc.NewProductPlanGrpcServer(planUseCase, authClient)
-	pb.RegisterProductPlanServiceServer(grpcServer, planGrpcServer)
 
 	go func() {
 		lis, err := net.Listen("tcp", ":50052")
@@ -83,7 +62,7 @@ func main() {
 	subscriptionPlanUseCase := usecases.NewSubscriptionPlanUseCase(db)
 	subscriptionPlanHandler := handlers.NewSubscriptionPlanHandler(subscriptionPlanUseCase)
 
-	userSubscriptionUseCase := usecases.NewUserSubscriptionUseCase(db)
+	userSubscriptionUseCase := usecases.NewUserSubscriptionUseCase(db, cfg.MidtransServerKey, authClient)
 	userSubscriptionHandler := handlers.NewUserSubscriptionHandler(userSubscriptionUseCase, authClient)
 
 	app := fiber.New()
@@ -92,15 +71,9 @@ func main() {
 	app.Use(recover.New())
 	app.Use(cors.New())
 
-	routes.SetupRoutes(app, productHandler, categoryHandler, planHandler, authClient)
-	
 	api := app.Group("/api/v1")
-	routes.SetupSubscriptionRoutes(api, accountTypeHandler, subscriptionPlanHandler, authClient)
+	routes.SetupSubscriptionRoutes(api, accountTypeHandler, subscriptionPlanHandler, userSubscriptionHandler, authClient)
 
-	// User Subscription Route
-	subGroup := api.Group("/subscriptions")
-	subGroup.Use(middleware.AuthMiddleware(authClient))
-	subGroup.Post("/subscribe", userSubscriptionHandler.Subscribe)
 
 	log.Printf("Server listening on port %s", cfg.Port)
 	if err := app.Listen(":" + cfg.Port); err != nil {

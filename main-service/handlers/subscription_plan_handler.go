@@ -51,6 +51,23 @@ func (h *SubscriptionPlanHandler) GetAllPlans(c fiber.Ctx) error {
 	return c.JSON(fiber.Map{"results": plans})
 }
 
+func (h *SubscriptionPlanHandler) GetPlanByID(c fiber.Ctx) error {
+	idParam := c.Params("id")
+	id, err := uuid.Parse(idParam)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid ID format"})
+	}
+
+	plan, err := h.usecase.GetPlanByID(id)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+	if plan == nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Plan not found"})
+	}
+	return c.JSON(fiber.Map{"results": plan})
+}
+
 func (h *SubscriptionPlanHandler) UpdatePlan(c fiber.Ctx) error {
 	idParam := c.Params("id")
 	id, err := uuid.Parse(idParam)

@@ -17,6 +17,7 @@ pub struct Claims {
     pub exp: usize,
     pub iat: usize,
     pub token_type: String, // "access" or "refresh"
+    pub discord_username: Option<String>,
 }
 
 pub struct JwtService {
@@ -53,6 +54,7 @@ impl JwtService {
             exp: exp_access,
             iat,
             token_type: "access".to_string(),
+            discord_username: user.discord_username.clone(),
         };
         let access_token = encode(
             &Header::new(Algorithm::RS256),
@@ -72,6 +74,7 @@ impl JwtService {
             exp: exp_refresh,
             iat,
             token_type: "refresh".to_string(),
+            discord_username: user.discord_username.clone(),
         };
         let refresh_token = encode(
             &Header::new(Algorithm::RS256),

@@ -12,6 +12,7 @@ func SetupSubscriptionRoutes(
 	api fiber.Router,
 	accountTypeHandler *handlers.AccountTypeHandler,
 	subscriptionPlanHandler *handlers.SubscriptionPlanHandler,
+	userSubscriptionHandler *handlers.UserSubscriptionHandler,
 	authClient *grpc.AuthClient,
 ) {
 	// ==================== Account Type Routes ====================
@@ -45,4 +46,14 @@ func SetupSubscriptionRoutes(
 	publicGroup := api.Group("/public")
 	publicGroup.Get("/account-types", accountTypeHandler.GetAllAccountTypes)
 	publicGroup.Get("/subscription-plans", subscriptionPlanHandler.GetAllPlans)
+	publicGroup.Get("/subscription-plans/:id", subscriptionPlanHandler.GetPlanByID)
+
+	publicGroup.Post("/subscription/midtrans-webhook", userSubscriptionHandler.MidtransWebhook)
+
+	// ==================== User Subscription Routes ====================
+	subGroup := api.Group("/subscriptions")
+	subGroup.Use(middleware.AuthMiddleware(authClient))
+	subGroup.Post("/subscribe", userSubscriptionHandler.Subscribe)
+	subGroup.Post("/buy", userSubscriptionHandler.Buy)
+	subGroup.Get("/my-active", userSubscriptionHandler.GetMyActiveSubscription)
 }

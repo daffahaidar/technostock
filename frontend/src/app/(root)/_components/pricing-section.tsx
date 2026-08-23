@@ -23,7 +23,7 @@ interface AccountType {
   plans: Plan[];
 }
 
-export default function PricingSection({ pricingData }: { pricingData: AccountType[] }) {
+export default function PricingSection({ pricingData, user }: { pricingData: AccountType[], user?: any }) {
   // Store selected plan ID for each account type ID
   const [selectedPlans, setSelectedPlans] = useState<Record<string, string>>(() => {
     const initial: Record<string, string> = {};
@@ -186,6 +186,15 @@ export default function PricingSection({ pricingData }: { pricingData: AccountTy
                         : "bg-white/10 text-white hover:bg-white/20 border border-white/10"
                     }`}
                     disabled={at.plans.length === 0}
+                    onClick={() => {
+                      if (at.plans.length === 0) return;
+                      
+                      if (!user) {
+                        window.location.href = `/auth/sign-in?callbackUrl=/checkout?planId=${selectedPlan.id}`;
+                      } else {
+                        window.location.href = `/checkout?planId=${selectedPlan.id}`;
+                      }
+                    }}
                   >
                     {at.plans.length === 0 ? "Coming Soon" : "Mulai Berlangganan"}
                   </Button>
