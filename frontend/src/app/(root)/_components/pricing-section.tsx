@@ -23,7 +23,7 @@ interface AccountType {
   plans: Plan[];
 }
 
-export default function PricingSection({ pricingData, user }: { pricingData: AccountType[], user?: any }) {
+export default function PricingSection({ pricingData, user, compact = false }: { pricingData: AccountType[], user?: any, compact?: boolean }) {
   // Store selected plan ID for each account type ID
   const [selectedPlans, setSelectedPlans] = useState<Record<string, string>>(() => {
     const initial: Record<string, string> = {};
@@ -49,15 +49,18 @@ export default function PricingSection({ pricingData, user }: { pricingData: Acc
   };
 
   return (
-    <section id="pricing" className="py-24 bg-black text-white relative overflow-hidden">
+    <section id="pricing" className={compact ? "py-8 relative w-full" : "py-24 bg-black text-white relative overflow-hidden"}>
       {/* Background gradients */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#D4AF37]/5 rounded-full blur-[120px]" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#D4AF37]/5 rounded-full blur-[120px]" />
-      </div>
+      {!compact && (
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl pointer-events-none">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#D4AF37]/5 rounded-full blur-[120px]" />
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#D4AF37]/5 rounded-full blur-[120px]" />
+        </div>
+      )}
 
-      <div className="container mx-auto px-4 md:px-6 relative z-10">
-        <div className="text-center max-w-3xl mx-auto mb-16">
+      <div className="container mx-auto px-0 md:px-0 relative z-10 w-full">
+        {!compact && (
+          <div className="text-center max-w-3xl mx-auto mb-16">
           <motion.h2 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -76,6 +79,7 @@ export default function PricingSection({ pricingData, user }: { pricingData: Acc
             Pilih paket berlangganan yang sesuai dengan kebutuhan dan target investasi Anda.
           </motion.p>
         </div>
+        )}
 
         {pricingData.length === 0 ? (
           <div className="text-center text-gray-500 py-12">

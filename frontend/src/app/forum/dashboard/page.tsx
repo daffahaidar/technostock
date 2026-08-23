@@ -4,6 +4,8 @@ import { getSession } from "@/app/auth/sign-in/_handlers/server";
 import { redirect } from "next/navigation";
 import SubscriptionCountdown from "./_components/subscription-countdown";
 import Link from "next/link";
+import PricingSection from "@/app/(root)/_components/pricing-section";
+import { getPublicPricingData } from "@/modules/subscription-plan/actions/get-public-pricing";
 
 export default async function MemberDashboardPage() {
   const session = await getSession();
@@ -40,6 +42,23 @@ export default async function MemberDashboardPage() {
     }
   }
 
+  // Fetch all pricing plans to show below
+  let pricingData = await getPublicPricingData();
+  
+  // Find which account type the active subscription belongs to
+  let activeAccountTypeName = "";
+  if (activeSub && activeSub.subscription_plan_id) {
+    const matchingAccountType = pricingData.find((at: any) => 
+      at.plans.some((p: any) => p.id === activeSub.subscription_plan_id)
+    );
+    
+    if (matchingAccountType) {
+      activeAccountTypeName = matchingAccountType.name;
+      // Filter out the active account type
+      pricingData = pricingData.filter((at: any) => at.id !== matchingAccountType.id);
+    }
+  }
+
   return (
     <SidebarLayout
       // subSidebar={[
@@ -55,7 +74,11 @@ export default async function MemberDashboardPage() {
         {activeSub && activeSub.end_date ? (
           <SubscriptionCountdown 
             endDateStr={activeSub.end_date} 
-            planName={planDetails?.name || "Langganan Premium"} 
+            planName={
+              activeAccountTypeName && planDetails?.name
+                ? `${activeAccountTypeName} - ${planDetails.name}`
+                : planDetails?.name || "Langganan Premium"
+            } 
           />
         ) : (
           <div className="bg-white/5 border border-white/10 rounded-2xl p-10 text-center shadow-lg">
@@ -69,12 +92,11 @@ export default async function MemberDashboardPage() {
           </div>
         )}
 
-        {/* Placeholder for future dashboard content */}
+        {/* Pilihan Paket Langganan */}
         <div className="mt-12">
-          <h2 className="text-xl font-bold mb-4 text-white">Aktivitas Terbaru</h2>
-          <div className="bg-white/5 border border-white/10 rounded-xl p-8 flex items-center justify-center min-h-[200px]">
-            <p className="text-gray-500 text-sm">Belum ada aktivitas untuk ditampilkan.</p>
-          </div>
+          <h2 className="text-2xl font-bold mb-2 text-white">Penawaran & Paket Lainnya</h2>
+          <p className="text-gray-400 mb-6 text-sm">Tingkatkan pengalaman Anda atau perpanjang masa aktif dengan memilih paket di bawah ini.</p>
+          <PricingSection pricingData={pricingData} user={session.user} compact={true} />
         </div>
       </div>
     </SidebarLayout>
