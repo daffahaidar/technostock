@@ -114,7 +114,6 @@ Siapkan `.env.development` (mode dev) dan `.env.production` (mode prod). Variabe
 | `SERVER_API_URL` | `NEXT_PUBLIC_API_URL`, lalu `http://localhost:8000` | Base URL untuk fetch **server-side** (route handler `/api/auth/*` dan `oauth-callback`). |
 | `NEXT_PUBLIC_MESSAGE_API_URL` | diturunkan dari `NEXT_PUBLIC_WS_API_URL` (`ws://` → `http://`), lalu `http://localhost:8001` | Override base URL REST chat pada instance axios `messageBackend`. |
 | `BETTER_AUTH_URL` | `http://localhost:3000` | `baseURL` untuk `createAuthClient`. |
-| `GOLANG_GRPC_URL` | `localhost:50052` | Hanya dipakai modul `product-category` / `product-plan` yang sudah mati — digantikan `account-type` / `subscription-plan` yang memakai REST lewat gateway. `main-service` tidak meregistrasi service gRPC apa pun di port tersebut. |
 
 #### 3. Variabel yang tidak dibaca kode
 

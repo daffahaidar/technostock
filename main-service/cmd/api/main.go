@@ -11,13 +11,11 @@ import (
 	"main-service/infrastructure/workers"
 	"main-service/routes"
 	"main-service/usecases"
-	"net"
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/cors"
 	"github.com/gofiber/fiber/v3/middleware/logger"
 	"github.com/gofiber/fiber/v3/middleware/recover"
-	googleGrpc "google.golang.org/grpc"
 )
 
 func main() {
@@ -41,20 +39,6 @@ func main() {
 	subscriptionWorker := workers.NewSubscriptionWorker(db, authClient)
 	subscriptionWorker.Start()
 
-	// gRPC Server setup
-	grpcServer := googleGrpc.NewServer()
-
-	go func() {
-		lis, err := net.Listen("tcp", ":50052")
-		if err != nil {
-			log.Fatalf("Failed to listen on gRPC port: %v", err)
-		}
-		log.Printf("gRPC server listening on port 50052")
-		if err := grpcServer.Serve(lis); err != nil {
-			log.Fatalf("Failed to serve gRPC: %v", err)
-		}
-	}()
-	
 	// Subscription Handlers
 	accountTypeUseCase := usecases.NewAccountTypeUseCase(db)
 	accountTypeHandler := handlers.NewAccountTypeHandler(accountTypeUseCase)

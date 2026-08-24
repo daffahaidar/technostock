@@ -46,7 +46,7 @@ Komunikasi antar service memakai REST, WebSocket, dan gRPC.
 | `grpc-service` | Rust, Axum, tonic | 8080 (gateway), 50051 (gRPC) | Reverse proxy HTTP/WS **dan** server gRPC `UserService` |
 | `auth-service` | Rust, Axum, sqlx | 8000 | Sign-up/in/refresh, OAuth GitHub & Google, CRUD user |
 | `realtime-service` | Rust, Axum, sqlx | 8001 | Chat WebSocket, Redis pub/sub, worker RabbitMQ, upload MinIO |
-| `main-service` | Go, Fiber v3, GORM | 8002 (+50052, lihat catatan) | Account type, subscription plan, langganan user, Midtrans |
+| `main-service` | Go, Fiber v3, GORM | 8002 | Account type, subscription plan, langganan user, Midtrans |
 | `shared-core` | Rust library crate | — | `User` entity, `JwtService`, pool Postgres, `PostgresUserRepository` |
 
 `shared-core` dipakai bersama oleh `auth-service` dan `grpc-service` (path dependency, bukan crate yang dipublish).
@@ -295,7 +295,6 @@ Kolom **Wajib** berarti service akan gagal start (panic / `log.Fatal`) jika vari
 | `SERVER_API_URL` | — | Base URL yang dipakai fetch **server-side**. Di Docker: `http://auth-service:8000`. Fallback ke `NEXT_PUBLIC_API_URL` |
 | `NEXT_PUBLIC_MESSAGE_API_URL` | — | Override base URL REST chat. Default: `NEXT_PUBLIC_WS_API_URL` dengan skema `ws→http` |
 | `BETTER_AUTH_URL` | — | `baseURL` untuk `createAuthClient`. Fallback `http://localhost:3000` |
-| `GOLANG_GRPC_URL` | — | Default `localhost:50052`. Hanya dipakai modul `product-category` / `product-plan` yang sudah mati — lihat [Status Fitur](#status-fitur--catatan-teknis). Ikut hilang bila modul itu dihapus |
 
 `DATABASE_URL` dan `BETTER_AUTH_SECRET` **tidak dibaca oleh kode frontend mana pun**, meski masih diset di `frontend/docker-compose.*.yml`.
 
@@ -454,7 +453,7 @@ technostock/
 │   └── {cmd,handlers,usecases,domain,infrastructure,routes,pb}/
 │
 ├── shared-core/              # Rust crate bersama (auth-service + grpc-service)
-├── proto/                    # user.proto (aktif) + product_*.proto (mati, tidak dikompilasi)
+├── proto/                    # user.proto — kontrak gRPC UserService
 └── tools/                    # Compose terpisah: postgres, redis, rabbitmq, minio
 ```
 
@@ -482,45 +481,14 @@ technostock/
 
 Hal-hal berikut ada di dalam kode tetapi belum berfungsi. Didokumentasikan agar tidak menyesatkan saat dikembangkan.
 
-**1. `product-category` / `product-plan` adalah kode mati — sudah digantikan `account-type` / `subscription-plan`.**
-
-Keduanya peninggalan iterasi lama dengan bentuk data yang hampir sama:
-
-| Dihapus (lama) | Pengganti (aktif) |
-|---|---|
-| `ProductCategory { id, name, slug, description }` | `AccountType { id, name, description, benefits, is_recommended }` |
-| `ProductPlan { id, category_id, name, slug, description, price }` | `SubscriptionPlan { id, account_type_id, name, description, duration_months, price }` |
-
-Yang lama memakai gRPC ke `main-service:50052`, yang baru memakai REST lewat gateway (`/api/v1/main/account-types`, `/api/v1/main/subscription-plans`).
-
-Bukti bahwa modul lama sudah tidak terpakai:
-
-- Tidak ada satu pun halaman atau komponen di luar kedua modul itu yang mengimpornya. Sebaliknya, `account-type` / `subscription-plan` diimpor oleh `/admin/subscriptions/*`, `/forum/dashboard`, dan landing page.
-- `main-service` membuka server gRPC di `:50052` tetapi **tidak meregistrasi satu service pun** ([`cmd/api/main.go`](main-service/cmd/api/main.go)), jadi seluruh panggilan client-nya akan mengembalikan `Unimplemented`.
-- `proto/product_category.proto` dan `proto/product_plan.proto` tidak dikompilasi oleh `build.rs` mana pun — keduanya hanya memuat `user.proto`. Salinan di `frontend/src/modules/*/grpc/proto/` identik byte-per-byte dengan yang di root.
-- Konstanta `PRODUCT_CATEGORY`, `PRODUCT_PLAN`, `PUBLIC_PRODUCT_PLAN`, `PUBLIC_PRODUCT_PLAN_DETAIL`, `BUY_PRODUCT` di [`src/endpoint/index.ts`](frontend/src/endpoint/index.ts) tidak direferensikan file mana pun, dan route-nya tidak ada di `main-service`.
-
-Total **20 file / ±1.700 baris** yang bisa dihapus:
-
-```
-proto/product_category.proto                    proto/product_plan.proto
-main-service/pb/product_category.pb.go          main-service/pb/product_plan.pb.go
-main-service/pb/product_category_grpc.pb.go     main-service/pb/product_plan_grpc.pb.go
-frontend/src/modules/product-category/  (7 file)
-frontend/src/modules/product-plan/      (7 file)
-+ 5 konstanta PRODUCT_* di frontend/src/endpoint/index.ts
-```
-
-`main-service/pb/user.pb.go` dan `user_grpc.pb.go` **tetap dipakai** — jangan ikut dihapus.
-
-**2. Endpoint chat belum ter-route di gateway.**
+**1. Endpoint chat belum ter-route di gateway.**
 Frontend memanggil chat pada path `/api/v1/chat/*` — WebSocket di [`chat-websocket.ts`](frontend/src/app/maintainer/discussion/_queries/chat-websocket.ts) dan REST via `messageBackend` di [`libs/axios.ts`](frontend/src/libs/axios.ts) — dengan base URL gateway `:8080`. Gateway hanya mengenal `/ws` dan `/ws/*` untuk WebSocket, sehingga `/api/v1/chat/*` jatuh ke fallback dan diteruskan ke frontend, bukan ke `realtime-service`. Sampai routing gateway ditambahkan, arahkan `NEXT_PUBLIC_WS_API_URL` / `NEXT_PUBLIC_MESSAGE_API_URL` langsung ke `realtime-service` (`ws://localhost:8001` dan `http://localhost:8001`).
 
-**3. `FRONTEND_URL` belum diset di compose.**
+**2. `FRONTEND_URL` belum diset di compose.**
 Route fallback gateway memakai default `http://localhost:3000`, yang di dalam container menunjuk ke gateway itu sendiri. Set `FRONTEND_URL=http://frontend:3000` bila fallback proxy ini ingin dipakai.
 
-**4. Kredensial development di-hardcode.**
+**3. Kredensial development di-hardcode.**
 Password Postgres, Redis, RabbitMQ, dan MinIO tertulis langsung di file compose. Nilai-nilai tersebut hanya untuk development lokal — ganti seluruhnya sebelum deploy.
 
-**5. Catatan tingkat database.**
+**4. Catatan tingkat database.**
 Tiga hal lain — `group_id` chat yang tidak pernah dipersist, role `SuperAdmin` yang tidak bisa di-decode enum Rust, dan tidak adanya foreign key dari schema `main` ke `users.users` — dijelaskan di [DATABASE.md → Catatan Integritas Data](DATABASE.md#catatan-integritas-data).
