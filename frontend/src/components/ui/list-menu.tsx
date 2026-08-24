@@ -34,6 +34,8 @@ import { useNotificationStore } from "@/store/useNotificationStore";
 import { Badge } from "./badge";
 import useMounted from "@/hooks/use-mounted";
 
+import { usePathname } from "next/navigation";
+
 export function ListMenu({
   group,
   menus,
@@ -53,6 +55,7 @@ export function ListMenu({
   const { state } = useSidebar();
   const unreadCount = useNotificationStore((state) => state.unreadCount);
   const { isMounted } = useMounted();
+  const pathname = usePathname();
 
   return (
     <SidebarGroup>
@@ -60,12 +63,14 @@ export function ListMenu({
       <SidebarMenu>
         {menus.map((item) => {
           const isDiscussion = item.title === "Member Discussion";
+          const isActive = pathname === item.url || item.items?.some((subItem) => pathname === subItem.url);
+          
           return (
             <Fragment key={item.title}>
               {item.items ? (
                 <Collapsible
                   asChild
-                  defaultOpen={item.isActive}
+                  defaultOpen={isActive || item.isActive}
                   className="group/collapsible"
                 >
                   <SidebarMenuItem>
@@ -120,7 +125,7 @@ export function ListMenu({
                       <SidebarMenuSub>
                         {item.items?.map((subItem) => (
                           <SidebarMenuSubItem key={subItem.title}>
-                            <SidebarMenuSubButton asChild>
+                            <SidebarMenuSubButton asChild isActive={pathname === subItem.url}>
                               <Link href={subItem.url}>{subItem.title}</Link>
                             </SidebarMenuSubButton>
                           </SidebarMenuSubItem>
@@ -135,7 +140,7 @@ export function ListMenu({
                     asChild
                     tooltip={item.title}
                     className="flex w-full items-center"
-                    isActive={item.isActive}
+                    isActive={isActive}
                   >
                     <Link href={item.url} className="flex w-full items-center">
                       {item.icon && <item.icon />}
