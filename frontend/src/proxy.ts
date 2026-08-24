@@ -2,14 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { decodeJwt } from "jose";
 
-// Define protected routes and their required roles
-// Using simpler string matching here, but could use regex for more complex patterns
-const PROTECTED_ROUTES = [
-  { path: "/admin", role: "Admin" },
-  { path: "/maintainer", role: "Maintainer" },
-  { path: "/forum", role: "Member" },
-  { path: "/user", role: null }, // Requires login, any role can access
-];
+
 
 // Role-based dashboard mapping
 const ROLE_DASHBOARDS: Record<string, string> = {
@@ -66,8 +59,8 @@ export async function proxy(request: NextRequest) {
           };
         }
       }
-    } catch (e) {
-      console.error("Middleware token refresh failed:", e);
+    } catch {
+      console.error("Middleware token refresh failed");
     }
   }
 
@@ -100,7 +93,7 @@ export async function proxy(request: NextRequest) {
           });
         }
         return response;
-      } catch (e) {
+      } catch {
         // Invalid token, delete it and let them access auth page
         const response = NextResponse.next();
         response.cookies.delete("access_token");
@@ -163,7 +156,7 @@ export async function proxy(request: NextRequest) {
       }
 
       return finalResponse;
-    } catch (e) {
+    } catch {
       // Token invalid
       const url = new URL("/auth/sign-in", request.url);
       const response = NextResponse.redirect(url);

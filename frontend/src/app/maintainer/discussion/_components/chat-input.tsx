@@ -52,7 +52,7 @@ export default function ChatInput({
 
   const handleSend = async () => {
     const text = editor
-      ? (editor.storage as any).markdown.getMarkdown().trim()
+      ? (editor.storage as unknown as { markdown: { getMarkdown: () => string } }).markdown.getMarkdown().trim()
       : "";
     if ((!text && !selectedImage) || isUploading) return;
 
@@ -145,7 +145,7 @@ export default function ChatInput({
         }
         return false;
       },
-      handlePaste: (view, event, slice) => {
+      handlePaste: (view, event) => {
         if (
           event.clipboardData &&
           event.clipboardData.files &&

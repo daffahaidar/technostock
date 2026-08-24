@@ -15,7 +15,7 @@ function decodeJwt(token: string): Record<string, unknown> | null {
     const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
     const jsonPayload = Buffer.from(base64, "base64").toString("utf-8");
     return JSON.parse(jsonPayload);
-  } catch (_e) {
+  } catch {
     return null;
   }
 }
@@ -101,7 +101,7 @@ export async function GET(req: NextRequest) {
     });
 
     return redirectResponse;
-  } catch (error) {
+  } catch {
     return NextResponse.redirect(
       new URL("/auth/sign-in?error=oauth_error", baseUrl),
     );

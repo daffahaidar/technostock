@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-import type { MessageWithSender, TypingUser } from "../types/chat";
+import type { MessageWithSender, TypingUser, ReactionSummary } from "../types/chat";
 
 interface UseChatWebSocketOptions {
   accessToken?: string;
@@ -27,7 +27,7 @@ interface UseChatWebSocketReturn {
   prependMessages: (olderMessages: MessageWithSender[]) => void;
   isConnected: boolean;
   onlineCount: number;
-  reactionOverrides: Record<string, any[]>;
+  reactionOverrides: Record<string, ReactionSummary[]>;
   editedOverrides: Record<string, MessageWithSender>;
   deletedMessageIds: Set<string>;
 }
@@ -47,7 +47,7 @@ export function useChatWebSocket({
   const [isConnected, setIsConnected] = useState(false);
   const [onlineCount, setOnlineCount] = useState(1);
   const [reactionOverrides, setReactionOverrides] = useState<
-    Record<string, any[]>
+    Record<string, ReactionSummary[]>
   >({});
   const [editedOverrides, setEditedOverrides] = useState<
     Record<string, MessageWithSender>
@@ -184,7 +184,7 @@ export function useChatWebSocket({
         ws.close();
       }
     };
-  }, [accessToken, currentUserId]);
+  }, [accessToken, currentUserId, currentUserName, currentUserRole, currentUserAvatar, groupId]);
 
   const sendMessage = (
     content: string,

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { SignJWT, jwtVerify, importSPKI } from "jose";
+import { jwtVerify, importSPKI } from "jose";
 
 const RUST_API_URL = process.env.SERVER_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -143,7 +143,7 @@ export async function GET(req: NextRequest) {
             },
           });
         }
-      } catch (e) {
+      } catch {
         // Token invalid
       }
     }
@@ -209,8 +209,8 @@ export async function GET(req: NextRequest) {
             return res;
           }
         }
-      } catch (e) {
-        console.error("Refresh Token Error", e);
+      } catch {
+        console.error("Refresh Token Error");
       }
     }
 
@@ -220,7 +220,17 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({ error: "Not Found" }, { status: 404 });
 }
 
-async function verifyJwt(token: string): Promise<any> {
+interface TokenPayload {
+  sub?: string;
+  email?: string;
+  name?: string;
+  role?: string;
+  phone?: string;
+  avatar_url?: string;
+  exp?: number;
+  [key: string]: unknown;
+}
+async function verifyJwt(token: string): Promise<TokenPayload | null> {
   try {
     const publicKeyEnv = process.env.JWT_PUBLIC_KEY;
     if (publicKeyEnv) {
@@ -233,7 +243,7 @@ async function verifyJwt(token: string): Promise<any> {
     const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
     const jsonPayload = Buffer.from(base64, "base64").toString("utf-8");
     return JSON.parse(jsonPayload);
-  } catch (e) {
+  } catch {
     return null;
   }
 }

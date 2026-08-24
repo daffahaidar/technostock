@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion } from "motion/react";
 import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 
 interface Plan {
@@ -23,7 +24,8 @@ interface AccountType {
   plans: Plan[];
 }
 
-export default function PricingSection({ pricingData, user, compact = false }: { pricingData: AccountType[], user?: any, compact?: boolean }) {
+export default function PricingSection({ pricingData, user, compact = false }: { pricingData: AccountType[], user?: unknown, compact?: boolean }) {
+  const router = useRouter();
   // Store selected plan ID for each account type ID
   const [selectedPlans, setSelectedPlans] = useState<Record<string, string>>(() => {
     const initial: Record<string, string> = {};
@@ -194,9 +196,9 @@ export default function PricingSection({ pricingData, user, compact = false }: {
                       if (at.plans.length === 0) return;
                       
                       if (!user) {
-                        window.location.href = `/auth/sign-in?callbackUrl=/checkout?planId=${selectedPlan.id}`;
+                        router.push(`/auth/sign-in?callbackUrl=/checkout?planId=${selectedPlan.id}`);
                       } else {
-                        window.location.href = `/checkout?planId=${selectedPlan.id}`;
+                        router.push(`/checkout?planId=${selectedPlan.id}`);
                       }
                     }}
                   >

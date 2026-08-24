@@ -11,18 +11,22 @@ export default function AccountTypeTable() {
   const { data: sessionData } = authClient.useSession();
   const token = sessionData?.session?.token;
 
-  const { data: dataAccountType, isLoading } = useQuery({
+  const { data: dataAccountType, isPending } = useQuery({
     queryKey: ["get-account-types", token],
     queryFn: async () => {
       if (!token) return { results: [] };
-      return (await getAccountTypes(token)) as { results: any[] };
+      return (await getAccountTypes(token)) as { results: unknown[] };
     },
     enabled: !!token,
   });
 
+  if (isPending) {
+    return <div className="flex h-64 items-center justify-center">Loading...</div>;
+  }
+
   return (
     <AgTable
-      rowData={dataAccountType?.results || []}
+      rowData={dataAccountType?.results}
       columnDefs={AccountTypeColumn}
     />
   );

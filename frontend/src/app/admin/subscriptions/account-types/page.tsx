@@ -1,52 +1,27 @@
-import AddAccountTypeForm from "@/modules/account-type/components/add-account-type";
 import AccountTypeTable from "@/modules/account-type/components/account-type-table";
-import { UserSquare } from "lucide-react";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { Separator } from "@/components/ui/separator";
+import SidebarLayout from "@/components/layout/sidebar";
+import { Suspense } from "react";
+import { ButtonAddAccountType } from "@/modules/account-type/components/button-add-account-type";
 
 export default function AccountTypesPage() {
   return (
-    <div className="flex flex-col gap-6 p-6 w-full">
-      <div className="flex flex-col gap-2">
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/admin/dashboard">Admin</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>Tipe Akun</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-        <div className="flex items-center gap-2">
-          <UserSquare className="w-6 h-6" />
-          <h1 className="text-2xl font-bold tracking-tight">Manajemen Tipe Akun</h1>
-        </div>
-        <p className="text-muted-foreground">
-          Kelola tipe akun dan manfaat yang didapatkan oleh masing-masing tipe.
-        </p>
-      </div>
-
-      <Separator />
-
-      <div className="grid gap-6 md:grid-cols-2">
-        <div className="flex flex-col gap-4">
-          <h2 className="text-lg font-semibold">Tambah Tipe Akun</h2>
-          <AddAccountTypeForm />
-        </div>
-        <div className="flex flex-col gap-4">
-          <h2 className="text-lg font-semibold">Daftar Tipe Akun</h2>
-          <AccountTypeTable />
-        </div>
-      </div>
-    </div>
+     <SidebarLayout
+          title="Daftar Tipe Akun"
+          additionalComponents={
+            <ButtonAddAccountType />
+          }
+          breadcrumb={[{ name: "Admin" },{ name: "Subscription" },{ name: "Daftar Tipe Akun", path: "/admin/subscriptions/account-types" }]}
+        >
+          <Suspense fallback={<div className="w-full text-white">Loading dashboard...</div>}>
+            <div className="flex flex-1 flex-col gap-4 h-[calc(100vh-12rem)] min-h-[500px]">
+              <div className="flex-1 w-full">
+                <AccountTypeTable />
+              </div>
+            </div>
+          </Suspense>
+        </SidebarLayout>
+   
+     
+  
   );
 }

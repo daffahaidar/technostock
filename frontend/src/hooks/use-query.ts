@@ -15,7 +15,7 @@ export function queryData({
   endpoint: string | ((param: string | number) => string);
   source: QuerySource;
   param?: string | number;
-  params?: Record<string, any>;
+  params?: Record<string, unknown>;
   token?: string;
 }) {
   const finalQueryKey = param !== undefined ? [...queryKey, param] : queryKey;
@@ -46,7 +46,7 @@ export const useQueryData = ({
   endpoint: string | ((param: string | number) => string);
   source: QuerySource;
   param?: string | number;
-  params?: Record<string, any>;
+  params?: Record<string, unknown>;
 }) => {
   const { data, isLoading, isError, refetch } = useQuery({
     ...queryData({ queryKey, endpoint, source, param, params }),

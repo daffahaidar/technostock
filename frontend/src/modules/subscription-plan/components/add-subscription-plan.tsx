@@ -3,7 +3,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import z from "zod";
 import { subscriptionPlanSchema } from "../schema/subscription-plan";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRevalidateQuery } from "@/hooks/use-revalidate";
@@ -36,13 +36,13 @@ export default function AddSubscriptionPlanForm() {
     queryFn: async () => {
       const token = sessionData?.session?.token;
       if (!token) return { results: [] };
-      return (await getAccountTypes(token)) as { results: any[] };
+      return (await getAccountTypes(token)) as { results: { id: string; name: string }[] };
     },
     enabled: !!sessionData?.session?.token,
   });
 
   const form = useForm<z.infer<typeof subscriptionPlanSchema>>({
-    resolver: zodResolver(subscriptionPlanSchema) as any,
+    resolver: zodResolver(subscriptionPlanSchema) as unknown as Resolver<z.infer<typeof subscriptionPlanSchema>>,
     defaultValues: {
       account_type_id: "",
       name: "",
@@ -64,8 +64,8 @@ export default function AddSubscriptionPlanForm() {
       revalidate(["get-subscription-plans"]);
       router.refresh();
     },
-    onError: (error: any) => {
-      toast.error(error?.message || "Failed to create subscription plan");
+    onError: (error: unknown) => {
+      toast.error((error as Error)?.message || "Failed to create subscription plan");
     },
   });
 
@@ -87,7 +87,7 @@ export default function AddSubscriptionPlanForm() {
                         className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                       >
                         <option value="" disabled>Select Account Type</option>
-                        {dataAccountType?.results?.map((at) => (
+                        {dataAccountType?.results?.map((at: { id: string; name: string }) => (
                           <option key={at.id} value={at.id}>
                             {at.name}
                           </option>

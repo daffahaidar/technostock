@@ -15,14 +15,14 @@ export const useMutateData = <TSchema extends z.ZodTypeAny>({
   source: typeof externalBackend | typeof messageBackend;
   method: "post" | "put" | "delete" | "patch";
   schema?: TSchema;
-  onSuccess?: (data: Record<string, any>) => void;
-  onError?: (error: any) => void;
+  onSuccess?: (data: Record<string, unknown>) => void;
+  onError?: (error: unknown) => void;
 }) => {
   return useMutation({
     mutationKey,
     mutationFn: async (
       variables: {
-        body?: TSchema extends z.ZodTypeAny ? z.infer<TSchema> : any;
+        body?: TSchema extends z.ZodTypeAny ? z.infer<TSchema> : unknown;
         param?: string | number;
       } = {},
     ) => {

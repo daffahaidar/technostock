@@ -18,7 +18,7 @@ export function queryGetChatHistory(accessToken?: string, limit: number = 20) {
       });
       return data?.results ?? [];
     },
-    getNextPageParam: (lastPage: any[]) => {
+    getNextPageParam: (lastPage: { id: string }[]) => {
       if (lastPage && lastPage.length === limit) {
         return lastPage[0].id;
       }

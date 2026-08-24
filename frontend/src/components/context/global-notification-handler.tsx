@@ -12,12 +12,10 @@ export function GlobalNotificationHandler() {
   const pathname = usePathname();
   const wsRef = useRef<WebSocket | null>(null);
 
-  // Early return if we are not in the maintainer path
-  if (!pathname?.startsWith("/maintainer")) {
-    return null;
-  }
+
 
   useEffect(() => {
+    if (!pathname?.startsWith("/maintainer")) return;
     const token = data?.session?.token;
     const currentUserId = data?.session?.userId;
     if (!token || !currentUserId) return;
@@ -70,7 +68,7 @@ export function GlobalNotificationHandler() {
             incrementUnread();
           }
         }
-      } catch (err) {
+      } catch {
         // Safe to ignore non-JSON or other message formats
       }
     };
@@ -84,10 +82,11 @@ export function GlobalNotificationHandler() {
         ws.onopen = () => ws.close();
       }
     };
-  }, [data?.session?.token, data?.session?.userId, incrementUnread]);
+  }, [data?.session?.token, data?.session?.userId, incrementUnread, pathname]);
 
   // Reset immediately if the user navigates into the discussion page
   useEffect(() => {
+    if (!pathname?.startsWith("/maintainer")) return;
     if (pathname?.startsWith("/maintainer/discussion")) {
       resetUnread();
     }

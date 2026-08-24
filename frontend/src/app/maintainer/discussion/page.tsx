@@ -50,11 +50,11 @@ export default function DiscussionPage() {
 
   const liveMessageIds = new Set(messages.map((m) => m.id));
   const historyMessages = chatHistoryData
-    ? chatHistoryData.pages
-        .flatMap((page: any) => page)
-        .filter((msg: any) => !liveMessageIds.has(msg.id))
+    ? (chatHistoryData.pages as MessageWithSender[][])
+        .flatMap((page) => page)
+        .filter((msg) => !liveMessageIds.has(msg.id))
         .sort(
-          (a: any, b: any) =>
+          (a, b) =>
             new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
         )
     : [];

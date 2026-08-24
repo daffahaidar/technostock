@@ -46,13 +46,14 @@ export default function SignUpForm() {
   });
 
   const { isPending, mutate: signUp } = useSignUp({
-    onSuccess: (result: any) => {
+    onSuccess: () => {
       toast.success("Berhasil mendaftar! Silakan login.");
       router.push("/auth/sign-in");
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
+      const err = error as { meta?: { message?: string }; message?: string };
       const message =
-        error?.meta?.message || error?.message || "Terjadi kesalahan";
+        err?.meta?.message || err?.message || "Terjadi kesalahan";
       toast.error(message);
     },
   });

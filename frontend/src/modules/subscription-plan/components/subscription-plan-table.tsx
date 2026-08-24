@@ -11,18 +11,22 @@ export default function SubscriptionPlanTable() {
   const { data: sessionData } = authClient.useSession();
   const token = sessionData?.session?.token;
 
-  const { data: dataSubscriptionPlan, isLoading } = useQuery({
+  const { data: dataSubscriptionPlan, isPending } = useQuery({
     queryKey: ["get-subscription-plans", token],
     queryFn: async () => {
       if (!token) return { results: [] };
-      return (await getSubscriptionPlans(token)) as { results: any[] };
+      return (await getSubscriptionPlans(token)) as { results: unknown[] };
     },
     enabled: !!token,
   });
 
+  if (isPending) {
+    return <div className="flex h-64 items-center justify-center">Loading...</div>;
+  }
+
   return (
     <AgTable
-      rowData={dataSubscriptionPlan?.results || []}
+      rowData={dataSubscriptionPlan?.results}
       columnDefs={SubscriptionPlanColumn}
     />
   );

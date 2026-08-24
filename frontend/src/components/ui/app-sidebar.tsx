@@ -1,9 +1,9 @@
 "use client";
 import { Suspense } from "react";
-import { AudioWaveform, Command, GalleryVerticalEnd } from "lucide-react";
+import { Command } from "lucide-react";
 import { ListMenu } from "@/components/ui/list-menu";
 import { NavUser } from "@/components/ui/nav-user";
-import { RoleSwitcher } from "./role-switcher";
+import { SidebarLogo } from "./sidebar-logo";
 import {
   Sidebar,
   SidebarContent,
@@ -17,14 +17,10 @@ import profileMenu from "@/constants/profile-menu";
 import maintainerMenu from "@/constants/maintainer-menu";
 import adminMenu from "@/constants/admin-menu";
 
-const data = {
-  roles: [
-    {
-      name: "Technostock",
-      logo: Command,
-      plan: "Admin Panel",
-    },
-  ],
+const getRoleLabel = (menu: string) => {
+  if (menu === "admin") return "Admin Panel";
+  if (menu === "maintainer") return "Developer Area";
+  return "Member Area";
 };
 
 import { GlobalNotificationHandler } from "@/components/context/global-notification-handler";
@@ -49,7 +45,7 @@ export function AppSidebar({ menu, ...props }: AppSidebarProps) {
       </Suspense>
       <Sidebar collapsible="icon" {...props}>
         <SidebarHeader>
-          <RoleSwitcher roles={data.roles} />
+          <SidebarLogo roleLabel={getRoleLabel(menu)} logo={Command} />
         </SidebarHeader>
         <SidebarContent>
           {activeMenu.map((listMenu, index) => (

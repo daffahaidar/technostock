@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, CardContent } from "@/components/ui/card";
+
 import z from "zod";
 import { accountTypeSchema } from "../schema/account-type";
 import { useForm } from "react-hook-form";
@@ -25,7 +25,7 @@ import { useRouter } from "next/navigation";
 
 import { authClient } from "@/app/auth/sign-in/_handlers/client";
 
-export default function AddAccountTypeForm() {
+export default function AddAccountTypeForm({ onSuccessSubmit }: { onSuccessSubmit?: () => void }) {
   const router = useRouter();
   const revalidate = useRevalidateQuery();
   const { data: sessionData } = authClient.useSession();
@@ -50,17 +50,18 @@ export default function AddAccountTypeForm() {
       form.reset();
       revalidate(["get-account-types"]);
       router.refresh();
+      if (onSuccessSubmit) {
+        onSuccessSubmit();
+      }
     },
-    onError: (error: any) => {
-      toast.error(error?.message || "Failed to create account type");
+    onError: (error: unknown) => {
+      toast.error((error as Error)?.message || "Failed to create account type");
     },
   });
 
   return (
     <Form {...form}>
-      <Card>
-        <CardContent className="pt-6">
-          <form onSubmit={form.handleSubmit((values) => mutate(values))}>
+      <form onSubmit={form.handleSubmit((values) => mutate(values))} className="pt-2">
             <FieldGroup>
               <FormField
                 control={form.control}
@@ -108,14 +109,16 @@ export default function AddAccountTypeForm() {
                 )}
               />
               <Field>
-                <Button type="submit" disabled={isPending}>
-                  {isPending ? "Creating..." : "Create"}
+                <Button 
+                  type="submit" 
+                  disabled={isPending}
+                  className="w-full bg-[#D4AF37] hover:bg-[#F3CA52] text-black font-bold"
+                >
+                  {isPending ? "Menyimpan..." : "Simpan"}
                 </Button>
               </Field>
             </FieldGroup>
-          </form>
-        </CardContent>
-      </Card>
+      </form>
     </Form>
   );
 }

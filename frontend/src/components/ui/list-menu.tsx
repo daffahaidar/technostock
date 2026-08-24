@@ -135,6 +135,7 @@ export function ListMenu({
                     asChild
                     tooltip={item.title}
                     className="flex w-full items-center"
+                    isActive={item.isActive}
                   >
                     <Link href={item.url} className="flex w-full items-center">
                       {item.icon && <item.icon />}

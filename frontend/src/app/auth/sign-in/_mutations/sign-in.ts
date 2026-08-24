@@ -7,7 +7,7 @@ export const useSignIn = ({
   onSuccess,
   onError,
 }: {
-  onSuccess?: (data: Record<string, any>) => void;
+  onSuccess?: (data: Record<string, unknown>) => void;
   onError?: (error: {
     meta: {
       message: string;
@@ -35,7 +35,7 @@ export const useSignIn = ({
             mode: "no-cors",
             signal: AbortSignal.timeout(5000), // 5s timeout
           });
-        } catch (error) {
+        } catch {
           throw new Error("Server Backend tidak aktif");
         }
 
@@ -48,7 +48,7 @@ export const useSignIn = ({
           throw response.error;
         }
 
-        return response.data;
+        return response.data as Record<string, unknown>;
       } else {
         const API_URL =
           process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -68,13 +68,13 @@ export const useSignIn = ({
             signal: AbortSignal.timeout(5000), // 5s timeout
           });
 
-          window.location.href = targetUrl;
-        } catch (error) {
+          window.open(targetUrl, "_self");
+        } catch {
           throw new Error("Server Backend tidak aktif");
         }
 
         // Return a promise that never resolves to keep isPending true until redirect
-        return new Promise<any>(() => {});
+        return new Promise<Record<string, unknown>>(() => {});
       }
     },
     onSuccess,

@@ -42,7 +42,7 @@ export async function getSession() {
         token: accessToken,
       },
     };
-  } catch (error) {
+  } catch {
     return null;
   }
 }

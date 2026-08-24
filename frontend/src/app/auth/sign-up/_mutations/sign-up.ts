@@ -7,7 +7,7 @@ export const useSignUp = ({
   onSuccess,
   onError,
 }: {
-  onSuccess?: (data: Record<string, any>) => void;
+  onSuccess?: (data: Record<string, unknown>) => void;
   onError?: (error: {
     meta?: { message: string };
     message?: string;
@@ -34,7 +34,7 @@ export const useSignUp = ({
             mode: "no-cors",
             signal: AbortSignal.timeout(5000),
           });
-        } catch (error) {
+        } catch {
           throw new Error("Server Backend tidak aktif");
         }
 
@@ -74,12 +74,12 @@ export const useSignUp = ({
             signal: AbortSignal.timeout(5000),
           });
 
-          window.location.href = targetUrl;
-        } catch (error) {
+          window.open(targetUrl, "_self");
+        } catch {
           throw new Error("Server Backend tidak aktif");
         }
 
-        return new Promise<any>(() => {});
+        return new Promise<unknown>(() => {});
       }
     },
     onSuccess,

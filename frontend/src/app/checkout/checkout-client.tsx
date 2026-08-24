@@ -12,7 +12,7 @@ export default function CheckoutClient({
   initialDiscordUsername,
   hasActiveSubscription
 }: { 
-  planDetails: any; 
+  planDetails: { account_type?: { name?: string }, name?: string, price: number, description?: string }; 
   planId: string; 
   initialDiscordUsername?: string | null;
   hasActiveSubscription?: boolean;
@@ -54,8 +54,8 @@ export default function CheckoutClient({
         toast.error("Gagal mendapatkan link pembayaran");
         setIsLoading(false);
       }
-    } catch (error: any) {
-      toast.error(error.message || "Terjadi kesalahan saat memproses pembayaran");
+    } catch (error) {
+      toast.error((error as Error).message || "Terjadi kesalahan saat memproses pembayaran");
       setIsLoading(false);
     }
   };

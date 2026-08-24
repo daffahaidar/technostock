@@ -52,8 +52,9 @@ export default function SignInForm() {
   });
 
   const { isPending, mutate: signIn } = useSignIn({
-    onSuccess: (result: any) => {
-      const role = result?.user?.role || "User";
+    onSuccess: (result: unknown) => {
+      const data = result as { user?: { role?: string } };
+      const role = data?.user?.role || "User";
       switch (role) {
         case "Maintainer":
           router.push(callbackUrl || "/maintainer/dashboard");
@@ -71,9 +72,10 @@ export default function SignInForm() {
           router.push("/");
       }
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
+      const err = error as { meta?: { message?: string }; message?: string };
       const message =
-        error?.meta?.message || error?.message || "Terjadi kesalahan";
+        err?.meta?.message || err?.message || "Terjadi kesalahan";
       toast.error(message);
     },
   });

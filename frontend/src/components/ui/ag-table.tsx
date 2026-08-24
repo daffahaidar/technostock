@@ -30,23 +30,23 @@ export default function AgTable<T>({
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
   const currentTheme = theme === "system" ? systemTheme : theme;
   const isDark = currentTheme === "dark";
 
-  // AG Grid v32+ uses the theme prop instead of CSS classes
   const myTheme = themeQuartz.withPart(colorSchemeDark).withParams({
-    headerBackgroundColor: isDark ? "var(--muted)" : "var(--primary)",
-    headerTextColor: isDark ? "var(--primary)" : "var(--background)",
+    headerBackgroundColor: "#111111",
+    headerTextColor: "#D4AF37",
     headerFontWeight: "bold",
-    textColor: "var(--foreground)",
-    backgroundColor: "var(--sidebar)",
-    borderColor: "var(--border)",
-    oddRowBackgroundColor: "var(--accent)",
-    rowHoverColor: "var(--accent)",
-    accentColor: "var(--accent)",
+    textColor: "#e5e5e5",
+    backgroundColor: "#0a0a0a",
+    borderColor: "rgba(212, 175, 55, 0.2)",
+    oddRowBackgroundColor: "rgba(255, 255, 255, 0.02)",
+    rowHoverColor: "rgba(212, 175, 55, 0.1)",
+    accentColor: "#D4AF37",
   });
 
   const defaultColDef = useMemo<ColDef>(() => {

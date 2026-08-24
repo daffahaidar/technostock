@@ -19,7 +19,7 @@ export async function getSubscriptionPlans(token: string) {
 
     const data = await res.json();
     return { results: data.results || [] };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error fetching subscription plans:", error);
     throw error;
   }
@@ -50,7 +50,7 @@ export async function createSubscriptionPlan(
     }
 
     return await res.json();
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error creating subscription plan:", error);
     throw error;
   }
@@ -71,7 +71,7 @@ export async function deleteSubscriptionPlan(id: string, token: string) {
     }
 
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error deleting subscription plan:", error);
     throw error;
   }

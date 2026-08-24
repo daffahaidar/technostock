@@ -10,6 +10,7 @@ import { Trash } from "lucide-react";
 import { authClient } from "@/app/auth/sign-in/_handlers/client";
 import { revalidateServerTag } from "@/app/actions/revalidate";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import { updateAccountType, deleteAccountType } from "../actions/account-type-actions";
 
 const ActionsRenderer = (props: ICellRendererParams) => {
@@ -29,9 +30,9 @@ const ActionsRenderer = (props: ICellRendererParams) => {
       toast.success("Account type deleted successfully");
       revalidate(["get-account-types"]);
     },
-    onError: (error: any) => {
-      if (error.message !== "Cancelled") {
-        toast.error(error?.message || "Failed to delete account type");
+    onError: (error: unknown) => {
+      if ((error as Error).message !== "Cancelled") {
+        toast.error((error as Error)?.message || "Failed to delete account type");
       }
     },
   });
@@ -40,7 +41,7 @@ const ActionsRenderer = (props: ICellRendererParams) => {
     <div className="flex gap-2 items-center h-full">
       <Button 
         size="xs" 
-        variant="destructive" 
+        className="bg-transparent border border-red-900 text-red-500 hover:bg-red-950 hover:text-red-400"
         onClick={() => mutate()} 
         disabled={isPending}
       >
@@ -68,8 +69,8 @@ const RecommendedRenderer = (props: ICellRendererParams) => {
       revalidate(["get-account-types"]);
       await revalidateServerTag("public-account-types");
     },
-    onError: (error: any) => {
-      toast.error(error?.message || "Failed to update recommendation");
+    onError: (error: unknown) => {
+      toast.error((error as Error)?.message || "Failed to update recommendation");
     },
   });
 
@@ -84,10 +85,40 @@ const RecommendedRenderer = (props: ICellRendererParams) => {
   );
 };
 
+const BenefitsRenderer = (props: ICellRendererParams) => {
+  let benefits: string[] = [];
+  try {
+    benefits = typeof props.value === "string" ? JSON.parse(props.value) : props.value;
+    if (!Array.isArray(benefits)) {
+      benefits = [String(benefits)];
+    }
+  } catch (e) {
+    if (props.value) {
+      benefits = [String(props.value)];
+    }
+  }
+
+  return (
+    <div className="flex flex-wrap gap-1 items-center h-full content-center py-2">
+      {benefits.map((benefit, i) => (
+        <Badge key={i} variant="secondary" className="text-xs bg-[#D4AF37]/10 text-[#D4AF37] hover:bg-[#D4AF37]/20 border-none">
+          {benefit}
+        </Badge>
+      ))}
+    </div>
+  );
+};
+
 export const AccountTypeColumn: ColDef[] = [
   { field: "name", headerName: "Name" },
-  { field: "description", headerName: "Description" },
-  { field: "benefits", headerName: "Benefits" },
+  { field: "description", headerName: "Description", flex: 1 },
+  { 
+    field: "benefits", 
+    headerName: "Benefits",
+    cellRenderer: BenefitsRenderer,
+    flex: 1,
+    autoHeight: true
+  },
   {
     field: "is_recommended",
     headerName: "Recommended",

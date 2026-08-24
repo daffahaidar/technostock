@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { LayoutDashboard, Package, Tag, Layers } from "lucide-react";
 
 const adminMenu = [

@@ -27,9 +27,9 @@ const ActionsRenderer = (props: ICellRendererParams) => {
       toast.success("Subscription plan deleted successfully");
       revalidate(["get-subscription-plans"]);
     },
-    onError: (error: any) => {
-      if (error.message !== "Cancelled") {
-        toast.error(error?.message || "Failed to delete subscription plan");
+    onError: (error: unknown) => {
+      if ((error as Error).message !== "Cancelled") {
+        toast.error((error as Error)?.message || "Failed to delete subscription plan");
       }
     },
   });

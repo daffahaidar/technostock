@@ -47,7 +47,7 @@ export async function getPublicPricingData() {
     const allPlans = plansData.results || [];
 
     // Combine account types with their respective plans
-    const combinedPricing = accountTypes.map((at: any) => {
+    const combinedPricing = accountTypes.map((at: { id: string; benefits: unknown; [key: string]: unknown }) => {
       // Parse benefits string into array if it's a string, or parse if it's JSON string inside string
       let parsedBenefits = [];
       try {
@@ -56,7 +56,7 @@ export async function getPublicPricingData() {
         } else if (Array.isArray(at.benefits)) {
           parsedBenefits = at.benefits;
         }
-      } catch (e) {
+      } catch {
         // Fallback for comma separated if JSON.parse fails
         if (typeof at.benefits === 'string') {
           parsedBenefits = at.benefits.split(',').map((s: string) => s.trim());
@@ -66,7 +66,7 @@ export async function getPublicPricingData() {
       return {
         ...at,
         parsedBenefits,
-        plans: allPlans.filter((plan: any) => plan.account_type_id === at.id),
+        plans: allPlans.filter((plan: { account_type_id: string }) => plan.account_type_id === at.id),
       };
     });
 

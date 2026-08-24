@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { ChartCandlestick, MessagesSquare, SquareTerminal } from "lucide-react";
 
 const mainMenu = [
