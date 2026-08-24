@@ -105,7 +105,7 @@ export function ListMenu({
                             <DropdownMenuGroup>
                               {item.items?.map((subItem, index) => (
                                 <DropdownMenuItem key={index} asChild>
-                                  <Link href={subItem.url}>
+                                  <Link href={subItem.url} prefetch={false}>
                                     {subItem.title}
                                   </Link>
                                 </DropdownMenuItem>
@@ -126,7 +126,7 @@ export function ListMenu({
                         {item.items?.map((subItem) => (
                           <SidebarMenuSubItem key={subItem.title}>
                             <SidebarMenuSubButton asChild isActive={pathname === subItem.url}>
-                              <Link href={subItem.url}>{subItem.title}</Link>
+                              <Link href={subItem.url} prefetch={false}>{subItem.title}</Link>
                             </SidebarMenuSubButton>
                           </SidebarMenuSubItem>
                         ))}
@@ -142,7 +142,7 @@ export function ListMenu({
                     className="flex w-full items-center"
                     isActive={isActive}
                   >
-                    <Link href={item.url} className="flex w-full items-center">
+                    <Link href={item.url} prefetch={false} className="flex w-full items-center">
                       {item.icon && <item.icon />}
                       <span>{item.title}</span>
                       {isDiscussion && isMounted && unreadCount > 0 && (
