@@ -88,35 +88,34 @@ Aplikasi akan berjalan di `http://localhost:3000`.
 ## Catatan Tentang Environment Variables
 
 - **Di Luar Docker:**
-  Aplikasi akan menggunakan akses `localhost` untuk terhubung ke database dan microservices lainnya.
-- **Di Dalam Docker:**
-  Container Docker secara otomatis memiliki konfigurasi `extra_hosts` agar alamat `host.docker.internal` me-resolve ke mesin host kamu. Ini mencegah isu _connection refused_ seperti saat login dengan Google (OAuth server side fetch).
+  Aplikasi menggunakan `localhost` untuk terhubung ke microservices lainnya.
+- **Di Dalam Docker (compose di folder ini):**
+  Container dikonfigurasi dengan `extra_hosts` agar `host.docker.internal` me-resolve ke mesin host. Ini dipakai untuk skenario "frontend di Docker, backend di host", dan mencegah _connection refused_ pada fetch server-side (misalnya callback OAuth).
+- **Di Dalam Docker (compose unified di root repo):**
+  Frontend berada satu network dengan backend, jadi `SERVER_API_URL` memakai nama service (`http://auth-service:8000`) alih-alih `host.docker.internal`.
 
-### Daftar Environment Variables yang Wajib Diisi
+### Daftar Environment Variables
 
-Pastikan kamu memiliki file `.env.development` (untuk lokal) dan `.env.production` (untuk production). Berikut penjelasan nilai variabel di dalamnya:
+Siapkan `.env.development` (mode dev) dan `.env.production` (mode prod). Variabel berawalan `NEXT_PUBLIC_` terekspos ke browser.
 
-#### 1. Konfigurasi Auth (Better Auth & OAuth)
+#### 1. Wajib
 
-| Variabel               | Penjelasan                                                                                    |
-| ---------------------- | --------------------------------------------------------------------------------------------- |
-| `BETTER_AUTH_SECRET`   | Secret key (string acak/base64) untuk mengamankan session enkripsi auth.                      |
-| `BETTER_AUTH_URL`      | URL aplikasi frontend (misal: `http://localhost:3000`).                                       |
-| `GITHUB_CLIENT_ID`     | Client ID dari aplikasi GitHub OAuth.                                                         |
-| `GITHUB_CLIENT_SECRET` | Client Secret dari aplikasi GitHub OAuth.                                                     |
-| `JWT_PUBLIC_KEY`       | Public key (format PEM RS256) untuk validasi token yang digenerate oleh layanan backend Rust. |
-
-#### 2. Endpoints Backend Microservices
-
-Variabel dengan awalan `NEXT_PUBLIC_` terekspos ke browser (client-side).
 | Variabel | Penjelasan |
 |---|---|
-| `NEXT_PUBLIC_APP_URL` | Base URL public dari frontend (misal: `http://localhost:3000`). Digunakan untuk callback & redirect absolut. |
-| `NEXT_PUBLIC_API_URL` | URL API Gateway untuk backend Auth & Message (Rust). Misal: `http://localhost:8080`. |
-| `NEXT_PUBLIC_WS_API_URL` | URL API Gateway untuk Web Socket (Rust). Misal: `ws://localhost:8080`. |
+| `NEXT_PUBLIC_API_URL` | URL API Gateway yang diakses browser. Misal `http://localhost:8080`. |
+| `NEXT_PUBLIC_WS_API_URL` | URL WebSocket gateway. Misal `ws://localhost:8080`. Juga jadi dasar base URL REST chat bila `NEXT_PUBLIC_MESSAGE_API_URL` tidak diisi. |
+| `NEXT_PUBLIC_APP_URL` | Base URL publik frontend. Dipakai untuk redirect absolut pada callback OAuth. |
+| `JWT_PUBLIC_KEY` | Public key PEM RS256 milik `auth-service`. Dipakai `jwtVerify` di route handler `/api/auth/*`. Bila kosong, token hanya di-decode **tanpa verifikasi tanda tangan**. |
 
-#### 3. Database & Payment Gateway
+#### 2. Opsional
 
-| Variabel       | Penjelasan                                                                                                                  |
-| -------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| `DATABASE_URL` | Connection string ke database PostgreSQL. Di Docker env, nilainya akan di-override otomatis menjadi `host.docker.internal`. |
+| Variabel | Default | Penjelasan |
+|---|---|---|
+| `SERVER_API_URL` | `NEXT_PUBLIC_API_URL`, lalu `http://localhost:8000` | Base URL untuk fetch **server-side** (route handler `/api/auth/*` dan `oauth-callback`). |
+| `NEXT_PUBLIC_MESSAGE_API_URL` | diturunkan dari `NEXT_PUBLIC_WS_API_URL` (`ws://` → `http://`), lalu `http://localhost:8001` | Override base URL REST chat pada instance axios `messageBackend`. |
+| `BETTER_AUTH_URL` | `http://localhost:3000` | `baseURL` untuk `createAuthClient`. |
+| `GOLANG_GRPC_URL` | `localhost:50052` | Hanya dipakai modul `product-category` / `product-plan` yang sudah mati — digantikan `account-type` / `subscription-plan` yang memakai REST lewat gateway. `main-service` tidak meregistrasi service gRPC apa pun di port tersebut. |
+
+#### 3. Variabel yang tidak dibaca kode
+
+`DATABASE_URL` dan `BETTER_AUTH_SECRET` masih diset di `docker-compose.dev.yml` / `docker-compose.prod.yml`, tetapi tidak dibaca oleh kode frontend mana pun. Frontend tidak terhubung langsung ke database; seluruh akses data lewat API Gateway. Variabel OAuth (`GITHUB_CLIENT_ID`, `GOOGLE_CLIENT_ID`, dan pasangan secret-nya) juga bukan milik frontend — tempatnya di `auth-service/.env`.

@@ -15,27 +15,34 @@ cd technostock
 ```
 
 ### 2. Persiapkan Environment Variables (`.env`)
-Anda harus membuat file `.env` di masing-masing direktori service dengan meng-copy dari template:
+
+Buat file `.env` di masing-masing direktori service. [`.env.example`](.env.example) di root sudah dikelompokkan per service — salin blok yang relevan ke masing-masing file:
+
 ```bash
-# Untuk Auth Service
-cp .env.example auth-service/.env
-
-# Untuk Realtime Service
-cp .env.example realtime-service/.env
-
-# Untuk gRPC Service (Gateway)
-cp .env.example grpc-service/.env
-
-# Untuk Main Service
-cp .env.example main-service/.env
-
-# Untuk Frontend
-cp .env.example frontend/.env.development
+touch auth-service/.env
+touch grpc-service/.env
+touch realtime-service/.env
+touch main-service/.env
+touch frontend/.env.development   # dan frontend/.env.production untuk mode prod
 ```
-*Catatan: Edit isi file `.env` tersebut dan hapus bagian yang tidak relevan dengan service tersebut.*
+
+Setiap blok di `.env.example` mencantumkan variabel apa saja yang dibutuhkan service tersebut. Tabel lengkap beserta nilai default ada di bagian [Environment Variables pada README](README.md#environment-variables).
+
+**Variabel yang membuat service gagal start bila kosong:**
+
+| Service | Wajib diisi |
+|---|---|
+| `auth-service` | `DATABASE_URL`, `JWT_PRIVATE_KEY`, `JWT_PUBLIC_KEY`, **keenam** variabel OAuth GitHub & Google |
+| `grpc-service` | `DATABASE_URL`, `JWT_PRIVATE_KEY`, `JWT_PUBLIC_KEY` |
+| `realtime-service` | `DATABASE_URL`, `JWT_PRIVATE_KEY`, `JWT_PUBLIC_KEY`, `MINIO_ACCESS_KEY`, `MINIO_SECRET_KEY`, `MINIO_BUCKET` |
+| `main-service` | `DATABASE_URL`, `AUTH_GRPC_URL`, `MIDTRANS_SERVER_KEY` |
+
+> `auth-service` panic saat startup bila variabel OAuth kosong, walaupun Anda tidak berencana memakai login Google/GitHub. Isi dengan nilai dummy bila hanya ingin mencoba login email.
+
+> `AUTH_GRPC_URL` di `main-service` dan `realtime-service` menunjuk ke **`grpc-service`**, bukan `auth-service`. Server gRPC `UserService` dijalankan oleh gateway.
 
 ### 3. Generate JWT Keys (Hanya 1x)
-Semua service Rust membutuhkan sepasang kunci RSA. Generate dengan OpenSSL:
+Semua service Rust membutuhkan sepasang kunci RSA yang sama. Generate dengan OpenSSL:
 ```bash
 # Generate private key
 openssl genrsa -out private.pem 2048
@@ -49,7 +56,9 @@ cat private.pem | awk '{printf "%s\\n", $0}' | sed 's/\\n$//'
 # Salin output public key ke JWT_PUBLIC_KEY di .env
 cat public.pem  | awk '{printf "%s\\n", $0}' | sed 's/\\n$//'
 ```
-*Pastikan `JWT_PUBLIC_KEY` dan `JWT_PRIVATE_KEY` disamakan pada file `.env` di `auth-service`, `realtime-service`, dan `grpc-service`.*
+
+- `JWT_PRIVATE_KEY` **dan** `JWT_PUBLIC_KEY` → `auth-service`, `grpc-service`, `realtime-service` (nilai identik di ketiganya).
+- `JWT_PUBLIC_KEY` saja → `frontend`, untuk memverifikasi token di route handler `/api/auth/*`.
 
 ---
 
@@ -106,35 +115,37 @@ cargo install sqlx-cli --no-default-features --features postgres
 **Menjalankan Service Secara Berurutan:**
 *(Buka 5 tab terminal terpisah, pastikan sudah di root folder `technostock`)*
 
-1. **Auth Service (Terminal 1)**
+> **Urutan ini penting.** `grpc-service` menyediakan server gRPC `:50051`. Tanpa itu, `realtime-service` gagal start (`Failed to connect to GRPC`) dan `main-service` tidak bisa memvalidasi token.
+
+1. **gRPC Gateway (Terminal 1)** — port `8080` (gateway) dan `50051` (gRPC)
+```bash
+cd grpc-service
+cargo run
+```
+2. **Auth Service (Terminal 2)** — port `8000`
 ```bash
 cd auth-service
-sqlx migrate run
 cargo run
 ```
-2. **Realtime Service (Terminal 2)**
+3. **Realtime Service (Terminal 3)** — port `8001`
 ```bash
 cd realtime-service
-sqlx migrate run
 cargo run
 ```
-3. **Main Service (Terminal 3)**
+4. **Main Service (Terminal 4)** — port `8002`
 ```bash
 cd main-service
 go mod download
 go run cmd/api/main.go
 ```
-4. **gRPC Gateway (Terminal 4)**
-```bash
-cd grpc-service
-cargo run
-```
-5. **Frontend (Terminal 5)**
+5. **Frontend (Terminal 5)** — port `3000`
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
+
+*Migrasi database tidak perlu dijalankan manual: `auth-service` dan `realtime-service` menerapkan migrasi sqlx-nya sendiri saat startup, dan `main-service` memakai GORM `AutoMigrate`. Bila Anda tetap ingin menjalankan `sqlx migrate run` secara manual, baca dulu catatan migrasi di [README](README.md#database--migrasi) — kedua service Rust berbagi satu tabel `_sqlx_migrations` di database yang sama.*
 
 ---
 
@@ -177,7 +188,7 @@ minio.exe server C:\minio-data --console-address ":9001"
 5. Install `sqlx-cli` via Cargo: `cargo install sqlx-cli --no-default-features --features postgres`
 
 **Menjalankan Service Secara Berurutan:**
-Sama seperti cara MacOS di atas, buka 5 jendela PowerShell yang berbeda, navigasi ke setiap direktori service, dan jalankan perintah: `cargo run`, `go run cmd/api/main.go`, dan `npm run dev`.
+Sama seperti cara MacOS di atas: buka 5 jendela PowerShell, lalu jalankan dengan urutan `grpc-service` → `auth-service` → `realtime-service` → `main-service` → `frontend`. Perintahnya `cargo run` untuk ketiga service Rust, `go run cmd/api/main.go` untuk main-service, dan `npm run dev` untuk frontend.
 
 ---
 
@@ -261,41 +272,52 @@ cargo install sqlx-cli --no-default-features --features postgres
 **Menjalankan Service Secara Berurutan:**
 *(Buka 5 tab terminal terpisah, pastikan sudah di root folder `technostock`)*
 
-1. **Auth Service (Terminal 1)**
+> **Urutan ini penting.** `grpc-service` menyediakan server gRPC `:50051`. Tanpa itu, `realtime-service` gagal start (`Failed to connect to GRPC`) dan `main-service` tidak bisa memvalidasi token.
+
+1. **gRPC Gateway (Terminal 1)** — port `8080` (gateway) dan `50051` (gRPC)
+```bash
+cd grpc-service
+cargo run
+```
+2. **Auth Service (Terminal 2)** — port `8000`
 ```bash
 cd auth-service
-sqlx migrate run
 cargo run
 ```
-2. **Realtime Service (Terminal 2)**
+3. **Realtime Service (Terminal 3)** — port `8001`
 ```bash
 cd realtime-service
-sqlx migrate run
 cargo run
 ```
-3. **Main Service (Terminal 3)**
+4. **Main Service (Terminal 4)** — port `8002`
 ```bash
 cd main-service
 go mod download
 go run cmd/api/main.go
 ```
-4. **gRPC Gateway (Terminal 4)**
-```bash
-cd grpc-service
-cargo run
-```
-5. **Frontend (Terminal 5)**
+5. **Frontend (Terminal 5)** — port `3000`
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
+*Migrasi database tidak perlu dijalankan manual: `auth-service` dan `realtime-service` menerapkan migrasi sqlx-nya sendiri saat startup, dan `main-service` memakai GORM `AutoMigrate`. Bila Anda tetap ingin menjalankan `sqlx migrate run` secara manual, baca dulu catatan migrasi di [README](README.md#database--migrasi) — kedua service Rust berbagi satu tabel `_sqlx_migrations` di database yang sama.*
+
 ---
 
 ## 🌐 Akses Layanan Setelah Running
 
-- **Frontend UI:** `http://localhost:3000`
-- **API Gateway:** `http://localhost:8080` (untuk seluruh API HTTP maupun WebSocket. Rute: `/api/v1/auth`, `/api/v1/main`, `/ws`)
-- **MinIO Console (Storage):** `http://localhost:9001` (Login menggunakan kredensial di `.env`)
-- **RabbitMQ Admin (Opsional):** `http://localhost:15672` (Gunakan username & password di `.env`)
+| URL | Keterangan |
+|---|---|
+| `http://localhost:3000` | Frontend UI |
+| `http://localhost:8080` | API Gateway — rute `/api/v1/auth/*`, `/api/v1/main/*`, `/ws/*`, sisanya fallback ke frontend |
+| `http://localhost:8000` | auth-service (internal) |
+| `http://localhost:8001` | realtime-service, HTTP + WebSocket (internal) |
+| `http://localhost:8002` | main-service (internal) |
+| `localhost:50051` | gRPC `UserService`, dilayani `grpc-service` (internal) |
+| `http://localhost:9001` | MinIO Console — login dengan `MINIO_ACCESS_KEY` / `MINIO_SECRET_KEY` |
+| `http://localhost:15672` | RabbitMQ Management — login dengan `RABBITMQ_USER` / `RABBITMQ_PASS` |
+| `localhost:5433` | PostgreSQL |
+
+> Endpoint chat (`/api/v1/chat/*`) belum ter-route di gateway dan saat ini harus diakses langsung ke `realtime-service` di port `8001`. Lihat bagian [Status Fitur di README](README.md#status-fitur--catatan-teknis).
