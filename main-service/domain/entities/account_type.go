@@ -15,5 +15,6 @@ type AccountType struct {
 	IsRecommended bool           `gorm:"default:false" json:"is_recommended"`
 	CreatedAt     time.Time      `json:"created_at"`
 	UpdatedAt     time.Time      `json:"updated_at"`
-	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
+	DeletedAt     gorm.DeletedAt `gorm:"index" json:"-"`
+	UserCount     int64          `gorm:"->;column:user_count" json:"user_count"`
 }

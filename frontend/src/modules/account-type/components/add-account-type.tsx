@@ -1,9 +1,10 @@
 "use client";
 
 
+import { Plus, Trash } from "lucide-react";
 import z from "zod";
 import { accountTypeSchema } from "../schema/account-type";
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { useRevalidateQuery } from "@/hooks/use-revalidate";
@@ -35,15 +36,28 @@ export default function AddAccountTypeForm({ onSuccessSubmit }: { onSuccessSubmi
     defaultValues: {
       name: "",
       description: "",
-      benefits: "",
+      benefits: [{ value: "" }],
     },
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "benefits",
   });
 
   const { mutate, isPending } = useMutation({
     mutationFn: async (values: z.infer<typeof accountTypeSchema>) => {
       const token = sessionData?.session?.token;
       if (!token) throw new Error("Unauthorized");
-      return await createAccountType(values, token);
+      
+      const benefitsArray = values.benefits?.map(b => b.value).filter(Boolean) || [];
+      const payload = {
+        name: values.name,
+        description: values.description,
+        benefits: benefitsArray.length > 0 ? JSON.stringify(benefitsArray) : undefined,
+      };
+
+      return await createAccountType(payload, token);
     },
     onSuccess: () => {
       toast.success("Account Type created successfully");
@@ -62,7 +76,7 @@ export default function AddAccountTypeForm({ onSuccessSubmit }: { onSuccessSubmi
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit((values) => mutate(values))} className="pt-2">
-            <FieldGroup>
+            <FieldGroup className="max-h-[60vh] overflow-y-auto pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
               <FormField
                 control={form.control}
                 name="name"
@@ -92,22 +106,47 @@ export default function AddAccountTypeForm({ onSuccessSubmit }: { onSuccessSubmi
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="benefits"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Benefits</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Access to basic forum, standard support"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="space-y-2">
+                <FormLabel>Benefits</FormLabel>
+                {fields.map((field, index) => (
+                  <FormField
+                    key={field.id}
+                    control={form.control}
+                    name={`benefits.${index}.value`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <div className="flex items-center gap-2">
+                            <Input placeholder="e.g. Access to basic forum" {...field} />
+                            {fields.length > 1 && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="shrink-0 text-red-500 hover:text-red-700 hover:bg-red-950/20"
+                                onClick={() => remove(index)}
+                              >
+                                <Trash className="w-4 h-4" />
+                              </Button>
+                            )}
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                ))}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="w-full mt-2 text-xs"
+                  onClick={() => append({ value: "" })}
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Tambah Benefit
+                </Button>
+              </div>
               <Field>
                 <Button 
                   type="submit" 

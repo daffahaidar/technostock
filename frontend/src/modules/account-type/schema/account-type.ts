@@ -5,5 +5,9 @@ export const accountTypeSchema = z.object({
     message: "Nama tipe akun harus diisi.",
   }),
   description: z.string().optional(),
-  benefits: z.string().optional(),
+  benefits: z.array(
+    z.object({
+      value: z.string().min(1, { message: "Benefit tidak boleh kosong." }),
+    })
+  ).optional(),
 });

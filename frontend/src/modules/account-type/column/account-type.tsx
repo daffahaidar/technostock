@@ -11,15 +11,23 @@ import { authClient } from "@/app/auth/sign-in/_handlers/client";
 import { revalidateServerTag } from "@/app/actions/revalidate";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { updateAccountType, deleteAccountType } from "../actions/account-type-actions";
 
 const ActionsRenderer = (props: ICellRendererParams) => {
   const revalidate = useRevalidateQuery();
   const { data: sessionData } = authClient.useSession();
   
+  const userCount = props.data.user_count || 0;
+  
   const { mutate, isPending } = useMutation({
     mutationFn: async () => {
-      if (confirm("Are you sure you want to delete this account type?")) {
+      if (confirm("Are you sure you want to delete this account type? This will also delete all associated subscription plans.")) {
         const token = sessionData?.session?.token;
         if (!token) throw new Error("Unauthorized");
         return await deleteAccountType(props.data.id, token);
@@ -37,17 +45,32 @@ const ActionsRenderer = (props: ICellRendererParams) => {
     },
   });
 
+  const isDeleteDisabled = userCount > 0 || isPending;
+
   return (
     <div className="flex gap-2 items-center h-full">
-      <Button 
-        size="xs" 
-        className="bg-transparent border border-red-900 text-red-500 hover:bg-red-950 hover:text-red-400"
-        onClick={() => mutate()} 
-        disabled={isPending}
-      >
-        <Trash className="w-4 h-4 mr-1" />
-        Delete
-      </Button>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className={isDeleteDisabled ? "cursor-not-allowed" : ""}>
+              <Button 
+                size="xs" 
+                className="h-auto py-1 bg-transparent border border-red-900 text-red-500 hover:bg-red-950 hover:text-red-400 disabled:opacity-50 disabled:pointer-events-none"
+                onClick={() => mutate()} 
+                disabled={isDeleteDisabled}
+              >
+                <Trash className="w-3.5 h-3.5" />
+                Delete
+              </Button>
+            </span>
+          </TooltipTrigger>
+          {userCount > 0 && (
+            <TooltipContent hideArrow={true} className="bg-[#111] border border-[#D4AF37]/50 text-[#D4AF37] text-xs font-medium shadow-md shadow-[#D4AF37]/5">
+              <p>Tidak dapat dihapus: Masih ada {userCount} user dengan subscription aktif.</p>
+            </TooltipContent>
+          )}
+        </Tooltip>
+      </TooltipProvider>
     </div>
   );
 };
@@ -99,7 +122,7 @@ const BenefitsRenderer = (props: ICellRendererParams) => {
   }
 
   return (
-    <div className="flex flex-wrap gap-1 items-center h-full content-center py-2">
+    <div className="flex flex-wrap gap-1.5 items-center py-3">
       {benefits.map((benefit, i) => (
         <Badge key={i} variant="secondary" className="text-xs bg-[#D4AF37]/10 text-[#D4AF37] hover:bg-[#D4AF37]/20 border-none">
           {benefit}
@@ -110,11 +133,12 @@ const BenefitsRenderer = (props: ICellRendererParams) => {
 };
 
 export const AccountTypeColumn: ColDef[] = [
-  { field: "name", headerName: "Name" },
-  { field: "description", headerName: "Description", flex: 1 },
+  { field: "name", headerName: "Tipe Akun" },
+  { field: "description", headerName: "Deskripsi", flex: 1 },
+  { field: "user_count", headerName: "Jumlah Member" },
   { 
     field: "benefits", 
-    headerName: "Benefits",
+    headerName: "Benefit",
     cellRenderer: BenefitsRenderer,
     flex: 1,
     autoHeight: true
@@ -125,8 +149,7 @@ export const AccountTypeColumn: ColDef[] = [
     cellRenderer: RecommendedRenderer,
   },
   {
-    field: "actions",
-    headerName: "Actions",
+    headerName: "Aksi",
     cellRenderer: ActionsRenderer,
   },
 ];

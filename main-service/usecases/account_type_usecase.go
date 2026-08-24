@@ -41,7 +41,17 @@ func (u *AccountTypeUseCase) GetAccountTypeByID(id uuid.UUID) (*entities.Account
 
 func (u *AccountTypeUseCase) GetAllAccountTypes() ([]entities.AccountType, error) {
 	var accountTypes []entities.AccountType
-	if err := u.db.Order("created_at asc").Find(&accountTypes).Error; err != nil {
+
+	// Create subquery to count unique users with active subscriptions
+	subQuery := u.db.Table("main.user_subscriptions").
+		Select("COUNT(DISTINCT main.user_subscriptions.user_id)").
+		Joins("JOIN main.subscription_plans ON main.subscription_plans.id = main.user_subscriptions.subscription_plan_id").
+		Where("main.subscription_plans.account_type_id = main.account_types.id").
+		Where("main.user_subscriptions.status = ?", entities.SubscriptionStatusActive)
+
+	if err := u.db.Select("main.account_types.*, (?) AS user_count", subQuery).
+		Order("created_at asc").
+		Find(&accountTypes).Error; err != nil {
 		return nil, err
 	}
 	return accountTypes, nil
@@ -60,5 +70,25 @@ func (u *AccountTypeUseCase) UpdateAccountType(accountType *entities.AccountType
 }
 
 func (u *AccountTypeUseCase) DeleteAccountType(id uuid.UUID) error {
-	return u.db.Unscoped().Delete(&entities.AccountType{}, "id = ?", id).Error
+	return u.db.Transaction(func(tx *gorm.DB) error {
+		var activeUserCount int64
+		if err := tx.Table("main.user_subscriptions").
+			Joins("JOIN main.subscription_plans ON main.subscription_plans.id = main.user_subscriptions.subscription_plan_id").
+			Where("main.subscription_plans.account_type_id = ?", id).
+			Where("main.user_subscriptions.status = ?", entities.SubscriptionStatusActive).
+			Count(&activeUserCount).Error; err != nil {
+			return err
+		}
+
+		if activeUserCount > 0 {
+			return errors.New("cannot delete account type because there are still users with active subscriptions")
+		}
+
+		// Delete associated subscription plans first (cascading)
+		if err := tx.Where("account_type_id = ?", id).Delete(&entities.SubscriptionPlan{}).Error; err != nil {
+			return err
+		}
+
+		return tx.Unscoped().Delete(&entities.AccountType{}, "id = ?", id).Error
+	})
 }
