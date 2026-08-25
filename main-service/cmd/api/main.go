@@ -33,6 +33,12 @@ func main() {
 		log.Fatalf("Failed to auto migrate: %v", err)
 	}
 
+	// Create partial unique index for lifetime plan (only 1 lifetime plan per account type)
+	err = db.Exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_lifetime_plan ON subscription_plans (account_type_id) WHERE duration_months = 0").Error
+	if err != nil {
+		log.Printf("Warning: Failed to create partial unique index: %v", err)
+	}
+
 	authClient := grpc.NewAuthClient(cfg.AuthGRPCURL)
 
 	// Start Background Workers

@@ -13,5 +13,14 @@ export const subscriptionPlanSchema = z.object({
   price: z.coerce.number().min(0, {
     message: "Harga tidak boleh negatif.",
   }),
+  quota: z.coerce.number().nullable().optional(),
   description: z.string().optional(),
+}).refine((data) => {
+  if (data.duration_months === 0 && (data.quota === null || data.quota === undefined || data.quota <= 0)) {
+    return false;
+  }
+  return true;
+}, {
+  message: "Kuota wajib diisi untuk plan lifetime.",
+  path: ["quota"],
 });

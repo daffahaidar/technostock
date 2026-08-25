@@ -75,7 +75,13 @@ const ActionsRenderer = (props: ICellRendererParams) => {
 export const SubscriptionPlanColumn: ColDef[] = [
   { field: "name", headerName: "Nama Plan" },
   { field: "account_type.name", headerName: "Tipe Akun" },
-  { field: "duration_months", headerName: "Durasi (Bulan)" },
+  { 
+    field: "duration_months", 
+    headerName: "Durasi (Bulan)",
+    valueFormatter: (params: ValueFormatterParams) => {
+      return params.value === 0 ? "Lifetime" : `${params.value} Bulan`;
+    }
+  },
   { 
     field: "price", 
     headerName: "Harga",
@@ -89,6 +95,13 @@ export const SubscriptionPlanColumn: ColDef[] = [
     }
   },
   { field: "user_count", headerName: "Jumlah Member" },
+  {
+    field: "quota",
+    headerName: "Kuota",
+    valueFormatter: (params: ValueFormatterParams) => {
+      return (params.data.duration_months === 0 && params.data.quota != null) ? params.data.quota.toString() : "∞";
+    }
+  },
   { field: "description", headerName: "Deskripsi", flex: 1 },
   {
     headerName: "Aksi",

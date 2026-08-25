@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRevalidateQuery } from "@/hooks/use-revalidate";
 import { toast } from "sonner";
-import { createSubscriptionPlan } from "../actions/subscription-plan-actions";
+import { createSubscriptionPlan, getSubscriptionPlans } from "../actions/subscription-plan-actions";
 import { getAccountTypes } from "@/modules/account-type/actions/account-type-actions";
 import { Field, FieldGroup } from "@/components/ui/field";
 import {
@@ -47,6 +47,16 @@ export default function AddSubscriptionPlanForm({ onSuccessSubmit }: { onSuccess
     enabled: !!sessionData?.session?.token,
   });
 
+  const { data: dataPlans } = useQuery({
+    queryKey: ["get-subscription-plans", sessionData?.session?.token],
+    queryFn: async () => {
+      const token = sessionData?.session?.token;
+      if (!token) return { results: [] };
+      return (await getSubscriptionPlans(token)) as { results: { account_type_id: string; duration_months: number }[] };
+    },
+    enabled: !!sessionData?.session?.token,
+  });
+
   const form = useForm<z.infer<typeof subscriptionPlanSchema>>({
     resolver: zodResolver(subscriptionPlanSchema) as unknown as Resolver<z.infer<typeof subscriptionPlanSchema>>,
     defaultValues: {
@@ -57,6 +67,9 @@ export default function AddSubscriptionPlanForm({ onSuccessSubmit }: { onSuccess
       description: "",
     },
   });
+
+  const selectedAccountTypeId = form.watch("account_type_id");
+  const hasLifetimePlan = dataPlans?.results?.some((plan) => plan.account_type_id === selectedAccountTypeId && plan.duration_months === 0) || false;
 
   const { mutate, isPending } = useMutation({
     mutationFn: async (values: z.infer<typeof subscriptionPlanSchema>) => {
@@ -140,20 +153,22 @@ export default function AddSubscriptionPlanForm({ onSuccessSubmit }: { onSuccess
                         Bulan
                       </div>
                     </div>
-                    <Button 
-                      type="button" 
-                      variant={field.value === 0 ? "default" : "outline"} 
-                      className={field.value === 0 ? "shrink-0 bg-[#D4AF37] hover:bg-[#F3CA52] text-black font-bold border-none" : "shrink-0"}
-                      onClick={() => {
-                        if (field.value === 0) {
-                          field.onChange(1);
-                        } else {
-                          field.onChange(0);
-                        }
-                      }}
-                    >
-                      Lifetime
-                    </Button>
+                    {!hasLifetimePlan && (
+                      <Button 
+                        type="button" 
+                        variant={field.value === 0 ? "default" : "outline"} 
+                        className={field.value === 0 ? "shrink-0 bg-[#D4AF37] hover:bg-[#F3CA52] text-black font-bold border-none" : "shrink-0"}
+                        onClick={() => {
+                          if (field.value === 0) {
+                            field.onChange(1);
+                          } else {
+                            field.onChange(0);
+                          }
+                        }}
+                      >
+                        Lifetime
+                      </Button>
+                    )}
                   </div>
                 </FormControl>
                 <FormMessage />
@@ -187,6 +202,32 @@ export default function AddSubscriptionPlanForm({ onSuccessSubmit }: { onSuccess
               </FormItem>
             )}
           />
+          {form.watch("duration_months") === 0 && (
+            <FormField
+              control={form.control}
+              name="quota"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Kuota Pembelian</FormLabel>
+                  <FormControl>
+                    <div className="flex w-full h-10 items-center rounded-md border border-input bg-background ring-offset-background focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 overflow-hidden">
+                      <Input 
+                        type="number" 
+                        placeholder="Masukkan Kuota, misal: 10" 
+                        value={field.value || ""} 
+                        onChange={(e) => field.onChange(e.target.value === "" ? null : Number(e.target.value))}
+                        className="border-0 h-full focus-visible:ring-0 focus-visible:ring-offset-0 rounded-none bg-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      />
+                      <div className="flex h-full items-center justify-center px-3 text-sm text-muted-foreground border-l border-input bg-muted/50">
+                        Akun
+                      </div>
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
           <FormField
             control={form.control}
             name="description"

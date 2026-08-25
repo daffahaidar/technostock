@@ -31,6 +31,7 @@ export async function createSubscriptionPlan(
     name: string;
     duration_months: number;
     price: number;
+    quota?: number | null;
     description?: string;
   },
   token: string

@@ -13,6 +13,8 @@ interface Plan {
   duration_months: number;
   price: number;
   description: string;
+  quota?: number | null;
+  used_quota?: number;
 }
 
 interface AccountType {
@@ -175,6 +177,12 @@ export default function PricingSection({ pricingData, user, compact = false, act
                           {selectedPlan?.description && (
                             <p className="text-xs text-[#D4AF37]/80 mt-3">{selectedPlan.description}</p>
                           )}
+                          
+                          {selectedPlan?.duration_months === 0 && selectedPlan?.quota != null && (
+                            <p className="text-xs font-semibold text-red-400 mt-2">
+                              Sisa Kuota: {Math.max(0, selectedPlan.quota - (selectedPlan.used_quota || 0))}
+                            </p>
+                          )}
                         </div>
                       ) : (
                         <div className="mb-8">
@@ -202,9 +210,9 @@ export default function PricingSection({ pricingData, user, compact = false, act
                             ? "bg-[#D4AF37] hover:bg-[#D4AF37]/90 text-black shadow-[0_0_15px_rgba(212,175,55,0.4)]" 
                             : "bg-white/10 text-white hover:bg-white/20 border border-white/10"
                         }`}
-                        disabled={at.plans.length === 0 || isFullAccess || hasLifetimeForThisAccountType}
+                        disabled={at.plans.length === 0 || isFullAccess || hasLifetimeForThisAccountType || (selectedPlan?.duration_months === 0 && selectedPlan?.quota != null && (selectedPlan.used_quota || 0) >= selectedPlan.quota)}
                         onClick={() => {
-                          if (at.plans.length === 0 || isFullAccess || hasLifetimeForThisAccountType) return;
+                          if (at.plans.length === 0 || isFullAccess || hasLifetimeForThisAccountType || (selectedPlan?.duration_months === 0 && selectedPlan?.quota != null && (selectedPlan.used_quota || 0) >= selectedPlan.quota)) return;
                           
                           if (!user) {
                             router.push(`/auth/sign-in?callbackUrl=/checkout?planId=${selectedPlan.id}`);
@@ -213,7 +221,7 @@ export default function PricingSection({ pricingData, user, compact = false, act
                           }
                         }}
                       >
-                        {at.plans.length === 0 ? "Coming Soon" : isFullAccess ? `Anda Sudah Memiliki Akses Penuh` : hasLifetimeForThisAccountType ? "Anda memiliki paket Lifetime" : "Mulai Berlangganan"}
+                        {at.plans.length === 0 ? "Coming Soon" : isFullAccess ? `Anda Sudah Memiliki Akses Penuh` : hasLifetimeForThisAccountType ? "Anda memiliki paket Lifetime" : (selectedPlan?.duration_months === 0 && selectedPlan?.quota != null && (selectedPlan.used_quota || 0) >= selectedPlan.quota) ? "Kuota Habis" : "Mulai Berlangganan"}
                       </Button>
                     </motion.div>
               );

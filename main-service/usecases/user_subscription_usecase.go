@@ -108,12 +108,41 @@ func (u *UserSubscriptionUseCase) BuySubscription(userID string, planID uuid.UUI
 		return nil, err
 	}
 
-	// Cek apakah user sudah punya langganan aktif untuk paket ini
-	var activeSub entities.UserSubscription
-	err := tx.Where("user_id = ? AND subscription_plan_id = ? AND status = ?", userID, planID, entities.SubscriptionStatusActive).First(&activeSub).Error
+	// Idempotency: Check if user already has a PENDING transaction for this specific plan
+	var pendingTx entities.Transaction
+	err := tx.Where("user_id = ? AND plan_id = ? AND status = ?", userID, planID, entities.TransactionStatusPending).First(&pendingTx).Error
+	if err == nil {
+		// Return existing pending transaction without eating more quota
+		tx.Rollback()
+		return &CheckoutResponse{
+			Token:       pendingTx.PaymentToken,
+			RedirectURL: pendingTx.InvoiceURL,
+		}, nil
+	}
+
+	// Double Purchase Protection: Check if user already has an active lifetime subscription for this account type
+	var activeLifetimeSub entities.UserSubscription
+	err = tx.Joins("JOIN subscription_plans ON subscription_plans.id = user_subscriptions.subscription_plan_id").
+		Where("user_subscriptions.user_id = ? AND subscription_plans.account_type_id = ? AND subscription_plans.duration_months = 0 AND user_subscriptions.status = ?", userID, plan.AccountTypeID, entities.SubscriptionStatusActive).
+		First(&activeLifetimeSub).Error
 	if err == nil {
 		tx.Rollback()
-		return nil, errors.New("anda sudah memiliki langganan aktif untuk paket ini")
+		return nil, errors.New("anda sudah memiliki langganan lifetime untuk tipe akun ini")
+	}
+
+	// Atomic Quota Reservation
+	if plan.Quota != nil {
+		res := tx.Model(&entities.SubscriptionPlan{}).
+			Where("id = ? AND used_quota < quota", plan.ID).
+			Update("used_quota", gorm.Expr("used_quota + 1"))
+		if res.Error != nil {
+			tx.Rollback()
+			return nil, res.Error
+		}
+		if res.RowsAffected == 0 {
+			tx.Rollback()
+			return nil, errors.New("mohon maaf, kuota untuk plan ini sudah habis")
+		}
 	}
 
 	// Buat transaksi baru
@@ -145,6 +174,10 @@ func (u *UserSubscriptionUseCase) BuySubscription(userID string, planID uuid.UUI
 		},
 		Callbacks: &snap.Callbacks{
 			Finish: returnURL,
+		},
+		Expiry: &snap.ExpiryDetails{
+			Unit:     "hour",
+			Duration: 1,
 		},
 	}
 
@@ -226,6 +259,16 @@ func (u *UserSubscriptionUseCase) HandleMidtransWebhook(payload map[string]inter
 		if err := tx.Save(&transaction).Error; err != nil {
 			tx.Rollback()
 			return err
+		}
+
+		// Release quota if transaction failed/expired and it was previously pending
+		if transaction.Status == entities.TransactionStatusFailed && oldStatus == entities.TransactionStatusPending {
+			var plan entities.SubscriptionPlan
+			if err := tx.First(&plan, "id = ?", transaction.PlanID).Error; err == nil && plan.Quota != nil {
+				tx.Model(&entities.SubscriptionPlan{}).
+					Where("id = ? AND used_quota > 0", plan.ID).
+					Update("used_quota", gorm.Expr("used_quota - 1"))
+			}
 		}
 
 		// Jika settlement DAN status lama bukan settlement, subscribe user (idempotency check)

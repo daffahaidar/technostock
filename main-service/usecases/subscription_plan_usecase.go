@@ -24,6 +24,19 @@ func (u *SubscriptionPlanUseCase) CreatePlan(plan *entities.SubscriptionPlan) er
 		}
 		return err
 	}
+
+	if plan.DurationMonths == 0 {
+		if plan.Quota == nil {
+			return errors.New("kuota wajib diisi untuk plan lifetime")
+		}
+		var existingLifetime entities.SubscriptionPlan
+		if err := u.db.Where("account_type_id = ? AND duration_months = 0", plan.AccountTypeID).First(&existingLifetime).Error; err == nil {
+			return errors.New("tipe akun ini sudah memiliki plan lifetime")
+		}
+	} else {
+		plan.Quota = nil
+	}
+
 	return u.db.Create(plan).Error
 }
 
@@ -45,7 +58,7 @@ func (u *SubscriptionPlanUseCase) GetAllPlans() ([]entities.SubscriptionPlan, er
 
 	if err := u.db.Select("main.subscription_plans.*, (?) AS user_count", subQuery).
 		Preload("AccountType").
-		Order("created_at asc").
+		Order("CASE WHEN main.subscription_plans.duration_months = 0 THEN 9999 ELSE main.subscription_plans.duration_months END ASC").
 		Find(&plans).Error; err != nil {
 		return nil, err
 	}
@@ -64,6 +77,17 @@ func (u *SubscriptionPlanUseCase) GetPlanByID(id uuid.UUID) (*entities.Subscript
 }
 
 func (u *SubscriptionPlanUseCase) UpdatePlan(plan *entities.SubscriptionPlan) error {
+	if plan.DurationMonths == 0 {
+		if plan.Quota == nil {
+			return errors.New("kuota wajib diisi untuk plan lifetime")
+		}
+		var existingLifetime entities.SubscriptionPlan
+		if err := u.db.Where("account_type_id = ? AND duration_months = 0 AND id != ?", plan.AccountTypeID, plan.ID).First(&existingLifetime).Error; err == nil {
+			return errors.New("tipe akun ini sudah memiliki plan lifetime lain")
+		}
+	} else {
+		plan.Quota = nil
+	}
 	return u.db.Save(plan).Error
 }
 
@@ -81,6 +105,6 @@ func (u *SubscriptionPlanUseCase) DeletePlan(id uuid.UUID) error {
 			return errors.New("cannot delete subscription plan because there are still users with active subscriptions")
 		}
 
-		return tx.Unscoped().Delete(&entities.SubscriptionPlan{}, "id = ?", id).Error
+		return tx.Delete(&entities.SubscriptionPlan{}, "id = ?", id).Error
 	})
 }
