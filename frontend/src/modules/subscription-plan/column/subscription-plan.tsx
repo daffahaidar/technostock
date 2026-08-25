@@ -1,12 +1,18 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { ColDef, ICellRendererParams } from "ag-grid-community";
+import { ColDef, ICellRendererParams, ValueFormatterParams } from "ag-grid-community";
 import { deleteSubscriptionPlan } from "../actions/subscription-plan-actions";
 import { useMutation } from "@tanstack/react-query";
 import { useRevalidateQuery } from "@/hooks/use-revalidate";
 import { toast } from "sonner";
 import { Trash } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 import { authClient } from "@/app/auth/sign-in/_handlers/client";
 
@@ -14,6 +20,8 @@ const ActionsRenderer = (props: ICellRendererParams) => {
   const revalidate = useRevalidateQuery();
   const { data: sessionData } = authClient.useSession();
   
+  const userCount = props.data.user_count || 0;
+
   const { mutate, isPending } = useMutation({
     mutationFn: async () => {
       if (confirm("Are you sure you want to delete this subscription plan?")) {
@@ -34,30 +42,56 @@ const ActionsRenderer = (props: ICellRendererParams) => {
     },
   });
 
+  const isDeleteDisabled = userCount > 0 || isPending;
+
   return (
     <div className="flex gap-2 items-center h-full">
-      <Button 
-        size="xs" 
-        variant="destructive" 
-        onClick={() => mutate()} 
-        disabled={isPending}
-      >
-        <Trash className="w-4 h-4 mr-1" />
-        Delete
-      </Button>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className={isDeleteDisabled ? "cursor-not-allowed" : ""}>
+              <Button 
+                size="xs" 
+                className="h-auto py-1 bg-transparent border border-red-900 text-red-500 hover:bg-red-950 hover:text-red-400 disabled:opacity-50 disabled:pointer-events-none"
+                onClick={() => mutate()} 
+                disabled={isDeleteDisabled}
+              >
+                <Trash className="w-3.5 h-3.5 mr-1" />
+                Delete
+              </Button>
+            </span>
+          </TooltipTrigger>
+          {userCount > 0 && (
+            <TooltipContent hideArrow={true} className="bg-[#111] border border-[#D4AF37]/50 text-[#D4AF37] text-xs font-medium shadow-md shadow-[#D4AF37]/5">
+              <p>Tidak dapat dihapus: Masih ada {userCount} user dengan subscription aktif.</p>
+            </TooltipContent>
+          )}
+        </Tooltip>
+      </TooltipProvider>
     </div>
   );
 };
 
 export const SubscriptionPlanColumn: ColDef[] = [
-  { field: "name", headerName: "Name" },
-  { field: "account_type.name", headerName: "Account Type" },
-  { field: "duration_months", headerName: "Duration (Months)" },
-  { field: "price", headerName: "Price" },
-  { field: "description", headerName: "Description" },
+  { field: "name", headerName: "Nama Plan" },
+  { field: "account_type.name", headerName: "Tipe Akun" },
+  { field: "duration_months", headerName: "Durasi (Bulan)" },
+  { 
+    field: "price", 
+    headerName: "Harga",
+    valueFormatter: (params: ValueFormatterParams) => {
+      return new Intl.NumberFormat("id-ID", {
+        style: "currency",
+        currency: "IDR",
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      }).format(params.value);
+    }
+  },
+  { field: "user_count", headerName: "Jumlah Member" },
+  { field: "description", headerName: "Deskripsi", flex: 1 },
   {
-    field: "actions",
-    headerName: "Actions",
+    headerName: "Aksi",
     cellRenderer: ActionsRenderer,
   },
 ];

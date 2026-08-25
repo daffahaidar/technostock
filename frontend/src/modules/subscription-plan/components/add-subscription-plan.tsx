@@ -1,6 +1,5 @@
 "use client";
 
-import { Card, CardContent } from "@/components/ui/card";
 import z from "zod";
 import { subscriptionPlanSchema } from "../schema/subscription-plan";
 import { useForm, type Resolver } from "react-hook-form";
@@ -22,12 +21,19 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { useRouter } from "next/navigation";
+
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 import { authClient } from "@/app/auth/sign-in/_handlers/client";
 
-export default function AddSubscriptionPlanForm() {
-  const router = useRouter();
+export default function AddSubscriptionPlanForm({ onSuccessSubmit }: { onSuccessSubmit?: () => void }) {
+ 
   const revalidate = useRevalidateQuery();
   const { data: sessionData } = authClient.useSession();
   
@@ -62,7 +68,7 @@ export default function AddSubscriptionPlanForm() {
       toast.success("Subscription Plan created successfully");
       form.reset();
       revalidate(["get-subscription-plans"]);
-      router.refresh();
+      onSuccessSubmit?.();
     },
     onError: (error: unknown) => {
       toast.error((error as Error)?.message || "Failed to create subscription plan");
@@ -71,97 +77,143 @@ export default function AddSubscriptionPlanForm() {
 
   return (
     <Form {...form}>
-      <Card>
-        <CardContent className="pt-6">
-          <form onSubmit={form.handleSubmit((values) => mutate(values))}>
-            <FieldGroup>
-              <FormField
-                control={form.control}
-                name="account_type_id"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Account Type</FormLabel>
-                    <FormControl>
-                      <select
-                        {...field}
-                        className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        <option value="" disabled>Select Account Type</option>
-                        {dataAccountType?.results?.map((at: { id: string; name: string }) => (
-                          <option key={at.id} value={at.id}>
-                            {at.name}
-                          </option>
-                        ))}
-                      </select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="1 Month Plan" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="duration_months"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Duration (Months)</FormLabel>
-                    <FormControl>
-                      <Input type="number" placeholder="1" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="price"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Price</FormLabel>
-                    <FormControl>
-                      <Input type="number" placeholder="50000" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Plan description"
-                        {...field}
+      <form onSubmit={form.handleSubmit((values) => mutate(values))} className="grid gap-4 py-4">
+        <FieldGroup>
+          <FormField
+            control={form.control}
+            name="account_type_id"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Tipe Akun</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Pilih Tipe Akun" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {dataAccountType?.results?.map((at: { id: string; name: string }) => (
+                      <SelectItem key={at.id} value={at.id}>
+                        {at.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nama Plan</FormLabel>
+                <FormControl>
+                  <Input placeholder="Misal: 1 Bulan" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="duration_months"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Durasi (Bulan)</FormLabel>
+                <FormControl>
+                  <div className="flex w-full items-center gap-2">
+                    <div className="flex w-full h-10 items-center rounded-md border border-input bg-background ring-offset-background focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 overflow-hidden">
+                      <Input 
+                        type={field.value === 0 ? "text" : "number"} 
+                        placeholder="1" 
+                        value={field.value === 0 ? "Lifetime" : ((field.value as unknown) === "" ? "" : field.value)}
+                        disabled={field.value === 0}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          field.onChange(val === "" ? "" : Number(val));
+                        }}
+                        className="border-0 h-full focus-visible:ring-0 focus-visible:ring-offset-0 rounded-none bg-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:opacity-100"
                       />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Field>
-                <Button type="submit" disabled={isPending || isLoadingAccountTypes}>
-                  {isPending ? "Creating..." : "Create"}
-                </Button>
-              </Field>
-            </FieldGroup>
-          </form>
-        </CardContent>
-      </Card>
+                      <div className="flex h-full items-center justify-center px-3 text-sm text-muted-foreground border-l border-input bg-muted/50">
+                        Bulan
+                      </div>
+                    </div>
+                    <Button 
+                      type="button" 
+                      variant={field.value === 0 ? "default" : "outline"} 
+                      className={field.value === 0 ? "shrink-0 bg-[#D4AF37] hover:bg-[#F3CA52] text-black font-bold border-none" : "shrink-0"}
+                      onClick={() => {
+                        if (field.value === 0) {
+                          field.onChange(1);
+                        } else {
+                          field.onChange(0);
+                        }
+                      }}
+                    >
+                      Lifetime
+                    </Button>
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="price"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Harga (Rp)</FormLabel>
+                <FormControl>
+                  <div className="flex w-full h-10 items-center rounded-md border border-input bg-background ring-offset-background focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 overflow-hidden">
+                    <div className="flex h-full items-center justify-center px-3 text-sm text-muted-foreground border-r border-input bg-muted/50">
+                      Rp
+                    </div>
+                    <Input 
+                      type="text" 
+                      placeholder="100.000" 
+                      value={(field.value as unknown) !== "" && field.value !== undefined ? new Intl.NumberFormat("id-ID").format(Number(field.value)) : ""}
+                      onChange={(e) => {
+                        const rawValue = e.target.value.replace(/\D/g, "");
+                        field.onChange(rawValue === "" ? "" : Number(rawValue));
+                      }} 
+                      className="border-0 h-full focus-visible:ring-0 focus-visible:ring-offset-0 rounded-none bg-transparent"
+                    />
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Deskripsi</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Deskripsi singkat plan langganan..."
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <Field className="pt-2">
+            <Button 
+              type="submit" 
+              disabled={isPending || isLoadingAccountTypes}
+              className="w-full bg-[#D4AF37] hover:bg-[#F3CA52] text-black font-bold border-none"
+            >
+              {isPending ? "Menyimpan..." : "Simpan Plan"}
+            </Button>
+          </Field>
+        </FieldGroup>
+      </form>
     </Form>
   );
 }

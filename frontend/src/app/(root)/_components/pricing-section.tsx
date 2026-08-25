@@ -26,6 +26,8 @@ interface AccountType {
 
 export default function PricingSection({ pricingData, user, compact = false }: { pricingData: AccountType[], user?: unknown, compact?: boolean }) {
   const router = useRouter();
+  const typedUser = user as { role?: string } | undefined;
+  const isFullAccess = ["admin", "maintainer"].includes(typedUser?.role?.toLowerCase() || "");
   // Store selected plan ID for each account type ID
   const [selectedPlans, setSelectedPlans] = useState<Record<string, string>>(() => {
     const initial: Record<string, string> = {};
@@ -191,9 +193,9 @@ export default function PricingSection({ pricingData, user, compact = false }: {
                         ? "bg-[#D4AF37] hover:bg-[#D4AF37]/90 text-black shadow-[0_0_15px_rgba(212,175,55,0.4)]" 
                         : "bg-white/10 text-white hover:bg-white/20 border border-white/10"
                     }`}
-                    disabled={at.plans.length === 0}
+                    disabled={at.plans.length === 0 || isFullAccess}
                     onClick={() => {
-                      if (at.plans.length === 0) return;
+                      if (at.plans.length === 0 || isFullAccess) return;
                       
                       if (!user) {
                         router.push(`/auth/sign-in?callbackUrl=/checkout?planId=${selectedPlan.id}`);
@@ -202,7 +204,7 @@ export default function PricingSection({ pricingData, user, compact = false }: {
                       }
                     }}
                   >
-                    {at.plans.length === 0 ? "Coming Soon" : "Mulai Berlangganan"}
+                    {at.plans.length === 0 ? "Coming Soon" : isFullAccess ? `Anda Sudah Memiliki Akses Penuh` : "Mulai Berlangganan"}
                   </Button>
                 </motion.div>
               );

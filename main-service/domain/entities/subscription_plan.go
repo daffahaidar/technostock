@@ -15,6 +15,7 @@ type SubscriptionPlan struct {
 	Description    string         `gorm:"type:text" json:"description"`
 	DurationMonths int            `gorm:"type:int;not null" json:"duration_months"` // 0 means lifetime
 	Price          float64        `gorm:"type:numeric(10,2);not null" json:"price"`
+	UserCount      int64          `gorm:"->;column:user_count" json:"user_count"`
 	CreatedAt      time.Time      `json:"created_at"`
 	UpdatedAt      time.Time      `json:"updated_at"`
 	DeletedAt      gorm.DeletedAt `gorm:"index" json:"-"`

@@ -37,7 +37,16 @@ func (u *SubscriptionPlanUseCase) GetPlansByAccountTypeID(accountTypeID uuid.UUI
 
 func (u *SubscriptionPlanUseCase) GetAllPlans() ([]entities.SubscriptionPlan, error) {
 	var plans []entities.SubscriptionPlan
-	if err := u.db.Preload("AccountType").Find(&plans).Error; err != nil {
+	
+	subQuery := u.db.Table("main.user_subscriptions").
+		Select("COUNT(DISTINCT main.user_subscriptions.user_id)").
+		Where("main.user_subscriptions.subscription_plan_id = main.subscription_plans.id").
+		Where("main.user_subscriptions.status = ?", entities.SubscriptionStatusActive)
+
+	if err := u.db.Select("main.subscription_plans.*, (?) AS user_count", subQuery).
+		Preload("AccountType").
+		Order("created_at asc").
+		Find(&plans).Error; err != nil {
 		return nil, err
 	}
 	return plans, nil
@@ -59,5 +68,19 @@ func (u *SubscriptionPlanUseCase) UpdatePlan(plan *entities.SubscriptionPlan) er
 }
 
 func (u *SubscriptionPlanUseCase) DeletePlan(id uuid.UUID) error {
-	return u.db.Unscoped().Delete(&entities.SubscriptionPlan{}, "id = ?", id).Error
+	return u.db.Transaction(func(tx *gorm.DB) error {
+		var activeUserCount int64
+		if err := tx.Table("main.user_subscriptions").
+			Where("subscription_plan_id = ?", id).
+			Where("status = ?", entities.SubscriptionStatusActive).
+			Count(&activeUserCount).Error; err != nil {
+			return err
+		}
+
+		if activeUserCount > 0 {
+			return errors.New("cannot delete subscription plan because there are still users with active subscriptions")
+		}
+
+		return tx.Unscoped().Delete(&entities.SubscriptionPlan{}, "id = ?", id).Error
+	})
 }

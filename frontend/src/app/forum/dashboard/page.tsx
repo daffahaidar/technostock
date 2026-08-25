@@ -86,6 +86,13 @@ async function DashboardContent() {
               : planDetails?.name || "Langganan Premium"
           } 
         />
+      ) : ["admin", "maintainer"].includes(session.user?.role?.toLowerCase() || "") ? (
+        <div className="bg-[#D4AF37]/10 border border-[#D4AF37]/30 rounded-2xl p-10 text-center shadow-lg">
+          <h2 className="text-2xl font-bold text-[#D4AF37] mb-3">Akses Penuh Sebagai {session.user.role}</h2>
+          <p className="text-gray-400 max-w-lg mx-auto">
+            Anda memiliki akses ke seluruh fitur eksklusif member Technostock karena peran Anda sebagai {session.user.role}.
+          </p>
+        </div>
       ) : (
         <div className="bg-white/5 border border-white/10 rounded-2xl p-10 text-center shadow-lg">
           <h2 className="text-2xl font-bold text-white mb-3">Belum Ada Langganan Aktif</h2>
