@@ -1,14 +1,82 @@
 "use client";
 
 import Link from "next/link";
-import { CheckCircle2, XCircle, Clock, ArrowRight } from "lucide-react";
+import { CheckCircle2, XCircle, Clock, ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { authClient } from "@/app/auth/sign-in/_handlers/client";
+import { clearAccessToken } from "./actions";
 
 export default function StatusContent() {
   const searchParams = useSearchParams();
-  const transactionStatus = searchParams.get("transaction_status");
+  const urlTransactionStatus = searchParams.get("transaction_status");
   const orderId = searchParams.get("order_id");
+
+  const { data: sessionData } = authClient.useSession();
+  const token = sessionData?.session.token;
+
+  const [realStatus, setRealStatus] = useState<string | null>(null);
+  const [isSyncing, setIsSyncing] = useState<boolean>(true);
+
+  useEffect(() => {
+    // Jika tidak ada orderId, tidak perlu sinkronisasi
+    if (!orderId) {
+      setIsSyncing(false);
+      return;
+    }
+    
+    // Tunggu sampai token tersedia
+    if (!token) return;
+
+    const syncTransaction = async () => {
+      try {
+        const res = await fetch(`http://localhost:8002/api/v1/subscriptions/transactions/${orderId}/sync`, {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        });
+        const data = await res.json();
+        if (data && data.data && data.data.status) {
+          const fetchedStatus = data.data.status;
+          setRealStatus(fetchedStatus);
+          
+          if (fetchedStatus === "capture" || fetchedStatus === "settlement") {
+            // Force session refresh by deleting access_token
+            // proxy.ts (middleware) will use refresh_token to fetch new token with updated role
+            await clearAccessToken();
+          }
+        } else {
+          setRealStatus(urlTransactionStatus);
+        }
+      } catch (error) {
+        console.error("Failed to sync transaction:", error);
+        setRealStatus(urlTransactionStatus);
+      } finally {
+        setIsSyncing(false);
+      }
+    };
+
+    syncTransaction();
+  }, [orderId, token, urlTransactionStatus]);
+
+  const finalStatus = realStatus || urlTransactionStatus;
+
+  if (isSyncing) {
+    return (
+      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center relative overflow-hidden px-4">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl pointer-events-none">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#D4AF37]/5 rounded-full blur-[150px]" />
+        </div>
+        <div className="z-10 w-full max-w-lg text-center flex flex-col items-center justify-center">
+          <Loader2 className="w-16 h-16 text-[#D4AF37] animate-spin mb-6" />
+          <h1 className="text-2xl font-bold mb-4">Memverifikasi Pembayaran...</h1>
+          <p className="text-gray-400">Mohon tunggu sebentar, kami sedang menyinkronkan status pembayaran Anda dengan server.</p>
+        </div>
+      </div>
+    );
+  }
 
   let statusConfig = {
     title: "Status Pembayaran Tidak Diketahui",
@@ -20,7 +88,7 @@ export default function StatusContent() {
     buttonHref: "/"
   };
 
-  if (transactionStatus === "capture" || transactionStatus === "settlement") {
+  if (finalStatus === "capture" || finalStatus === "settlement") {
     statusConfig = {
       title: "Pembayaran Berhasil!",
       description: "Terima kasih! Pembayaran langganan Anda telah berhasil diproses. Anda sekarang memiliki akses penuh ke fitur eksklusif Technostock.",
@@ -30,7 +98,7 @@ export default function StatusContent() {
       buttonText: "Masuk ke Member Area",
       buttonHref: "/forum/dashboard"
     };
-  } else if (transactionStatus === "pending") {
+  } else if (finalStatus === "pending") {
     statusConfig = {
       title: "Menunggu Pembayaran",
       description: "Pesanan Anda telah dibuat. Silakan selesaikan pembayaran sesuai dengan metode yang Anda pilih sebelum batas waktu berakhir.",
@@ -38,9 +106,9 @@ export default function StatusContent() {
       color: "from-[#D4AF37]/20 to-transparent",
       borderColor: "border-[#D4AF37]/30",
       buttonText: "Ke Dashboard",
-      buttonHref: "/dashboard"
+      buttonHref: "/forum/dashboard"
     };
-  } else if (transactionStatus === "deny" || transactionStatus === "cancel" || transactionStatus === "expire") {
+  } else if (finalStatus === "deny" || finalStatus === "cancel" || finalStatus === "expire" || finalStatus === "failed") {
     statusConfig = {
       title: "Pembayaran Gagal atau Kedaluwarsa",
       description: "Mohon maaf, transaksi Anda gagal, dibatalkan, atau telah melewati batas waktu pembayaran. Silakan coba lakukan checkout kembali.",

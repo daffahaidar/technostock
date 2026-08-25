@@ -235,32 +235,56 @@ func (u *UserSubscriptionUseCase) HandleMidtransWebhook(payload map[string]inter
 				return err
 			}
 
-			// Matikan subs lama
+			// Cek subscription lama
 			var existing entities.UserSubscription
-			dbErr := tx.Where("user_id = ? AND status = ?", transaction.UserID, entities.SubscriptionStatusActive).First(&existing).Error
-			if dbErr == nil {
-				existing.Status = entities.SubscriptionStatusCancelled
-				tx.Save(&existing)
-			}
+			dbErr := tx.Preload("SubscriptionPlan").Where("user_id = ? AND status = ?", transaction.UserID, entities.SubscriptionStatusActive).First(&existing).Error
+			
+			if dbErr == nil && existing.SubscriptionPlan.AccountTypeID == plan.AccountTypeID {
+				// Account Type sama -> Akumulasi
+				existing.SubscriptionPlanID = plan.ID
+				if plan.DurationMonths > 0 {
+					if existing.EndDate != nil {
+						newEndDate := existing.EndDate.AddDate(0, plan.DurationMonths, 0)
+						existing.EndDate = &newEndDate
+					} else {
+						newEndDate := time.Now().AddDate(0, plan.DurationMonths, 0)
+						existing.EndDate = &newEndDate
+					}
+				} else if plan.DurationMonths == 0 {
+					existing.EndDate = nil
+				}
+				
+				if err := tx.Save(&existing).Error; err != nil {
+					tx.Rollback()
+					return err
+				}
+			} else {
+				// Account Type beda ATAU belum ada langganan aktif
+				if dbErr == nil {
+					// Batalkan yang lama
+					existing.Status = entities.SubscriptionStatusCancelled
+					tx.Save(&existing)
+				}
+				
+				startDate := time.Now()
+				var endDate *time.Time
+				if plan.DurationMonths > 0 {
+					t := startDate.AddDate(0, plan.DurationMonths, 0)
+					endDate = &t
+				}
 
-			startDate := time.Now()
-			var endDate *time.Time
-			if plan.DurationMonths > 0 {
-				t := startDate.AddDate(0, plan.DurationMonths, 0)
-				endDate = &t
-			}
+				newSub := &entities.UserSubscription{
+					UserID:             transaction.UserID,
+					SubscriptionPlanID: plan.ID,
+					Status:             entities.SubscriptionStatusActive,
+					StartDate:          startDate,
+					EndDate:            endDate,
+				}
 
-			newSub := &entities.UserSubscription{
-				UserID:             transaction.UserID,
-				SubscriptionPlanID: plan.ID,
-				Status:             entities.SubscriptionStatusActive,
-				StartDate:          startDate,
-				EndDate:            endDate,
-			}
-
-			if err := tx.Create(newSub).Error; err != nil {
-				tx.Rollback()
-				return err
+				if err := tx.Create(newSub).Error; err != nil {
+					tx.Rollback()
+					return err
+				}
 			}
 
 			// Update Role to Member via gRPC
@@ -297,4 +321,20 @@ func (u *UserSubscriptionUseCase) GetActiveSubscription(userID string) (*entitie
 		return nil, err
 	}
 	return &existing, nil
+}
+
+func (u *UserSubscriptionUseCase) SyncTransaction(orderID string) (*entities.Transaction, error) {
+	payload := map[string]interface{}{
+		"order_id": orderID,
+	}
+	
+	// Secara paksa trigger webhook logic yang sudah menghandle call API Midtrans dan logic DB
+	_ = u.HandleMidtransWebhook(payload)
+
+	var transaction entities.Transaction
+	if err := u.db.Where("external_id = ?", orderID).First(&transaction).Error; err != nil {
+		return nil, err
+	}
+
+	return &transaction, nil
 }

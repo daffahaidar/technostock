@@ -118,3 +118,17 @@ func (h *UserSubscriptionHandler) GetMyActiveSubscription(c fiber.Ctx) error {
 	}
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": sub})
 }
+
+func (h *UserSubscriptionHandler) SyncTransaction(c fiber.Ctx) error {
+	orderID := c.Params("order_id")
+	if orderID == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Order ID is required"})
+	}
+
+	transaction, err := h.usecase.SyncTransaction(orderID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"data": transaction})
+}

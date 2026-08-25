@@ -145,7 +145,7 @@ func (u *MemberUseCase) ExtendSubscription(userID string, planID uuid.UUID) erro
 
 	// 2. Find active subscription
 	var activeSub entities.UserSubscription
-	err := tx.Where("user_id = ? AND status = ?", userID, entities.SubscriptionStatusActive).First(&activeSub).Error
+	err := tx.Preload("SubscriptionPlan").Where("user_id = ? AND status = ?", userID, entities.SubscriptionStatusActive).First(&activeSub).Error
 	if err != nil {
 		tx.Rollback()
 		// If they don't have an active subscription, just promote/subscribe them normally
@@ -159,11 +159,21 @@ func (u *MemberUseCase) ExtendSubscription(userID string, planID uuid.UUID) erro
 	}
 
     // 3. Update plan ID and end date
+	isSameAccountType := activeSub.SubscriptionPlan.AccountTypeID == plan.AccountTypeID
 	activeSub.SubscriptionPlanID = plan.ID
-	if activeSub.EndDate != nil && plan.DurationMonths > 0 {
-		newEndDate := activeSub.EndDate.AddDate(0, plan.DurationMonths, 0)
-		activeSub.EndDate = &newEndDate
+
+	if plan.DurationMonths > 0 {
+		if isSameAccountType && activeSub.EndDate != nil {
+			// Akumulasi dari EndDate lama
+			newEndDate := activeSub.EndDate.AddDate(0, plan.DurationMonths, 0)
+			activeSub.EndDate = &newEndDate
+		} else {
+			// Reset (dihitung dari sekarang) jika beda AccountType atau sebelumnya Lifetime
+			newEndDate := time.Now().AddDate(0, plan.DurationMonths, 0)
+			activeSub.EndDate = &newEndDate
+		}
 	} else if plan.DurationMonths == 0 {
+		// Lifetime
 		activeSub.EndDate = nil
 	}
 

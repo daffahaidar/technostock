@@ -57,6 +57,7 @@ func SetupSubscriptionRoutes(
 	subGroup.Post("/subscribe", userSubscriptionHandler.Subscribe)
 	subGroup.Post("/buy", userSubscriptionHandler.Buy)
 	subGroup.Get("/my-active", userSubscriptionHandler.GetMyActiveSubscription)
+	subGroup.Post("/transactions/:order_id/sync", userSubscriptionHandler.SyncTransaction)
 
 	// ==================== Member Management Routes (Admin) ====================
 	memberGroup := api.Group("/admin/members")
