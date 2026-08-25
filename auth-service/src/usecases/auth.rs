@@ -70,6 +70,10 @@ impl<R: UserRepository> LoginUseCase<R> {
             .await?
             .ok_or(AppError::InvalidCredentials)?;
 
+        if user.status == shared_core::domain::entities::user::UserStatus::Suspended {
+            return Err(AppError::Forbidden);
+        }
+
         // OAuth-only users cannot sign in with password
         let password_hash = user.password_hash.as_ref()
             .ok_or(AppError::InvalidCredentials)?;
@@ -156,6 +160,9 @@ impl<R: UserRepository> GitHubCallbackUseCase<R> {
 
         // 3. Check if user already exists by github_id
         let user = if let Some(existing_user) = self.user_repository.find_by_github_id(github_user.id).await? {
+            if existing_user.status == shared_core::domain::entities::user::UserStatus::Suspended {
+                return Err(AppError::Forbidden);
+            }
             existing_user
         } else {
             // Check if a user with this email already exists (link accounts)
@@ -231,6 +238,9 @@ impl<R: UserRepository> GoogleCallbackUseCase<R> {
 
         // 3. Check if user already exists by google_id
         let user = if let Some(existing_user) = self.user_repository.find_by_google_id(&google_user.id).await? {
+            if existing_user.status == shared_core::domain::entities::user::UserStatus::Suspended {
+                return Err(AppError::Forbidden);
+            }
             existing_user
         } else {
             if let Some(mut existing_user) = self.user_repository.find_by_email(&email).await? {

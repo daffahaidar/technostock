@@ -77,7 +77,7 @@ async function DashboardContent() {
     <div className="w-full">
       <h1 className="text-3xl font-bold mb-8 text-white">Halo, <span className="text-[#D4AF37]">{session.user.name || session.user.email}</span>!</h1>
       
-      {activeSub && activeSub.end_date ? (
+      {activeSub ? (
         <SubscriptionCountdown 
           endDateStr={activeSub.end_date} 
           planName={

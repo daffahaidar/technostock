@@ -46,6 +46,8 @@ pub async fn start_gateway() {
     let app = Router::new()
         .route("/api/v1/auth", any(proxy_auth))
         .route("/api/v1/auth/{*path}", any(proxy_auth))
+        .route("/api/v1/users", any(proxy_auth))
+        .route("/api/v1/users/{*path}", any(proxy_auth))
         .route("/api/v1/main", any(proxy_main))
         .route("/api/v1/main/{*path}", any(proxy_main))
         .route("/ws", get(proxy_ws))

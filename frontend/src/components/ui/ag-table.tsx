@@ -8,7 +8,7 @@ import {
   colorSchemeDark,
 } from "ag-grid-community";
 import type { ColDef, GridOptions } from "ag-grid-community";
-import { useTheme } from "next-themes";
+
 import { useMemo, useEffect, useState } from "react";
 import { BeatLoader } from "react-spinners";
 
@@ -26,16 +26,12 @@ export default function AgTable<T>({
   columnDefs,
   gridOptions,
 }: AgTableProps<T>) {
-  const { theme, systemTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
-
-  const currentTheme = theme === "system" ? systemTheme : theme;
-  const isDark = currentTheme === "dark";
 
   const myTheme = themeQuartz.withPart(colorSchemeDark).withParams({
     headerBackgroundColor: "#111111",

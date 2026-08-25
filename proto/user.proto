@@ -4,10 +4,15 @@ option go_package = "main-service/pb;pb";
 
 service UserService {
     rpc GetUsers (GetUsersRequest) returns (GetUsersResponse);
+    rpc GetAllUsers (GetAllUsersRequest) returns (GetUsersResponse);
     rpc UpdateLastRead (UpdateLastReadRequest) returns (Empty);
     rpc ValidateToken (ValidateTokenRequest) returns (ValidateTokenResponse);
     rpc UpdateUserRole (UpdateUserRoleRequest) returns (Empty);
     rpc UpdateDiscordUsername (UpdateDiscordUsernameRequest) returns (Empty);
+}
+
+message GetAllUsersRequest {
+    repeated string exclude_roles = 1;
 }
 
 message GetUsersRequest {
@@ -21,6 +26,8 @@ message User {
     optional string avatar_url = 4;
     optional int64 last_read_at = 5; // Unix timestamp
     optional string discord_username = 6;
+    string email = 7;
+    string status = 8;
 }
 
 message GetUsersResponse {

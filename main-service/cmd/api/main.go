@@ -49,6 +49,9 @@ func main() {
 	userSubscriptionUseCase := usecases.NewUserSubscriptionUseCase(db, cfg.MidtransServerKey, authClient)
 	userSubscriptionHandler := handlers.NewUserSubscriptionHandler(userSubscriptionUseCase, authClient)
 
+	memberUseCase := usecases.NewMemberUseCase(db, authClient, userSubscriptionUseCase)
+	memberHandler := handlers.NewMemberHandler(memberUseCase)
+
 	app := fiber.New()
 
 	app.Use(logger.New())
@@ -56,7 +59,7 @@ func main() {
 	app.Use(cors.New())
 
 	api := app.Group("/api/v1")
-	routes.SetupSubscriptionRoutes(api, accountTypeHandler, subscriptionPlanHandler, userSubscriptionHandler, authClient)
+	routes.SetupSubscriptionRoutes(api, accountTypeHandler, subscriptionPlanHandler, userSubscriptionHandler, memberHandler, authClient)
 
 
 	log.Printf("Server listening on port %s", cfg.Port)

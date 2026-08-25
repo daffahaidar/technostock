@@ -115,7 +115,7 @@ const BenefitsRenderer = (props: ICellRendererParams) => {
     if (!Array.isArray(benefits)) {
       benefits = [String(benefits)];
     }
-  } catch (e) {
+  } catch {
     if (props.value) {
       benefits = [String(props.value)];
     }

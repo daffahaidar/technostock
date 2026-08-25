@@ -26,7 +26,7 @@ export default function SubscriptionPlanTable() {
 
   return (
     <AgTable
-      rowData={dataSubscriptionPlan?.results}
+      rowData={(dataSubscriptionPlan?.results as Record<string, unknown>[]) || []}
       columnDefs={SubscriptionPlanColumn}
     />
   );

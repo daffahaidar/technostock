@@ -74,8 +74,13 @@ export default function SignInForm() {
     },
     onError: (error: unknown) => {
       const err = error as { meta?: { message?: string }; message?: string };
-      const message =
+      let message =
         err?.meta?.message || err?.message || "Terjadi kesalahan";
+      
+      if (message === "Forbidden") {
+        message = "Akun anda telah di suspend, silahkan hubungi Admin";
+      }
+      
       toast.error(message);
     },
   });

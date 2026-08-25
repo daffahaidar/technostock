@@ -7,7 +7,7 @@ pub mod user_proto {
 }
 
 use user_proto::user_service_server::UserService;
-use user_proto::{GetUsersRequest, GetUsersResponse, UpdateLastReadRequest, ValidateTokenRequest, ValidateTokenResponse, Empty, User};
+use user_proto::{GetUsersRequest, GetUsersResponse, GetAllUsersRequest, UpdateLastReadRequest, ValidateTokenRequest, ValidateTokenResponse, Empty, User};
 use shared_core::infrastructure::repositories::postgres_user_repository::PostgresUserRepository;
 use shared_core::domain::repositories::user_repository::UserRepository;
 use shared_core::infrastructure::auth::jwt::JwtService;
@@ -41,6 +41,37 @@ impl UserService for UserServiceImpl {
                     avatar_url: user.avatar_url,
                     last_read_at: user.last_read_at.map(|ts| ts.timestamp_millis()),
                     discord_username: user.discord_username,
+                    email: user.email,
+                    status: format!("{:?}", user.status),
+                });
+            }
+        }
+
+        Ok(Response::new(GetUsersResponse { users }))
+    }
+
+    async fn get_all_users(
+        &self,
+        request: Request<GetAllUsersRequest>,
+    ) -> Result<Response<GetUsersResponse>, Status> {
+        let exclude_roles: Vec<String> = request.into_inner().exclude_roles;
+        
+        let all_users = self.user_repository.find_all().await
+            .map_err(|_| Status::internal("Failed to fetch users"))?;
+
+        let mut users = std::collections::HashMap::new();
+        for user in all_users {
+            let role_str = format!("{:?}", user.role);
+            if !exclude_roles.contains(&role_str) {
+                users.insert(user.id.to_string(), User {
+                    id: user.id.to_string(),
+                    name: user.name,
+                    role: role_str,
+                    avatar_url: user.avatar_url,
+                    last_read_at: user.last_read_at.map(|ts| ts.timestamp_millis()),
+                    discord_username: user.discord_username,
+                    email: user.email,
+                    status: format!("{:?}", user.status),
                 });
             }
         }

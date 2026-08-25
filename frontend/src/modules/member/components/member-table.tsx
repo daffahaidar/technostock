@@ -1,21 +1,20 @@
 "use client";
 
 import AgTable from "@/components/ui/ag-table";
-import { AccountTypeColumn } from "../column/account-type";
+import { MemberColumn } from "../column/member";
 import { useQuery } from "@tanstack/react-query";
-import { getAccountTypes } from "../actions/account-type-actions";
-
+import { getMembers } from "../actions/member-actions";
 import { authClient } from "@/app/auth/sign-in/_handlers/client";
 
-export default function AccountTypeTable() {
+export default function MemberTable() {
   const { data: sessionData } = authClient.useSession();
   const token = sessionData?.session?.token;
 
-  const { data: dataAccountType, isPending } = useQuery({
-    queryKey: ["get-account-types", token],
+  const { data: membersData, isPending } = useQuery({
+    queryKey: ["get-members", token],
     queryFn: async () => {
       if (!token) return { results: [] };
-      return (await getAccountTypes(token)) as { results: unknown[] };
+      return (await getMembers(token)) as { results: unknown[] };
     },
     enabled: !!token,
   });
@@ -26,8 +25,8 @@ export default function AccountTypeTable() {
 
   return (
     <AgTable
-      rowData={(dataAccountType?.results as Record<string, unknown>[]) || []}
-      columnDefs={AccountTypeColumn}
+      rowData={(membersData?.results as Record<string, unknown>[]) || []}
+      columnDefs={MemberColumn}
     />
   );
 }

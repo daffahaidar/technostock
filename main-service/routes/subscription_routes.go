@@ -13,6 +13,7 @@ func SetupSubscriptionRoutes(
 	accountTypeHandler *handlers.AccountTypeHandler,
 	subscriptionPlanHandler *handlers.SubscriptionPlanHandler,
 	userSubscriptionHandler *handlers.UserSubscriptionHandler,
+	memberHandler *handlers.MemberHandler,
 	authClient *grpc.AuthClient,
 ) {
 	// ==================== Account Type Routes ====================
@@ -56,4 +57,15 @@ func SetupSubscriptionRoutes(
 	subGroup.Post("/subscribe", userSubscriptionHandler.Subscribe)
 	subGroup.Post("/buy", userSubscriptionHandler.Buy)
 	subGroup.Get("/my-active", userSubscriptionHandler.GetMyActiveSubscription)
+
+	// ==================== Member Management Routes (Admin) ====================
+	memberGroup := api.Group("/admin/members")
+	memberGroup.Use(middleware.AuthMiddleware(authClient))
+	memberGroup.Use(adminRole)
+
+	memberGroup.Get("/", memberHandler.GetMembers)
+	memberGroup.Get("", memberHandler.GetMembers)
+	memberGroup.Post("/:id/promote", memberHandler.PromoteToMember)
+	memberGroup.Post("/:id/extend", memberHandler.ExtendSubscription)
+	memberGroup.Post("/:id/revoke", memberHandler.RevokeMembership)
 }
