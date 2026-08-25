@@ -15,6 +15,28 @@ export default async function Home() {
   const session = await getSession();
   const pricingData = await getPublicPricingData();
 
+  let activeSub = null;
+  if (session?.user) {
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+    try {
+      const mySubRes = await fetch(`${API_URL}/api/v1/main/subscriptions/my-active`, {
+        headers: {
+          "Authorization": `Bearer ${session.session.token}`,
+          "Content-Type": "application/json"
+        },
+        cache: "no-store"
+      });
+      if (mySubRes.ok) {
+        const subData = await mySubRes.json();
+        if (subData?.data) {
+          activeSub = subData.data;
+        }
+      }
+    } catch (e) {
+      console.error("Failed to fetch active subscription for pricing section", e);
+    }
+  }
+
   return (
     <main className="relative">
       <LandingNavbar user={session?.user || null} />
@@ -24,7 +46,7 @@ export default async function Home() {
       <ProductShowcase />
       <HowItWorksSection />
       <TestimonialsSection />
-      <PricingSection pricingData={pricingData} user={session?.user || null} />
+      <PricingSection pricingData={pricingData} user={session?.user || null} activeSub={activeSub} />
       <CtaSection />
       <LandingFooter />
     </main>
