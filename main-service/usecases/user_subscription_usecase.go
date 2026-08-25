@@ -242,6 +242,7 @@ func (u *UserSubscriptionUseCase) HandleMidtransWebhook(payload map[string]inter
 			if dbErr == nil && existing.SubscriptionPlan.AccountTypeID == plan.AccountTypeID {
 				// Account Type sama -> Akumulasi
 				existing.SubscriptionPlanID = plan.ID
+				existing.SubscriptionPlan = entities.SubscriptionPlan{} // Clear relation so GORM uses the updated ID
 				if plan.DurationMonths > 0 {
 					if existing.EndDate != nil {
 						newEndDate := existing.EndDate.AddDate(0, plan.DurationMonths, 0)

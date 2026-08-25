@@ -158,9 +158,10 @@ func (u *MemberUseCase) ExtendSubscription(userID string, planID uuid.UUID) erro
 		return err
 	}
 
-    // 3. Update plan ID and end date
+	// 3. Update plan ID and end date
 	isSameAccountType := activeSub.SubscriptionPlan.AccountTypeID == plan.AccountTypeID
 	activeSub.SubscriptionPlanID = plan.ID
+	activeSub.SubscriptionPlan = entities.SubscriptionPlan{} // Clear relation so GORM uses the updated ID
 
 	if plan.DurationMonths > 0 {
 		if isSameAccountType && activeSub.EndDate != nil {
