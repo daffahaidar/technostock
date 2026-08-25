@@ -24,7 +24,7 @@ interface AccountType {
   plans: Plan[];
 }
 
-export default function PricingSection({ pricingData, user, compact = false, activeSub = null }: { pricingData: AccountType[], user?: unknown, compact?: boolean, activeSub?: any }) {
+export default function PricingSection({ pricingData, user, compact = false, activeSub = null }: { pricingData: AccountType[], user?: unknown, compact?: boolean, activeSub?: { subscription_plan_id?: string } | null }) {
   const router = useRouter();
   const typedUser = user as { role?: string } | undefined;
   const isFullAccess = ["admin", "maintainer"].includes(typedUser?.role?.toLowerCase() || "");
