@@ -90,7 +90,7 @@ type CheckoutResponse struct {
 	RedirectURL string `json:"redirect_url"`
 }
 
-func (u *UserSubscriptionUseCase) BuySubscription(userID string, planID uuid.UUID, discordUsername string, returnURL string) (*CheckoutResponse, error) {
+func (u *UserSubscriptionUseCase) BuySubscription(userID string, planID uuid.UUID, discordUsername string, returnURL string, voucherCode string) (*CheckoutResponse, error) {
 	// Start transaction
 	tx := u.db.Begin()
 	defer func() {
@@ -111,6 +111,10 @@ func (u *UserSubscriptionUseCase) BuySubscription(userID string, planID uuid.UUI
 	// Idempotency: Check if user already has a PENDING transaction for this specific plan
 	var pendingTx entities.Transaction
 	err := tx.Where("user_id = ? AND plan_id = ? AND status = ?", userID, planID, entities.TransactionStatusPending).First(&pendingTx).Error
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		tx.Rollback()
+		return nil, err
+	}
 	if err == nil {
 		// Return existing pending transaction without eating more quota
 		tx.Rollback()
@@ -122,9 +126,13 @@ func (u *UserSubscriptionUseCase) BuySubscription(userID string, planID uuid.UUI
 
 	// Double Purchase Protection: Check if user already has an active lifetime subscription for this account type
 	var activeLifetimeSub entities.UserSubscription
-	err = tx.Joins("JOIN subscription_plans ON subscription_plans.id = user_subscriptions.subscription_plan_id").
-		Where("user_subscriptions.user_id = ? AND subscription_plans.account_type_id = ? AND subscription_plans.duration_months = 0 AND user_subscriptions.status = ?", userID, plan.AccountTypeID, entities.SubscriptionStatusActive).
+	err = tx.Joins("JOIN main.subscription_plans ON main.subscription_plans.id = main.user_subscriptions.subscription_plan_id").
+		Where("main.user_subscriptions.user_id = ? AND main.subscription_plans.account_type_id = ? AND main.subscription_plans.duration_months = 0 AND main.user_subscriptions.status = ?", userID, plan.AccountTypeID, entities.SubscriptionStatusActive).
 		First(&activeLifetimeSub).Error
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		tx.Rollback()
+		return nil, err
+	}
 	if err == nil {
 		tx.Rollback()
 		return nil, errors.New("anda sudah memiliki langganan lifetime untuk tipe akun ini")
@@ -145,14 +153,91 @@ func (u *UserSubscriptionUseCase) BuySubscription(userID string, planID uuid.UUI
 		}
 	}
 
+	var appliedVoucher *entities.Voucher
+	var discountAmount float64 = 0
+
+	if voucherCode != "" {
+		var voucher entities.Voucher
+		if err := tx.Where("code = ?", voucherCode).First(&voucher).Error; err != nil {
+			tx.Rollback()
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return nil, errors.New("kode voucher tidak ditemukan")
+			}
+			return nil, err
+		}
+
+		if time.Now().After(voucher.ExpiresAt) {
+			tx.Rollback()
+			return nil, errors.New("kode voucher sudah kedaluwarsa")
+		}
+
+		// Atomic Quota Reservation for Voucher
+		if voucher.Quota != nil {
+			res := tx.Model(&entities.Voucher{}).
+				Where("id = ? AND used_quota < quota", voucher.ID).
+				Update("used_quota", gorm.Expr("used_quota + 1"))
+			if res.Error != nil {
+				tx.Rollback()
+				return nil, res.Error
+			}
+			if res.RowsAffected == 0 {
+				tx.Rollback()
+				return nil, errors.New("mohon maaf, kuota voucher ini sudah habis")
+			}
+		}
+
+		appliedVoucher = &voucher
+		
+		// Calculate discount
+		discountAmount = plan.Price * (voucher.DiscountPercentage / 100)
+		if discountAmount > voucher.MaxDiscountAmount {
+			discountAmount = voucher.MaxDiscountAmount
+		}
+	}
+
+	finalPrice := plan.Price - discountAmount
+	if finalPrice < 0 {
+		finalPrice = 0
+	}
+
 	// Buat transaksi baru
 	newTransaction := &entities.Transaction{
 		UserID:          userID,
 		PlanID:          plan.ID,
 		ExternalID:      fmt.Sprintf("SUB-%s-%d", planID.String()[:8], time.Now().Unix()),
-		Amount:          plan.Price,
+		Amount:          finalPrice,
+		DiscountAmount:  discountAmount,
 		Status:          entities.TransactionStatusPending,
 		DiscordUsername: discordUsername,
+	}
+
+	if appliedVoucher != nil {
+		newTransaction.VoucherID = &appliedVoucher.ID
+	}
+
+	if finalPrice == 0 {
+		newTransaction.Status = entities.TransactionStatusSettlement
+		newTransaction.PaymentToken = "FREE-" + newTransaction.ExternalID
+		newTransaction.InvoiceURL = returnURL
+
+		if err := tx.Create(newTransaction).Error; err != nil {
+			tx.Rollback()
+			return nil, err
+		}
+
+		if err := u.activateSubscription(tx, newTransaction); err != nil {
+			tx.Rollback()
+			return nil, err
+		}
+
+		if err := tx.Commit().Error; err != nil {
+			return nil, err
+		}
+
+		return &CheckoutResponse{
+			Token:       newTransaction.PaymentToken,
+			RedirectURL: newTransaction.InvoiceURL,
+		}, nil
 	}
 
 	// Midtrans setup
@@ -162,12 +247,12 @@ func (u *UserSubscriptionUseCase) BuySubscription(userID string, planID uuid.UUI
 	req := &snap.Request{
 		TransactionDetails: midtrans.TransactionDetails{
 			OrderID:  newTransaction.ExternalID,
-			GrossAmt: int64(plan.Price),
+			GrossAmt: int64(finalPrice),
 		},
 		Items: &[]midtrans.ItemDetails{
 			{
 				ID:    plan.ID.String(),
-				Price: int64(plan.Price),
+				Price: int64(finalPrice),
 				Qty:   1,
 				Name:  plan.Name,
 			},
@@ -269,90 +354,19 @@ func (u *UserSubscriptionUseCase) HandleMidtransWebhook(payload map[string]inter
 					Where("id = ? AND used_quota > 0", plan.ID).
 					Update("used_quota", gorm.Expr("used_quota - 1"))
 			}
+
+			if transaction.VoucherID != nil {
+				tx.Model(&entities.Voucher{}).
+					Where("id = ? AND used_quota > 0", *transaction.VoucherID).
+					Update("used_quota", gorm.Expr("used_quota - 1"))
+			}
 		}
 
 		// Jika settlement DAN status lama bukan settlement, subscribe user (idempotency check)
 		if transaction.Status == entities.TransactionStatusSettlement && oldStatus != entities.TransactionStatusSettlement {
-			// Aktifkan plan di dalam tx (jangan panggil SubscribeUser karena tx terpisah)
-			var plan entities.SubscriptionPlan
-			if err := tx.First(&plan, "id = ?", transaction.PlanID).Error; err != nil {
+			if err := u.activateSubscription(tx, &transaction); err != nil {
 				tx.Rollback()
 				return err
-			}
-
-			// Cek subscription lama
-			var existing entities.UserSubscription
-			dbErr := tx.Preload("SubscriptionPlan").Where("user_id = ? AND status = ?", transaction.UserID, entities.SubscriptionStatusActive).First(&existing).Error
-			
-			if dbErr == nil && existing.SubscriptionPlan.AccountTypeID == plan.AccountTypeID {
-				// Account Type sama -> Akumulasi
-				existing.SubscriptionPlanID = plan.ID
-				existing.SubscriptionPlan = entities.SubscriptionPlan{} // Clear relation so GORM uses the updated ID
-				if plan.DurationMonths > 0 {
-					if existing.EndDate != nil {
-						newEndDate := existing.EndDate.AddDate(0, plan.DurationMonths, 0)
-						existing.EndDate = &newEndDate
-					} else {
-						newEndDate := time.Now().AddDate(0, plan.DurationMonths, 0)
-						existing.EndDate = &newEndDate
-					}
-				} else if plan.DurationMonths == 0 {
-					existing.EndDate = nil
-				}
-				
-				if err := tx.Save(&existing).Error; err != nil {
-					tx.Rollback()
-					return err
-				}
-			} else {
-				// Account Type beda ATAU belum ada langganan aktif
-				if dbErr == nil {
-					// Batalkan yang lama
-					existing.Status = entities.SubscriptionStatusCancelled
-					tx.Save(&existing)
-				}
-				
-				startDate := time.Now()
-				var endDate *time.Time
-				if plan.DurationMonths > 0 {
-					t := startDate.AddDate(0, plan.DurationMonths, 0)
-					endDate = &t
-				}
-
-				newSub := &entities.UserSubscription{
-					UserID:             transaction.UserID,
-					SubscriptionPlanID: plan.ID,
-					Status:             entities.SubscriptionStatusActive,
-					StartDate:          startDate,
-					EndDate:            endDate,
-				}
-
-				if err := tx.Create(newSub).Error; err != nil {
-					tx.Rollback()
-					return err
-				}
-			}
-
-			// Update Role to Member via gRPC
-			if u.authClient != nil {
-				_, err := u.authClient.GetClient().UpdateUserRole(context.Background(), &pb.UpdateUserRoleRequest{
-					UserId: transaction.UserID,
-					Role:   "Member",
-				})
-				if err != nil {
-					fmt.Printf("[Midtrans Webhook] Failed to update user role for user %s: %v\n", transaction.UserID, err)
-				}
-			}
-
-			// Update Discord Username via gRPC if it exists
-			if transaction.DiscordUsername != "" && u.authClient != nil {
-				_, err := u.authClient.GetClient().UpdateDiscordUsername(context.Background(), &pb.UpdateDiscordUsernameRequest{
-					UserId:          transaction.UserID,
-					DiscordUsername: transaction.DiscordUsername,
-				})
-				if err != nil {
-					fmt.Printf("[Midtrans Webhook] Failed to update discord username for user %s: %v\n", transaction.UserID, err)
-				}
 			}
 		}
 	}
@@ -383,4 +397,85 @@ func (u *UserSubscriptionUseCase) SyncTransaction(orderID string) (*entities.Tra
 	}
 
 	return &transaction, nil
+}
+
+func (u *UserSubscriptionUseCase) activateSubscription(tx *gorm.DB, transaction *entities.Transaction) error {
+	var plan entities.SubscriptionPlan
+	if err := tx.First(&plan, "id = ?", transaction.PlanID).Error; err != nil {
+		return err
+	}
+
+	// Cek subscription lama
+	var existing entities.UserSubscription
+	dbErr := tx.Preload("SubscriptionPlan").Where("user_id = ? AND status = ?", transaction.UserID, entities.SubscriptionStatusActive).First(&existing).Error
+	
+	if dbErr == nil && existing.SubscriptionPlan.AccountTypeID == plan.AccountTypeID {
+		// Account Type sama -> Akumulasi
+		existing.SubscriptionPlanID = plan.ID
+		existing.SubscriptionPlan = entities.SubscriptionPlan{} // Clear relation so GORM uses the updated ID
+		if plan.DurationMonths > 0 {
+			if existing.EndDate != nil {
+				newEndDate := existing.EndDate.AddDate(0, plan.DurationMonths, 0)
+				existing.EndDate = &newEndDate
+			} else {
+				newEndDate := time.Now().AddDate(0, plan.DurationMonths, 0)
+				existing.EndDate = &newEndDate
+			}
+		} else if plan.DurationMonths == 0 {
+			existing.EndDate = nil
+		}
+		
+		if err := tx.Save(&existing).Error; err != nil {
+			return err
+		}
+	} else {
+		// Account Type beda ATAU belum ada langganan aktif
+		if dbErr == nil {
+			// Batalkan yang lama
+			existing.Status = entities.SubscriptionStatusCancelled
+			tx.Save(&existing)
+		}
+		
+		startDate := time.Now()
+		var endDate *time.Time
+		if plan.DurationMonths > 0 {
+			t := startDate.AddDate(0, plan.DurationMonths, 0)
+			endDate = &t
+		}
+
+		newSub := &entities.UserSubscription{
+			UserID:             transaction.UserID,
+			SubscriptionPlanID: plan.ID,
+			Status:             entities.SubscriptionStatusActive,
+			StartDate:          startDate,
+			EndDate:            endDate,
+		}
+
+		if err := tx.Create(newSub).Error; err != nil {
+			return err
+		}
+	}
+
+	// Update Role to Member via gRPC
+	if u.authClient != nil {
+		_, err := u.authClient.GetClient().UpdateUserRole(context.Background(), &pb.UpdateUserRoleRequest{
+			UserId: transaction.UserID,
+			Role:   "Member",
+		})
+		if err != nil {
+			fmt.Printf("[Midtrans Webhook] Failed to update user role for user %s: %v\n", transaction.UserID, err)
+		}
+	}
+
+	// Update Discord Username via gRPC if it exists
+	if transaction.DiscordUsername != "" && u.authClient != nil {
+		_, err := u.authClient.GetClient().UpdateDiscordUsername(context.Background(), &pb.UpdateDiscordUsernameRequest{
+			UserId:          transaction.UserID,
+			DiscordUsername: transaction.DiscordUsername,
+		})
+		if err != nil {
+			fmt.Printf("[Midtrans Webhook] Failed to update discord username for user %s: %v\n", transaction.UserID, err)
+		}
+	}
+	return nil
 }

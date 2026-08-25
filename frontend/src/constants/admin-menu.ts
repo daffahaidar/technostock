@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { LayoutDashboard, Package, Tag, Layers, MessageSquare, Users } from "lucide-react";
+import { LayoutDashboard, Package, Tag, Layers, MessageSquare, Users, Ticket } from "lucide-react";
 
 const adminMenu = [
   {
@@ -29,9 +29,15 @@ const adminMenu = [
         isActive: false,
       },
       {
-        title: "Plan Langganan",
+        title: "Plan Subscription",
         url: "/admin/subscriptions/plans",
         icon: Layers,
+        isActive: false,
+      },
+      {
+        title: "Kode Voucher",
+        url: "/admin/subscriptions/vouchers",
+        icon: Ticket,
         isActive: false,
       },
     ],

@@ -28,6 +28,7 @@ func main() {
 		&entities.SubscriptionPlan{},
 		&entities.UserSubscription{},
 		&entities.Transaction{},
+		&entities.Voucher{},
 	)
 	if err != nil {
 		log.Fatalf("Failed to auto migrate: %v", err)
@@ -58,6 +59,9 @@ func main() {
 	memberUseCase := usecases.NewMemberUseCase(db, authClient, userSubscriptionUseCase)
 	memberHandler := handlers.NewMemberHandler(memberUseCase)
 
+	voucherUseCase := usecases.NewVoucherUseCase(db)
+	voucherHandler := handlers.NewVoucherHandler(voucherUseCase)
+
 	app := fiber.New()
 
 	app.Use(logger.New())
@@ -65,7 +69,7 @@ func main() {
 	app.Use(cors.New())
 
 	api := app.Group("/api/v1")
-	routes.SetupSubscriptionRoutes(api, accountTypeHandler, subscriptionPlanHandler, userSubscriptionHandler, memberHandler, authClient)
+	routes.SetupSubscriptionRoutes(api, accountTypeHandler, subscriptionPlanHandler, userSubscriptionHandler, memberHandler, voucherHandler, authClient)
 
 
 	log.Printf("Server listening on port %s", cfg.Port)

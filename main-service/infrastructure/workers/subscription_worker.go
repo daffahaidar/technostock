@@ -66,6 +66,15 @@ func (w *SubscriptionWorker) processExpiredTransactions() {
 					return err
 				}
 			}
+
+			// Release voucher quota
+			if tx.VoucherID != nil {
+				if err := dbTx.Model(&entities.Voucher{}).
+					Where("id = ? AND used_quota > 0", *tx.VoucherID).
+					Update("used_quota", gorm.Expr("used_quota - 1")).Error; err != nil {
+					return err
+				}
+			}
 			return nil
 		})
 		

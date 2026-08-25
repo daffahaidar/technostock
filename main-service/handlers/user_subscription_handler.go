@@ -26,6 +26,7 @@ type SubscribeRequest struct {
 	PlanID          string `json:"plan_id"`
 	DiscordUsername string `json:"discord_username"`
 	ReturnURL       string `json:"return_url"`
+	VoucherCode     string `json:"voucher_code"`
 }
 
 func (h *UserSubscriptionHandler) Subscribe(c fiber.Ctx) error {
@@ -84,7 +85,7 @@ func (h *UserSubscriptionHandler) Buy(c fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid plan ID"})
 	}
 
-	checkoutResp, err := h.usecase.BuySubscription(userID, planID, req.DiscordUsername, req.ReturnURL)
+	checkoutResp, err := h.usecase.BuySubscription(userID, planID, req.DiscordUsername, req.ReturnURL, req.VoucherCode)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}

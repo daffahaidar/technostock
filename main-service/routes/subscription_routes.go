@@ -14,6 +14,7 @@ func SetupSubscriptionRoutes(
 	subscriptionPlanHandler *handlers.SubscriptionPlanHandler,
 	userSubscriptionHandler *handlers.UserSubscriptionHandler,
 	memberHandler *handlers.MemberHandler,
+	voucherHandler *handlers.VoucherHandler,
 	authClient *grpc.AuthClient,
 ) {
 	// ==================== Account Type Routes ====================
@@ -43,11 +44,24 @@ func SetupSubscriptionRoutes(
 	planGroup.Patch("/:id", adminRole, subscriptionPlanHandler.UpdatePlan)
 	planGroup.Delete("/:id", adminRole, subscriptionPlanHandler.DeletePlan)
 
+	// ==================== Voucher Routes ====================
+	voucherGroup := api.Group("/vouchers")
+	voucherGroup.Use(middleware.AuthMiddleware(authClient))
+	
+	// Admin only
+	voucherGroup.Get("", adminRole, voucherHandler.GetAllVouchers)
+	voucherGroup.Get("/", adminRole, voucherHandler.GetAllVouchers)
+	voucherGroup.Get("/:id", adminRole, voucherHandler.GetVoucherByID)
+	voucherGroup.Post("", adminRole, voucherHandler.CreateVoucher)
+	voucherGroup.Post("/", adminRole, voucherHandler.CreateVoucher)
+	voucherGroup.Delete("/:id", adminRole, voucherHandler.DeleteVoucher)
+
 	// ==================== Public Routes ====================
 	publicGroup := api.Group("/public")
 	publicGroup.Get("/account-types", accountTypeHandler.GetAllAccountTypes)
 	publicGroup.Get("/subscription-plans", subscriptionPlanHandler.GetAllPlans)
 	publicGroup.Get("/subscription-plans/:id", subscriptionPlanHandler.GetPlanByID)
+	publicGroup.Get("/vouchers/check/:code", voucherHandler.CheckVoucher)
 
 	publicGroup.Post("/subscription/midtrans-webhook", userSubscriptionHandler.MidtransWebhook)
 

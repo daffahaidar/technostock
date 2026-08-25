@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { processCheckout } from "./action";
+import { processCheckout, checkVoucher } from "./action";
 import { toast } from "sonner";
-import { CheckCircle2, ShieldCheck } from "lucide-react";
+import { CheckCircle2, ShieldCheck, Tag, X } from "lucide-react";
 
 export default function CheckoutClient({ 
   planDetails, 
@@ -20,6 +20,11 @@ export default function CheckoutClient({
   const [isLoading, setIsLoading] = useState(false);
   const [discordUsername, setDiscordUsername] = useState("");
   const [discordUsernameError, setDiscordUsernameError] = useState("");
+
+  const [voucherCode, setVoucherCode] = useState("");
+  const [appliedVoucher, setAppliedVoucher] = useState<{ discount_percentage: number, max_discount_amount: number, code: string } | null>(null);
+  const [isCheckingVoucher, setIsCheckingVoucher] = useState(false);
+  const [voucherError, setVoucherError] = useState("");
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("id-ID", {
@@ -46,7 +51,7 @@ export default function CheckoutClient({
       setIsLoading(true);
       const returnUrl = window.location.origin + "/checkout/status";
       
-      const result = await processCheckout(planId, returnUrl, finalDiscordUsername);
+      const result = await processCheckout(planId, returnUrl, finalDiscordUsername, appliedVoucher?.code);
       
       if (result?.redirect_url) {
         window.location.href = result.redirect_url;
@@ -59,6 +64,33 @@ export default function CheckoutClient({
       setIsLoading(false);
     }
   };
+
+  const handleApplyVoucher = async () => {
+    if (!voucherCode.trim()) return;
+    try {
+      setIsCheckingVoucher(true);
+      setVoucherError("");
+      const result = await checkVoucher(voucherCode);
+      setAppliedVoucher(result);
+      toast.success("Voucher berhasil digunakan");
+    } catch (err) {
+      setVoucherError((err as Error).message);
+      setAppliedVoucher(null);
+    } finally {
+      setIsCheckingVoucher(false);
+    }
+  };
+
+  let discountAmount = 0;
+  if (appliedVoucher) {
+    discountAmount = planDetails.price * (appliedVoucher.discount_percentage / 100);
+    if (discountAmount > appliedVoucher.max_discount_amount) {
+      discountAmount = appliedVoucher.max_discount_amount;
+    }
+  }
+
+  let finalPrice = planDetails.price - discountAmount;
+  if (finalPrice < 0) finalPrice = 0;
 
   return (
     <div className="grid md:grid-cols-3 gap-8">
@@ -107,13 +139,17 @@ export default function CheckoutClient({
               <span className="text-gray-400">Harga Paket</span>
               <span>{formatPrice(planDetails.price)}</span>
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-400">Pajak</span>
-              <span>Termasuk</span>
-            </div>
+            
+            {appliedVoucher && (
+              <div className="flex justify-between text-sm text-green-400">
+                <span>Diskon ({appliedVoucher.code})</span>
+                <span>-{formatPrice(discountAmount)}</span>
+              </div>
+            )}
+            
             <div className="pt-3 border-t border-white/10 flex justify-between font-bold text-lg text-[#F9E596]">
               <span>Total</span>
-              <span>{formatPrice(planDetails.price)}</span>
+              <span>{formatPrice(finalPrice)}</span>
             </div>
           </div>
           
@@ -147,6 +183,49 @@ export default function CheckoutClient({
                       <p className="text-red-500 text-xs mt-1">{discordUsernameError}</p>
                     )}
                     <p className="text-xs text-gray-500 mt-1">Dibutuhkan untuk pemberian akses komunitas Discord</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="mb-6 border-t border-white/10 pt-4">
+                <h4 className="text-sm font-semibold text-gray-300 mb-2 flex items-center gap-2">
+                  <Tag className="w-4 h-4 text-[#D4AF37]" />
+                  Kode Voucher
+                </h4>
+                {appliedVoucher ? (
+                  <div className="bg-green-500/10 border border-green-500/30 p-3 rounded-xl flex items-center justify-between">
+                    <div>
+                      <span className="text-green-400 font-medium block">{appliedVoucher.code}</span>
+                      <span className="text-xs text-green-500">Berhasil diterapkan</span>
+                    </div>
+                    <button onClick={() => setAppliedVoucher(null)} className="text-gray-400 hover:text-white transition-colors">
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-1">
+                    <div className="flex gap-2">
+                      <input 
+                        type="text" 
+                        value={voucherCode}
+                        onChange={(e) => {
+                          setVoucherCode(e.target.value.toUpperCase());
+                          if (e.target.value) setVoucherError("");
+                        }}
+                        placeholder="Contoh: PROMO2026"
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all"
+                      />
+                      <Button 
+                        onClick={handleApplyVoucher}
+                        disabled={isCheckingVoucher || !voucherCode}
+                        className="h-12 px-6 rounded-xl bg-white/10 hover:bg-white/20 text-white"
+                      >
+                        {isCheckingVoucher ? "Cek..." : "Gunakan"}
+                      </Button>
+                    </div>
+                    {voucherError && (
+                      <p className="text-red-500 text-xs mt-1">{voucherError}</p>
+                    )}
                   </div>
                 )}
               </div>
