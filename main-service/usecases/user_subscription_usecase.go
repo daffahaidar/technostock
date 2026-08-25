@@ -207,6 +207,8 @@ func (u *UserSubscriptionUseCase) HandleMidtransWebhook(payload map[string]inter
 		return err
 	}
 
+	oldStatus := transaction.Status
+
 	if transactionStatusResp != nil {
 		switch transactionStatusResp.TransactionStatus {
 		case "capture":
@@ -226,8 +228,8 @@ func (u *UserSubscriptionUseCase) HandleMidtransWebhook(payload map[string]inter
 			return err
 		}
 
-		// Jika settlement, subscribe user
-		if transaction.Status == entities.TransactionStatusSettlement {
+		// Jika settlement DAN status lama bukan settlement, subscribe user (idempotency check)
+		if transaction.Status == entities.TransactionStatusSettlement && oldStatus != entities.TransactionStatusSettlement {
 			// Aktifkan plan di dalam tx (jangan panggil SubscribeUser karena tx terpisah)
 			var plan entities.SubscriptionPlan
 			if err := tx.First(&plan, "id = ?", transaction.PlanID).Error; err != nil {
