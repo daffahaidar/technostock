@@ -190,18 +190,50 @@ func (u *MemberUseCase) ExtendSubscription(userID string, planID uuid.UUID) erro
 }
 
 func (u *MemberUseCase) RevokeMembership(userID string) error {
-	// 1. Mark active subscription as cancelled
-	if err := u.db.Model(&entities.UserSubscription{}).
+	// Start Transaction
+	tx := u.db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	// 1. Find active subscription
+	var activeSub entities.UserSubscription
+	if err := tx.Preload("SubscriptionPlan").
 		Where("user_id = ? AND status = ?", userID, entities.SubscriptionStatusActive).
-		Update("status", entities.SubscriptionStatusCancelled).Error; err != nil {
+		First(&activeSub).Error; err != nil {
+		tx.Rollback()
 		return err
 	}
 
-	// 2. Update role to User via gRPC
+	// 2. Mark active subscription as cancelled
+	if err := tx.Model(&entities.UserSubscription{}).
+		Where("id = ?", activeSub.ID).
+		Update("status", entities.SubscriptionStatusCancelled).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// 3. Restore quota if plan has quota limit
+	if activeSub.SubscriptionPlan.Quota != nil {
+		if err := tx.Model(&entities.SubscriptionPlan{}).
+			Where("id = ? AND used_quota > 0", activeSub.SubscriptionPlanID).
+			Update("used_quota", gorm.Expr("used_quota - 1")).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
+	// 4. Update role to User via gRPC
 	_, err := u.authClient.GetClient().UpdateUserRole(context.Background(), &pb.UpdateUserRoleRequest{
 		UserId: userID,
 		Role:   "User",
 	})
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
 
-	return err
+	return tx.Commit().Error
 }
