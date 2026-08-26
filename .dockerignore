@@ -3,7 +3,13 @@
 
 # Rust build artifacts (sangat besar, tidak dibutuhkan)
 auth-service/target/
+grpc-service/target/
 realtime-service/target/
+
+# Tooling agent — isinya symlink, tar-writer Podman di Windows gagal
+# encode reparse point Windows ("unknown file mode ?rw-rw-rw-").
+.claude/
+.agents/
 
 # Node.js
 frontend/node_modules/

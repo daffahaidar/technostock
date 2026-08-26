@@ -3,9 +3,16 @@
 import { ENDPOINT } from "@/endpoint";
 
 export async function getPublicPricingData() {
+  // SERVER_GATEWAY_URL dipakai saat jalan di dalam container: dari sana
+  // "localhost:8080" menunjuk ke container frontend sendiri, bukan API gateway.
+  const API_URL =
+    process.env.SERVER_GATEWAY_URL ||
+    process.env.NEXT_PUBLIC_API_URL ||
+    "http://localhost:8080";
+
   try {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}${ENDPOINT.GOLANG_API.PUBLIC_ACCOUNT_TYPE}`,
+      `${API_URL}${ENDPOINT.GOLANG_API.PUBLIC_ACCOUNT_TYPE}`,
       {
         method: "GET",
         headers: {
@@ -26,7 +33,7 @@ export async function getPublicPricingData() {
     const accountTypes = accountTypesData.results || [];
 
     const plansRes = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}${ENDPOINT.GOLANG_API.PUBLIC_SUBSCRIPTION_PLAN}`,
+      `${API_URL}${ENDPOINT.GOLANG_API.PUBLIC_SUBSCRIPTION_PLAN}`,
       {
         method: "GET",
         headers: {

@@ -51,7 +51,11 @@ async fn main() {
 
     let db = Database::new(&database_url).await.expect("Failed to connect to database");
 
-    sqlx::migrate!("./migrations")
+    // set_ignore_missing(true): DB `technostock` dipakai bersama service lain,
+    // jadi tabel _sqlx_migrations juga bersama. Lihat realtime-service/src/main.rs.
+    let mut migrator = sqlx::migrate!("./migrations");
+    migrator.set_ignore_missing(true);
+    migrator
         .run(&db.pool)
         .await
         .expect("Failed to run migrations");

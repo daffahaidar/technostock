@@ -19,4 +19,4 @@ RUN cargo install cargo-watch --version 8.4.1 --locked && \
 EXPOSE 8000 50051
 
 # Source & proto disediakan via volume. Jalankan migrasi dulu lalu watch.
-CMD ["sh", "-c", "sqlx migrate run && cargo watch -c -x run"]
+CMD ["sh", "-c", "sqlx migrate run --ignore-missing && cargo watch --poll -c -x run"]

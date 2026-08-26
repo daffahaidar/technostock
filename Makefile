@@ -4,11 +4,20 @@
         docker\:dev docker\:prod podman\:dev podman\:prod engine
 
 # ─── Config ───────────────────────────────────────────────────────────────────
-# Engine auto-detect: pakai docker kalau ada (macOS), kalau tidak pakai podman (Windows).
-# Keduanya support sub-command `compose`, jadi syntax-nya identik.
-# Override manual: make dev ENGINE=podman
-DETECTED_ENGINE  := $(shell docker --version >/dev/null 2>&1 && echo docker || (podman --version >/dev/null 2>&1 && echo podman))
-ENGINE           ?= $(if $(DETECTED_ENGINE),$(DETECTED_ENGINE),docker)
+# Default engine per OS: Windows → podman, macOS/Linux → docker.
+# Keduanya support sub-command `compose`, jadi syntax recipe di bawah identik.
+#
+# Kenapa tidak auto-detect via $(shell ...)? Karena `make` yang dijalankan dari
+# PowerShell/cmd memakai cmd.exe sebagai shell — `command -v`, `/dev/null`, dan
+# `&&` gaya POSIX tidak ada di sana. $(OS) di-set langsung oleh Windows sendiri,
+# jadi tidak butuh shell sama sekali dan aman di PowerShell, cmd, maupun bash.
+#
+# Override: make dev ENGINE=docker    (atau pakai target docker:dev / podman:dev)
+ifeq ($(OS),Windows_NT)
+ENGINE           ?= podman
+else
+ENGINE           ?= docker
+endif
 COMPOSE          ?= $(ENGINE) compose
 
 DOCKER_HUB_USER  := daffahaidarnz

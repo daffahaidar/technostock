@@ -23,8 +23,12 @@ tmp_dir = "tmp"
   include_file = []
   kill_delay = "0s"
   log = "build-errors.log"
-  poll = false
-  poll_interval = 0
+  # poll = true: bind mount dari host Windows/macOS ke VM Linux (Podman machine
+  # atau Docker Desktop) tidak meneruskan event inotify, jadi air tidak pernah
+  # mendeteksi perubahan file. Polling adalah satu-satunya cara yang jalan di
+  # kedua engine. Sejalan dengan CHOKIDAR_USEPOLLING di service frontend.
+  poll = true
+  poll_interval = 500
   post_cmd = []
   pre_cmd = []
   rerun = false

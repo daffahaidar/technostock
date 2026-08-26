@@ -35,7 +35,7 @@ func main() {
 	}
 
 	// Create partial unique index for lifetime plan (only 1 lifetime plan per account type)
-	err = db.Exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_lifetime_plan ON subscription_plans (account_type_id) WHERE duration_months = 0").Error
+	err = db.Exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_lifetime_plan ON main.subscription_plans (account_type_id) WHERE duration_months = 0").Error
 	if err != nil {
 		log.Printf("Warning: Failed to create partial unique index: %v", err)
 	}

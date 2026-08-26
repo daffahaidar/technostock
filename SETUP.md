@@ -68,10 +68,11 @@ Semua compose file di repo ini kompatibel dengan **kedua engine** — syntax `<e
 identik, jadi tidak ada file terpisah untuk Podman.
 
 ```bash
-make dev            # engine di-auto-detect: docker kalau ada, kalau tidak podman
-make engine         # cek engine mana yang terdeteksi
+make dev            # default: podman di Windows, docker di macOS/Linux
+make engine         # cek engine mana yang dipakai
 make docker:dev     # paksa docker
 make podman:dev     # paksa podman
+make dev ENGINE=docker   # bentuk panjang dari override di atas
 ```
 
 Catatan khusus Podman:
@@ -80,6 +81,10 @@ Catatan khusus Podman:
 - Di Windows/macOS jalankan `podman machine start` dulu. Beri VM RAM cukup untuk
   compile Rust: `podman machine set --memory 8192` (default 2 GB terlalu kecil).
 - Rootless Podman menghormati `mem_limit`, jadi limit memori di compose tetap berlaku.
+
+Kalau menjalankan `make` dari PowerShell/cmd, GNU Make memakai `cmd.exe` sebagai
+shell sehingga output `@echo` tampil dengan tanda kutip. Itu kosmetik saja —
+recipe-nya tetap berjalan normal. Untuk output bersih, jalankan `make` dari Git Bash.
 
 ---
 

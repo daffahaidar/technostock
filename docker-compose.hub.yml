@@ -118,6 +118,8 @@ services:
       - DATABASE_URL=postgres://postgres:admin@postgres:5432/technostock
       - MINIO_ENDPOINT=minio
       - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_USER=daffahaidar
+      - RABBITMQ_PASS=daffahaidarnz27
       - REDIS_HOST=redis
     depends_on:
       postgres:
@@ -157,6 +159,8 @@ services:
       - DATABASE_URL=postgres://postgres:admin@postgres:5432/technostock
       - REDIS_HOST=redis
       - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_USER=daffahaidar
+      - RABBITMQ_PASS=daffahaidarnz27
       - AUTH_GRPC_URL=http://grpc-service:50051
       - MINIO_ENDPOINT=minio
     depends_on:
@@ -210,6 +214,7 @@ services:
       - HOSTNAME=0.0.0.0
       - DATABASE_URL=postgres://postgres:admin@postgres:5432/technostock
       - SERVER_API_URL=http://auth-service:8000
+      - SERVER_GATEWAY_URL=http://grpc-service:8080   # server-side: nama service internal
     depends_on:
       - auth-service
       - realtime-service

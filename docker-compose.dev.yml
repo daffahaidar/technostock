@@ -133,7 +133,7 @@ services:
       - MALLOC_ARENA_MAX=2
     # mem_limit: 1G
     # Jalankan migrasi dulu, baru start dengan hot-reload
-    command: sh -c "sqlx migrate run && cargo watch -c -x run"
+    command: sh -c "sqlx migrate run --ignore-missing && cargo watch --poll -c -x run"
     depends_on:
       postgres:
         condition: service_healthy
@@ -164,9 +164,10 @@ services:
       - AUTH_SERVICE_URL=http://auth-service:8000
       - MAIN_SERVICE_URL=http://main-service:8002
       - REALTIME_SERVICE_WS_URL=ws://realtime-service:8001
+      - FRONTEND_URL=http://frontend:3000   # nama service internal, bukan localhost
       - MALLOC_ARENA_MAX=2
     # mem_limit: 1G
-    command: sh -c "cargo watch -c -x run"
+    command: sh -c "cargo watch --poll -c -x run"
     depends_on:
       postgres:
         condition: service_healthy
@@ -195,13 +196,17 @@ services:
       - DATABASE_URL=postgres://postgres:admin@postgres:5432/technostock
       - REDIS_HOST=redis
       - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_USER=daffahaidar
+      - RABBITMQ_PASS=daffahaidarnz27
       - AUTH_GRPC_URL=http://grpc-service:50051
       - MINIO_ENDPOINT=minio
       - SQLX_OFFLINE=false
       - MALLOC_ARENA_MAX=2
     # mem_limit: 1G
-    # Jalankan migrasi dulu, baru start dengan hot-reload
-    command: sh -c "sqlx migrate run && cargo watch -c -x run"
+    # Jalankan migrasi dulu, baru start dengan hot-reload.
+    # --ignore-missing: DB `technostock` (dan tabel _sqlx_migrations) dipakai
+    # bersama auth-service, jadi migrasi milik service lain harus di-skip.
+    command: sh -c "sqlx migrate run --ignore-missing && cargo watch --poll -c -x run"
     depends_on:
       postgres:
         condition: service_healthy
@@ -236,7 +241,12 @@ services:
       - AUTH_GRPC_URL=grpc-service:50051
       - GOMEMLIMIT=100MiB
       - GOGC=50
-    mem_limit: 200M
+    # 1G, bukan 200M: di mode dev `air` meng-compile Go DI DALAM container, dan
+    # go compiler butuh ~600MB+ untuk paket seperti pgx. Dengan 200M compiler
+    # kena OOM-kill ("compile: signal: killed" → "/app/tmp/main: not found").
+    # GOMEMLIMIT di atas hanya membatasi runtime app-nya, bukan proses compiler.
+    # Limit 64M di docker-compose.prod.yml tetap aman karena build di stage terpisah.
+    mem_limit: 1G
     depends_on:
       postgres:
         condition: service_healthy
@@ -272,6 +282,7 @@ services:
       # Server-side: gunakan nama service internal
       - DATABASE_URL=postgres://postgres:admin@postgres:5432/technostock
       - SERVER_API_URL=http://auth-service:8000
+      - SERVER_GATEWAY_URL=http://grpc-service:8080   # server-side: nama service internal
       - BETTER_AUTH_URL=http://localhost:3000
       # Client-side (browser): tetap localhost karena diakses dari browser user
       - NEXT_PUBLIC_API_URL=http://localhost:8080
