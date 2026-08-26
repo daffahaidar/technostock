@@ -1,6 +1,7 @@
 # ═══════════════════════════════════════════════════════════════════════════════
-# Technostock Prod — Unified Docker Compose
-# Jalankan: make prod  atau  docker compose -f docker-compose.prod.yml up --build
+# Technostock Prod — Unified Compose (Docker / Podman)
+# Jalankan: make prod  atau  <docker|podman> compose -f docker-compose.prod.yml up --build
+# Compose file ini kompatibel Docker & Podman (tanpa key khusus salah satu engine).
 # ═══════════════════════════════════════════════════════════════════════════════
 
 name: technostock-prod
@@ -31,10 +32,7 @@ services:
       POSTGRES_DB: technostock
     volumes:
       - pgdata:/var/lib/postgresql/data
-    deploy:
-      resources:
-        limits:
-          memory: 256M
+    mem_limit: 256M
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -53,10 +51,7 @@ services:
     command: redis-server --requirepass daffahaidarnz27 --appendonly yes
     volumes:
       - redis_data:/data
-    deploy:
-      resources:
-        limits:
-          memory: 128M
+    mem_limit: 128M
     healthcheck:
       test: ["CMD", "redis-cli", "-a", "daffahaidarnz27", "ping"]
       interval: 10s
@@ -78,10 +73,7 @@ services:
       RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: "-+A 16"
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
-    deploy:
-      resources:
-        limits:
-          memory: 256M
+    mem_limit: 256M
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 15s
@@ -102,10 +94,7 @@ services:
       MINIO_ROOT_PASSWORD: daffahaidarnz27
     volumes:
       - minio_data:/data
-    deploy:
-      resources:
-        limits:
-          memory: 256M
+    mem_limit: 256M
     command: server /data --console-address ":9001"
     networks:
       - technostock-network
@@ -126,10 +115,7 @@ services:
     environment:
       - DATABASE_URL=postgres://postgres:admin@postgres:5432/technostock
       - MALLOC_ARENA_MAX=2
-    deploy:
-      resources:
-        limits:
-          memory: 64M
+    mem_limit: 64M
     depends_on:
       postgres:
         condition: service_healthy
@@ -156,10 +142,7 @@ services:
       - MAIN_SERVICE_URL=http://main-service:8002
       - REALTIME_SERVICE_WS_URL=ws://realtime-service:8001
       - MALLOC_ARENA_MAX=2
-    deploy:
-      resources:
-        limits:
-          memory: 64M
+    mem_limit: 64M
     depends_on:
       postgres:
         condition: service_healthy
@@ -186,10 +169,7 @@ services:
       - AUTH_GRPC_URL=http://grpc-service:50051
       - MINIO_ENDPOINT=minio
       - MALLOC_ARENA_MAX=2
-    deploy:
-      resources:
-        limits:
-          memory: 64M
+    mem_limit: 64M
     depends_on:
       postgres:
         condition: service_healthy
@@ -220,10 +200,7 @@ services:
       - AUTH_GRPC_URL=grpc-service:50051
       - GOMEMLIMIT=50MiB
       - GOGC=50
-    deploy:
-      resources:
-        limits:
-          memory: 64M
+    mem_limit: 64M
     depends_on:
       postgres:
         condition: service_healthy
@@ -255,10 +232,7 @@ services:
       # Server-side: gunakan nama service internal
       - DATABASE_URL=postgres://postgres:admin@postgres:5432/technostock
       - SERVER_API_URL=http://auth-service:8000
-    deploy:
-      resources:
-        limits:
-          memory: 128M
+    mem_limit: 128M
     depends_on:
       - auth-service
       - realtime-service

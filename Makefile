@@ -1,11 +1,15 @@
 .PHONY: dev dev-d prod prod-d down-dev down-prod logs-dev logs-prod ps-dev ps-prod \
         push push-auth push-grpc push-realtime push-main push-frontend \
         pull deploy deploy-down \
-        docker\:dev docker\:prod podman\:dev podman\:prod
+        docker\:dev docker\:prod podman\:dev podman\:prod engine
 
 # ─── Config ───────────────────────────────────────────────────────────────────
-DOCKER           ?= docker
-COMPOSE          ?= $(DOCKER) compose
+# Engine auto-detect: pakai docker kalau ada (macOS), kalau tidak pakai podman (Windows).
+# Keduanya support sub-command `compose`, jadi syntax-nya identik.
+# Override manual: make dev ENGINE=podman
+DETECTED_ENGINE  := $(shell docker --version >/dev/null 2>&1 && echo docker || (podman --version >/dev/null 2>&1 && echo podman))
+ENGINE           ?= $(if $(DETECTED_ENGINE),$(DETECTED_ENGINE),docker)
+COMPOSE          ?= $(ENGINE) compose
 
 DOCKER_HUB_USER  := daffahaidarnz
 REPO             := technostock
@@ -18,18 +22,24 @@ MAIN_IMAGE       := $(DOCKER_HUB_USER)/$(REPO):main-service-$(VERSION)
 FRONTEND_IMAGE   := $(DOCKER_HUB_USER)/$(REPO):frontend-$(VERSION)
 
 # ─── Engine Specific Shortcuts (Docker / Podman) ──────────────────────────────
+# Dipakai kalau kedua engine terpasang di satu mesin dan mau pilih manual.
 
 docker\:dev:
-	$(MAKE) dev DOCKER=docker COMPOSE="docker compose"
+	$(MAKE) dev ENGINE=docker
 
 docker\:prod:
-	$(MAKE) prod DOCKER=docker COMPOSE="docker compose"
+	$(MAKE) prod ENGINE=docker
 
 podman\:dev:
-	$(MAKE) dev DOCKER=podman COMPOSE="podman-compose"
+	$(MAKE) dev ENGINE=podman
 
 podman\:prod:
-	$(MAKE) prod DOCKER=podman COMPOSE="podman-compose"
+	$(MAKE) prod ENGINE=podman
+
+## Tampilkan engine yang terdeteksi
+engine:
+	@echo "engine  : $(ENGINE)"
+	@echo "compose : $(COMPOSE)"
 
 # ─── Technostock Dev ──────────────────────────────────────────────────────────
 
@@ -101,51 +111,51 @@ push: push-auth push-grpc push-realtime push-main push-frontend
 push-auth:
 	@echo "🔨 Building auth-service..."
 	$(COMPOSE) -f docker-compose.prod.yml build auth-service
-	$(DOCKER) tag auth-service:latest $(AUTH_IMAGE)
+	$(ENGINE) tag auth-service:latest $(AUTH_IMAGE)
 	@echo "📤 Pushing $(AUTH_IMAGE)..."
-	$(DOCKER) push $(AUTH_IMAGE)
+	$(ENGINE) push $(AUTH_IMAGE)
 
 ## Build & push grpc-service saja
 push-grpc:
 	@echo "🔨 Building grpc-service..."
 	$(COMPOSE) -f docker-compose.prod.yml build grpc-service
-	$(DOCKER) tag grpc-service:latest $(GRPC_IMAGE)
+	$(ENGINE) tag grpc-service:latest $(GRPC_IMAGE)
 	@echo "📤 Pushing $(GRPC_IMAGE)..."
-	$(DOCKER) push $(GRPC_IMAGE)
+	$(ENGINE) push $(GRPC_IMAGE)
 
 ## Build & push realtime-service saja
 push-realtime:
 	@echo "🔨 Building realtime-service..."
 	$(COMPOSE) -f docker-compose.prod.yml build realtime-service
-	$(DOCKER) tag realtime-service:latest $(REALTIME_IMAGE)
+	$(ENGINE) tag realtime-service:latest $(REALTIME_IMAGE)
 	@echo "📤 Pushing $(REALTIME_IMAGE)..."
-	$(DOCKER) push $(REALTIME_IMAGE)
+	$(ENGINE) push $(REALTIME_IMAGE)
 
 ## Build & push main-service saja
 push-main:
 	@echo "🔨 Building main-service..."
 	$(COMPOSE) -f docker-compose.prod.yml build main-service
-	$(DOCKER) tag main-service:latest $(MAIN_IMAGE)
+	$(ENGINE) tag main-service:latest $(MAIN_IMAGE)
 	@echo "📤 Pushing $(MAIN_IMAGE)..."
-	$(DOCKER) push $(MAIN_IMAGE)
+	$(ENGINE) push $(MAIN_IMAGE)
 
 ## Build & push frontend saja
 push-frontend:
 	@echo "🔨 Building frontend..."
 	$(COMPOSE) -f docker-compose.prod.yml build frontend
-	$(DOCKER) tag frontend:latest $(FRONTEND_IMAGE)
+	$(ENGINE) tag frontend:latest $(FRONTEND_IMAGE)
 	@echo "📤 Pushing $(FRONTEND_IMAGE)..."
-	$(DOCKER) push $(FRONTEND_IMAGE)
+	$(ENGINE) push $(FRONTEND_IMAGE)
 
 # ─── Docker Hub — Deploy (dari server/VPS) ────────────────────────────────────
 
 ## Pull semua image terbaru dari Docker Hub (untuk server)
 pull:
-	$(DOCKER) pull $(AUTH_IMAGE)
-	$(DOCKER) pull $(GRPC_IMAGE)
-	$(DOCKER) pull $(REALTIME_IMAGE)
-	$(DOCKER) pull $(MAIN_IMAGE)
-	$(DOCKER) pull $(FRONTEND_IMAGE)
+	$(ENGINE) pull $(AUTH_IMAGE)
+	$(ENGINE) pull $(GRPC_IMAGE)
+	$(ENGINE) pull $(REALTIME_IMAGE)
+	$(ENGINE) pull $(MAIN_IMAGE)
+	$(ENGINE) pull $(FRONTEND_IMAGE)
 	@echo "✅ Semua image berhasil di-pull!"
 
 ## Jalankan semua service menggunakan image dari Docker Hub (untuk server)
@@ -188,12 +198,15 @@ validate:
 ## Tampilkan help
 help:
 	@echo ""
-	@echo "  Technostock Docker Commands"
+	@echo "  Technostock Container Commands  (engine: $(ENGINE))"
 	@echo "  ═══════════════════════════════════════════════"
+	@echo "  Engine di-auto-detect: docker kalau ada, kalau tidak podman."
+	@echo "  make engine           Lihat engine & compose yang terpakai"
+	@echo ""
 	@echo "  [Development]"
 	@echo "  make dev              Start semua service (dev, foreground)"
-	@echo "  make docker:dev       Shortcut start dev menggunakan docker compose"
-	@echo "  make podman:dev       Shortcut start dev menggunakan podman-compose"
+	@echo "  make docker:dev       Paksa pakai docker compose"
+	@echo "  make podman:dev       Paksa pakai podman compose"
 	@echo "  make dev-d            Start semua service (dev, background)"
 	@echo "  make down-dev         Stop dev services"
 	@echo "  make down-dev-volumes Stop dev + hapus semua volumes"
@@ -202,8 +215,8 @@ help:
 	@echo ""
 	@echo "  [Production — local build]"
 	@echo "  make prod             Start semua service (prod, foreground)"
-	@echo "  make docker:prod      Shortcut start prod menggunakan docker compose"
-	@echo "  make podman:prod      Shortcut start prod menggunakan podman-compose"
+	@echo "  make docker:prod      Paksa pakai docker compose"
+	@echo "  make podman:prod      Paksa pakai podman compose"
 	@echo "  make prod-d           Start semua service (prod, background)"
 	@echo "  make down-prod        Stop prod services"
 	@echo "  make logs-prod        Tail prod logs"

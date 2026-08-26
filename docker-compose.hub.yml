@@ -1,7 +1,8 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 # Technostock — Docker Hub Deployment Compose
 # Dipakai di server/VPS: menggunakan image yang sudah di-push ke Docker Hub
-# Jalankan: make deploy  atau  docker compose -f docker-compose.hub.yml up -d
+# Jalankan: make deploy  atau  <docker|podman> compose -f docker-compose.hub.yml up -d
+# Compose file ini kompatibel Docker & Podman (tanpa key khusus salah satu engine).
 #
 # Sebelum menjalankan:
 #   1. Buat file .env untuk setiap service
@@ -108,7 +109,6 @@ services:
   auth-service:
     image: daffahaidarnz/technostock:auth-service-latest  # ganti 'latest' jika pakai VERSION
     container_name: auth-service
-    image: auth-service
     restart: always
     ports:
       - "8000:8000"
@@ -130,7 +130,6 @@ services:
   grpc-service:
     image: daffahaidarnz/technostock:grpc-service-latest
     container_name: grpc-service
-    image: grpc-service
     restart: always
     ports:
       - "50051:50051"
@@ -149,7 +148,6 @@ services:
   realtime-service:
     image: daffahaidarnz/technostock:realtime-service-latest
     container_name: realtime-service
-    image: realtime-service
     restart: always
     ports:
       - "8001:8001"
@@ -178,7 +176,6 @@ services:
   main-service:
     image: daffahaidarnz/technostock:main-service-latest
     container_name: main-service
-    image: main-service
     restart: always
     ports:
       - "8002:8002"
@@ -202,7 +199,6 @@ services:
   frontend:
     image: daffahaidarnz/technostock:frontend-latest
     container_name: frontend
-    image: frontend
     restart: always
     ports:
       - "3000:3000"

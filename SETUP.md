@@ -62,6 +62,27 @@ cat public.pem  | awk '{printf "%s\\n", $0}' | sed 's/\\n$//'
 
 ---
 
+## 🐳 Docker atau Podman?
+
+Semua compose file di repo ini kompatibel dengan **kedua engine** — syntax `<engine> compose`
+identik, jadi tidak ada file terpisah untuk Podman.
+
+```bash
+make dev            # engine di-auto-detect: docker kalau ada, kalau tidak podman
+make engine         # cek engine mana yang terdeteksi
+make docker:dev     # paksa docker
+make podman:dev     # paksa podman
+```
+
+Catatan khusus Podman:
+- Butuh Podman **4.7+**. `podman compose` mendelegasikan ke provider eksternal
+  (`docker-compose` atau `podman-compose`) — salah satu harus terpasang.
+- Di Windows/macOS jalankan `podman machine start` dulu. Beri VM RAM cukup untuk
+  compile Rust: `podman machine set --memory 8192` (default 2 GB terlalu kecil).
+- Rootless Podman menghormati `mem_limit`, jadi limit memori di compose tetap berlaku.
+
+---
+
 ## 🍏 1. MacOS dengan Docker (Direkomendasikan)
 
 **Langkah Instalasi:**
@@ -149,20 +170,28 @@ npm run dev
 
 ---
 
-## 🪟 3. Windows dengan Docker (Direkomendasikan)
+## 🪟 3. Windows dengan Docker atau Podman (Direkomendasikan)
 
 **Langkah Instalasi:**
 1. Install [WSL 2](https://learn.microsoft.com/en-us/windows/wsl/install) (Windows Subsystem for Linux). Buka PowerShell sebagai Administrator dan jalankan: `wsl --install`
 2. Restart komputer Anda.
-3. Unduh dan install [Docker Desktop untuk Windows](https://www.docker.com/products/docker-desktop/).
-4. Buka Docker Desktop dan pastikan opsi "Use the WSL 2 based engine" tercentang di Settings.
+3. Pilih salah satu engine:
+   - **Docker** — install [Docker Desktop untuk Windows](https://www.docker.com/products/docker-desktop/), pastikan opsi "Use the WSL 2 based engine" tercentang di Settings.
+   - **Podman** — install [Podman Desktop](https://podman-desktop.io/), lalu:
+     ```powershell
+     podman machine init --memory 8192   # RAM cukup untuk compile Rust
+     podman machine start
+     ```
 
 **Menjalankan Proyek:**
 Buka terminal (PowerShell atau WSL Ubuntu).
 ```powershell
+make dev            # auto-detect docker/podman
+# atau eksplisit:
 docker compose -f docker-compose.dev.yml up --build
+podman compose -f docker-compose.dev.yml up --build
 ```
-Biarkan Docker yang mengurus instalasi dan kompilasi semuanya.
+Biarkan engine yang mengurus instalasi dan kompilasi semuanya.
 
 ---
 
