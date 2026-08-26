@@ -21,9 +21,8 @@ di sini:
   **tidak punya** `discord_username`.
 - Service ini **tidak pernah** query tabel user — selalu lewat gRPC
   `GetUsers` / `UpdateLastRead` ke `grpc-service:50051`.
-- Dead code: `src/api.rs` dan `src/mod.rs` **tidak pernah di-compile** (sisa
-  copy-paste dari auth-service, merujuk modul yang tidak ada). Router aktif:
-  `src/routes/api.rs`.
+- Router aktif: `src/routes/api.rs`. (`src/api.rs` dan `src/mod.rs` yang dulu
+  dead code sudah dihapus.)
 - Port `0.0.0.0:8001` hard-coded di `main.rs`.
 - `/api/v1/chat/*` **belum ter-route di gateway** — lihat
   `docs/operations.md → Isu 1`.
@@ -139,8 +138,8 @@ let group_id = params.get("group_id").cloned().unwrap_or_else(|| "general".to_st
 let claims = state.jwt_service.verify_token(token).map_err(|_| AppError::InvalidToken)?;
 ```
 
-> Handler ini **tidak** mengecek `token_type == "access"` (berbeda dari
-> extractor `AuthUser`). Bila menambah handler WS baru, tambahkan cek itu.
+Handler ini kini juga mengecek `token_type == "access"` seperti extractor
+`AuthUser` — pertahankan cek itu pada handler WS baru.
 
 ## State non-relasional
 
@@ -148,7 +147,7 @@ let claims = state.jwt_service.verify_token(token).map_err(|_| AppError::Invalid
 |---|---|---|
 | Redis | `chat:group:{id}` (pub/sub), `group:{id}` (SET online), `typing:group:{id}:{user}` (TTL 5s) | Key `typing:*` ditulis tapi **tidak pernah dibaca** |
 | RabbitMQ | Exchange `chat.events` (topic, durable), 3 queue durable ke routing key `chat.message.created` | **Jangan tambah** — akan pindah ke Kafka |
-| MinIO | `chat-images/{uuid}.{ext}`, maks 10 MiB | URL dirakit manual dari `MINIO_ENDPOINT` — lihat isu R6 di `docs/PRD.md` |
+| MinIO | `chat-images/{uuid}.{ext}`, maks 10 MiB | URL publik dirakit dari `MINIO_PUBLIC_URL` (fallback ke endpoint internal) |
 
 Hanya event `message` yang dipublish ke RabbitMQ. `edit`, `delete`, `react`,
 `typing` **tidak**.

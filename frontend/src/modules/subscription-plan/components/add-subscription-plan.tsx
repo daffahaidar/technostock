@@ -2,7 +2,7 @@
 
 import z from "zod";
 import { subscriptionPlanSchema } from "../schema/subscription-plan";
-import { useForm, type Resolver } from "react-hook-form";
+import { useForm, type Resolver, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRevalidateQuery } from "@/hooks/use-revalidate";
@@ -68,7 +68,9 @@ export default function AddSubscriptionPlanForm({ onSuccessSubmit }: { onSuccess
     },
   });
 
-  const selectedAccountTypeId = form.watch("account_type_id");
+  // useWatch (bukan form.watch) agar React Compiler dapat memoize komponen ini.
+  const selectedAccountTypeId = useWatch({ control: form.control, name: "account_type_id" });
+  const durationMonths = useWatch({ control: form.control, name: "duration_months" });
   const hasLifetimePlan = dataPlans?.results?.some((plan) => plan.account_type_id === selectedAccountTypeId && plan.duration_months === 0) || false;
 
   const { mutate, isPending } = useMutation({
@@ -202,7 +204,7 @@ export default function AddSubscriptionPlanForm({ onSuccessSubmit }: { onSuccess
               </FormItem>
             )}
           />
-          {form.watch("duration_months") === 0 && (
+          {durationMonths === 0 && (
             <FormField
               control={form.control}
               name="quota"

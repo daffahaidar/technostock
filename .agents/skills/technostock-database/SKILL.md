@@ -154,10 +154,7 @@ Konsekuensinya:
   sudah ter-apply — buat file baru.
 
 > Target `make migrate` di `auth-service/Makefile` dan
-> `realtime-service/Makefile` menjalankan `sqlx migrate run` **tanpa**
-> `--ignore-missing` — akan gagal pada DB bersama. Pakai
-> `sqlx migrate run --ignore-missing` manual, atau biarkan service
-> menjalankannya sendiri saat startup.
+> `realtime-service/Makefile` sudah memakai `--ignore-missing`.
 
 ## Konvensi nilai
 
@@ -175,7 +172,6 @@ Konsekuensinya:
 
 | Jebakan | Akibat |
 |---|---|
-| `SuperAdmin` valid di DB CHECK & Go, tidak ada di enum Rust `Role` | Baris user `SuperAdmin` **gagal di-decode sqlx** → 500 |
 | Tidak ada FK dari `main.*` ke `users.users` | Hapus user meninggalkan langganan & transaksi yatim |
 | `group_id` chat tidak pernah dipersist | Semua pesan masuk satu tabel; history global tanpa filter group |
 | `last_read_at` satu kolom | Unread count berlaku global, bukan per group |

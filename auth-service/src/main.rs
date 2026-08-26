@@ -87,7 +87,14 @@ async fn main() {
         .layer(
             CorsLayer::new()
                 .allow_origin(Any)
-                .allow_methods([Method::GET, Method::POST, Method::PUT, Method::DELETE])
+                // PATCH wajib ada: route PATCH /users/{id}/status dipakai admin UI.
+                .allow_methods([
+                    Method::GET,
+                    Method::POST,
+                    Method::PUT,
+                    Method::PATCH,
+                    Method::DELETE,
+                ])
                 .allow_headers(Any),
         )
         .layer(TraceLayer::new_for_http())

@@ -137,13 +137,21 @@ impl UserService for UserServiceImpl {
         let user_id = uuid::Uuid::parse_str(&req.user_id)
             .map_err(|_| Status::invalid_argument("Invalid user_id format"))?;
 
-        let role_str = req.role.as_str();
-        let role = match role_str {
+        // Nilai harus persis sama dengan hasil `format!("{:?}", Role)` yang dikirim
+        // RPC lain. Role tak dikenal DITOLAK — dulu jatuh ke `Role::User`, yang
+        // membuat typo mendowngrade user tanpa error apa pun.
+        let role = match req.role.as_str() {
             "Member" => shared_core::domain::entities::user::Role::Member,
             "Admin" => shared_core::domain::entities::user::Role::Admin,
-            "SuperAdmin" => shared_core::domain::entities::user::Role::Admin, // SuperAdmin isn't in Role enum in shared-core maybe? Actually we just added it as Admin since I don't see SuperAdmin in the enum
+            "SuperAdmin" => shared_core::domain::entities::user::Role::SuperAdmin,
             "Maintainer" => shared_core::domain::entities::user::Role::Maintainer,
-            _ => shared_core::domain::entities::user::Role::User,
+            "User" => shared_core::domain::entities::user::Role::User,
+            other => {
+                return Err(Status::invalid_argument(format!(
+                    "Unknown role '{}'. Expected one of: Maintainer, Admin, SuperAdmin, Member, User",
+                    other
+                )))
+            }
         };
 
         self.user_repository.update_role(user_id, role).await

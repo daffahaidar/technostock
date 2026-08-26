@@ -6,8 +6,9 @@
 .env
 .env.*
 !.env.example
-!frontend/.env.development
-!frontend/.env.production
+# JANGAN menegasikan frontend/.env.* di sini — file tersebut memuat rahasia
+# nyata (BETTER_AUTH_SECRET, GITHUB_CLIENT_SECRET). Template-nya ada di
+# .env.example.
 
 # Keys
 **/.keys/

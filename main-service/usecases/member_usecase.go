@@ -2,6 +2,7 @@ package usecases
 
 import (
 	"context"
+	"errors"
 	"main-service/domain/entities"
 	"main-service/infrastructure/grpc"
 	"main-service/pb"
@@ -41,7 +42,7 @@ type MemberResponse struct {
 func (u *MemberUseCase) GetMembers() ([]MemberResponse, error) {
 	// 1. Fetch all users excluding Admin and Maintainer via gRPC
 	grpcResp, err := u.authClient.GetClient().GetAllUsers(context.Background(), &pb.GetAllUsersRequest{
-		ExcludeRoles: []string{"Admin", "Maintainer"},
+		ExcludeRoles: []string{"Admin", "SuperAdmin", "Maintainer"},
 	})
 	if err != nil {
 		return nil, err
@@ -57,10 +58,12 @@ func (u *MemberUseCase) GetMembers() ([]MemberResponse, error) {
 	// 3. Fetch active subscriptions for these users
 	var activeSubs []entities.UserSubscription
 	if len(userIDs) > 0 {
-		u.db.Preload("SubscriptionPlan").
+		if err := u.db.Preload("SubscriptionPlan").
 			Preload("SubscriptionPlan.AccountType").
 			Where("user_id IN ? AND status = ?", userIDs, entities.SubscriptionStatusActive).
-			Find(&activeSubs)
+			Find(&activeSubs).Error; err != nil {
+			return nil, err
+		}
 	}
 
 	// Map user_id to their active subscription
@@ -147,11 +150,11 @@ func (u *MemberUseCase) ExtendSubscription(userID string, planID uuid.UUID) erro
 	var activeSub entities.UserSubscription
 	err := tx.Preload("SubscriptionPlan").Where("user_id = ? AND status = ?", userID, entities.SubscriptionStatusActive).First(&activeSub).Error
 	if err != nil {
+		// Rollback SEKALI saja. Sebelumnya jalur not-found memanggil Rollback lalu
+		// Commit pada transaksi yang sama — Commit itu selalu gagal diam-diam.
 		tx.Rollback()
-		// If they don't have an active subscription, just promote/subscribe them normally
-		if err == gorm.ErrRecordNotFound {
-			// fallback to Subscribing
-			tx.Commit()
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			// Belum punya langganan aktif: buat baru lewat jalur normal.
 			_, subErr := u.userSubUseCase.SubscribeUser(userID, planID)
 			return subErr
 		}

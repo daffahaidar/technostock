@@ -18,7 +18,7 @@ COPY proto/ /proto/
 
 # Source service
 COPY realtime-service/ .
-COPY shared-core/ /shared-core/
+# realtime-service TIDAK bergantung pada shared-core — tidak perlu di-copy.
 
 # SQLX_OFFLINE=true agar cargo build tidak butuh koneksi database saat image build
 ENV SQLX_OFFLINE=true

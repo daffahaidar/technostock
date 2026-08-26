@@ -1,7 +1,9 @@
 .PHONY: dev dev-d prod prod-d down-dev down-prod logs-dev logs-prod ps-dev ps-prod \
         push push-auth push-grpc push-realtime push-main push-frontend \
         pull deploy deploy-down \
-        docker\:dev docker\:prod podman\:dev podman\:prod engine
+        docker\:dev docker\:prod podman\:dev podman\:prod engine \
+        down-dev-volumes down-prod-volumes deploy-down-volumes \
+        logs-deploy deploy-update validate help
 
 # ─── Config ───────────────────────────────────────────────────────────────────
 # Default engine per OS: Windows → podman, macOS/Linux → docker.

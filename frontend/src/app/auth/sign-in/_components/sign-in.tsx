@@ -60,6 +60,7 @@ export default function SignInForm() {
           router.push(callbackUrl || "/maintainer/dashboard");
           break;
         case "Admin":
+        case "SuperAdmin":
           router.push(callbackUrl || "/admin/dashboard");
           break;
         case "Member":

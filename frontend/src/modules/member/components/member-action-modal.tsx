@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -24,11 +24,17 @@ export function MemberActionModal({ userId, actionType, isOpen, setIsOpen, isLif
   const [discordUsername, setDiscordUsername] = useState(initialDiscordUsername || "");
   const queryClient = useQueryClient();
 
-  useEffect(() => {
+  // Reset form saat dialog dibuka. Pola "adjust state during render" (React docs)
+  // dipakai alih-alih useEffect+setState yang memicu cascading render.
+  // Bonus: selectedPlanId dulu tidak pernah di-reset antar pembukaan dialog.
+  const [wasOpen, setWasOpen] = useState(isOpen);
+  if (isOpen !== wasOpen) {
+    setWasOpen(isOpen);
     if (isOpen) {
       setDiscordUsername(initialDiscordUsername || "");
+      setSelectedPlanId("");
     }
-  }, [isOpen, initialDiscordUsername]);
+  }
 
   const { data: sessionData } = authClient.useSession();
   const token = sessionData?.session?.token;

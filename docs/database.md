@@ -408,17 +408,16 @@ Artinya: semua pesan dari semua "group" masuk ke satu tabel yang sama, dan
 `GET /api/v1/chat/history` mengembalikan riwayat global tanpa filter group.
 Fitur multi-group memerlukan kolom baru plus migrasi.
 
-### Role `SuperAdmin` tidak bisa di-decode Rust
+### Role `SuperAdmin`
 
-CHECK constraint DB mengizinkan `SuperAdmin`, dan `main-service`
-memperlakukannya sebagai role admin yang valid. Namun enum `Role` di
-[`shared-core/src/domain/entities/user.rs`](../shared-core/src/domain/entities/user.rs)
-hanya berisi `Maintainer`, `Admin`, `Member`, `User`. Baris user dengan
-`role = 'SuperAdmin'` akan gagal di-decode saat sqlx memetakannya ke struct
-`User`.
+Enum `Role` di Rust (`shared-core` dan `realtime-service`) kini memuat
+`SuperAdmin`, cocok dengan CHECK constraint DB dan dengan
+`RequireRole("Admin", "SuperAdmin", "Maintainer")` di Go. Sebelumnya varian ini
+tidak ada di Rust sehingga baris user `SuperAdmin` gagal di-decode sqlx.
 
-`realtime-service` juga memetakan role dari string gRPC secara manual dan
-memperlakukan apa pun selain `Admin`/`Maintainer`/`Member` sebagai `User`.
+Nilai role yang dikirim lewat gRPC harus PascalCase persis — `UpdateUserRole`
+menolak nilai tak dikenal dengan `Status::invalid_argument` alih-alih
+mendowngrade user secara diam-diam.
 
 ### Unread count bersifat global
 

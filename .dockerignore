@@ -23,10 +23,11 @@ main-service/tmp/
 .gitignore
 
 # Env files (sensitive)
+# File ini hanya berlaku untuk build context = root (service Rust). Frontend
+# di-build dengan context ./frontend, jadi negasi frontend/.env.* di sini tidak
+# berguna dan justru membakar rahasia frontend ke dalam image Rust.
 **/.env
 **/.env.*
-!frontend/.env.development
-!frontend/.env.production
 
 # Misc
 **/.DS_Store

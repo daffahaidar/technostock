@@ -65,21 +65,21 @@ file logo). Font `Geist` (next/font/google).
 ## 2. Persona & Role
 
 Role tersimpan di `users.users.role`. Enum Rust:
-`Maintainer | Admin | Member | User`
-([`shared-core/src/domain/entities/user.rs`](../shared-core/src/domain/entities/user.rs)).
-DB CHECK juga mengizinkan `SuperAdmin`, tetapi enum Rust tidak punya varian itu
-— lihat [§8 Risiko](#8-risiko-teknis-yang-mempengaruhi-produk).
+`Maintainer | Admin | SuperAdmin | Member | User`
+([`shared-core/src/domain/entities/user.rs`](../shared-core/src/domain/entities/user.rs)),
+cocok dengan CHECK constraint DB. `SuperAdmin` diperlakukan setara `Admin` di
+seluruh lapisan otorisasi (Rust, Go, dan `proxy.ts`).
 
 | Persona | Role | Landing dashboard | Yang bisa dilakukan hari ini |
 |---|---|---|---|
 | **Pengunjung / calon pembeli** | `User` | `/` | Lihat landing + pricing, sign up, checkout, bayar |
 | **Member berbayar** | `Member` | `/forum/dashboard` | Lihat sisa masa aktif langganan. Menu "Market News" ada tapi halamannya belum dibuat |
-| **Admin bisnis** | `Admin` | `/admin/dashboard` | Kelola tipe akun, plan, voucher, dan member (promote/extend/revoke/ban) |
+| **Admin bisnis** | `Admin` / `SuperAdmin` | `/admin/dashboard` | Kelola tipe akun, plan, voucher, dan member (promote/extend/revoke/ban) |
 | **Maintainer / internal** | `Maintainer` | `/maintainer/dashboard` | Akses forum chat (satu-satunya role yang bisa), dashboard masih stub |
 
 Proteksi route ada di [`frontend/src/proxy.ts`](../frontend/src/proxy.ts):
-`/admin` → `Admin`; `/maintainer` → `Maintainer`; `/forum` → `Maintainer`,
-`Admin`, `Member`; `/user` → semua yang login. Otorisasi backend Go memakai
+`/admin` → `Admin`/`SuperAdmin`; `/maintainer` → `Maintainer`; `/forum` →
+`Maintainer`, `Admin`, `SuperAdmin`, `Member`; `/user` → semua yang login. Otorisasi backend Go memakai
 `RequireRole("Admin", "SuperAdmin", "Maintainer")`.
 
 > Admin dan Maintainer diperlakukan "sudah punya akses penuh" di UI pricing —
@@ -136,7 +136,7 @@ Status: ✅ jalan · 🟡 sebagian · ⛔ belum ada · ⏸️ on-hold.
 | F2.1 | Login email/password menerbitkan access token (15 mnt) + refresh token (7 hari) | ✅ | `shared-core/src/infrastructure/auth/jwt.rs` |
 | F2.2 | User berstatus `Suspended` ditolak login | ✅ | `usecases/auth.rs` `LoginUseCase` |
 | F2.3 | User OAuth-only (tanpa password) ditolak login email | ✅ | `LoginUseCase` |
-| F2.4 | Refresh token **tidak** memeriksa status suspend | 🟡 | `RefreshTokenUseCase` — user yang di-suspend tetap bisa refresh sampai token kedaluwarsa |
+| F2.4 | Refresh token menolak user yang di-suspend | ✅ | `RefreshTokenUseCase` — sama seperti `LoginUseCase` |
 | F3.1 | Login GitHub & Google, redirect URI menunjuk ke frontend | ✅ | `infrastructure/auth/{github,google}.rs` |
 | F3.2 | Akun OAuth dengan email yang sama di-link ke user existing | ✅ | `GitHubCallbackUseCase`, `GoogleCallbackUseCase` |
 | F3.3 | Alur OAuth memakai parameter `state`/PKCE anti-CSRF | ⛔ | Tidak ada di `get_authorize_url()` kedua provider |
@@ -157,7 +157,7 @@ Status: ✅ jalan · 🟡 sebagian · ⛔ belum ada · ⏸️ on-hold.
 | F6.5 | Admin & Maintainer dapat mengubah status `Active`/`Suspended` | ✅ | `UpdateUserStatusUseCase` |
 | F6.6 | UI untuk update & delete user | ⛔ | Frontend hanya memakai `PATCH /users/:id/status` |
 | F6.7 | Daftar user ter-paginasi | ⛔ | `find_all()` tanpa `LIMIT`/`ORDER BY` |
-| F6.8 | Non-admin yang mengakses daftar user mendapat 403 | 🟡 | Mendapat **401** — usecase mengembalikan `InvalidToken`, bukan `Forbidden` |
+| F6.8 | Non-admin yang mengakses daftar user mendapat 403 | ✅ | `GetUsersUseCase` mengembalikan `AppError::Forbidden` |
 
 ### 4.3 Katalog Langganan
 
@@ -209,8 +209,8 @@ Status: ✅ jalan · 🟡 sebagian · ⛔ belum ada · ⏸️ on-hold.
 | F9.13 | Transaksi gagal/kedaluwarsa mengembalikan kuota | ✅ | Webhook + worker |
 | F9.14 | Halaman status dapat memaksa sinkronisasi bila webhook telat | ✅ | `POST /subscriptions/transactions/:order_id/sync` |
 | F9.15 | Signature webhook Midtrans diverifikasi | ⛔ | Tidak ada verifikasi `signature_key`; keamanan bersandar pada `CheckTransaction` |
-| F9.16 | Environment Midtrans dapat dikonfigurasi | ⛔ | `midtrans.Sandbox` **hard-coded** |
-| F9.17 | Halaman status memakai URL gateway | ⛔ | `status-content.tsx` **hard-code** `http://localhost:8002/...` dan salah prefix — lihat [§8](#8-risiko-teknis-yang-mempengaruhi-produk) |
+| F9.16 | Environment Midtrans dapat dikonfigurasi | ✅ | Env `MIDTRANS_ENV` (`sandbox` default / `production`), divalidasi di `config.go` |
+| F9.17 | Halaman status memakai URL gateway | ✅ | `status-content.tsx` memakai `NEXT_PUBLIC_API_URL` + `ENDPOINT.GOLANG_API.TRANSACTION_SYNC` |
 
 ### 4.6 Siklus Hidup Langganan
 
@@ -346,16 +346,17 @@ Dicatat agar tidak ada yang mengira fitur ini ada.
 
 | # | Risiko | Dampak produk | Bukti |
 |---|---|---|---|
-| R1 | `status-content.tsx` hard-code `http://localhost:8002` dan **salah prefix** (`/api/v1/...` alih-alih `/api/v1/main/...`) | Sinkronisasi status pembayaran **gagal di luar mesin dev**. User yang webhook-nya telat melihat status salah | `frontend/src/app/checkout/status/status-content.tsx` |
-| R2 | Midtrans terkunci mode Sandbox | Tidak bisa menerima pembayaran nyata tanpa ubah kode | `user_subscription_usecase.go` |
+| ~~R1~~ | ~~`status-content.tsx` hard-code `http://localhost:8002`~~ | **DITUTUP** — kini lewat `NEXT_PUBLIC_API_URL` + `ENDPOINT.GOLANG_API.TRANSACTION_SYNC` | `frontend/src/app/checkout/status/status-content.tsx` |
+| ~~R2~~ | ~~Midtrans terkunci mode Sandbox~~ | **DITUTUP** — env `MIDTRANS_ENV` | `main-service/config/config.go` |
 | R3 | Signature webhook tidak diverifikasi | Endpoint webhook publik; mitigasi hanya `CheckTransaction` ke Midtrans | idem |
-| R4 | Role `SuperAdmin` valid di DB & Go tapi tidak ada di enum Rust | Baris user `SuperAdmin` **gagal di-decode** → 500 di seluruh jalur Rust | `shared-core/.../user.rs` vs migrasi `20260823055723` |
-| R5 | `UpdateUserRole` gRPC memetakan role tak dikenal ke `Role::User` secara diam-diam | Typo pada string role = user **di-downgrade** tanpa error | `user_service_impl.rs` |
-| R6 | URL gambar chat memakai hostname internal `minio` | Gambar tidak bisa dibuka dari browser | `storage_service.rs` |
+| ~~R4~~ | ~~`SuperAdmin` tidak ada di enum Rust~~ | **DITUTUP** — varian `Role::SuperAdmin` ditambahkan di `shared-core` & `realtime-service`, dan diperlakukan setara `Admin` di otorisasi Rust dan `proxy.ts` | `shared-core/.../user.rs` |
+| ~~R5~~ | ~~`UpdateUserRole` mendowngrade role tak dikenal secara diam-diam~~ | **DITUTUP** — kini `Status::invalid_argument` | `user_service_impl.rs` |
+| ~~R6~~ | ~~URL gambar chat memakai hostname internal~~ | **DITUTUP** — env `MINIO_PUBLIC_URL` (fallback ke perilaku lama) | `storage_service.rs` |
 | R7 | Tidak ada test dan tidak ada CI | Setiap perubahan berisiko regresi diam-diam | Seluruh repo |
 | R8 | Kredensial dev hard-coded di compose | Bocor bila di-deploy apa adanya | Semua compose |
 | R9 | Kegagalan gRPC saat aktivasi hanya di-log | Langganan aktif tapi role tetap `User` → member tidak dapat akses | `activateSubscription` |
-| R10 | Refresh token tidak cek suspend & tidak bisa dicabut | User yang di-ban tetap punya sesi hingga 7 hari | `RefreshTokenUseCase` |
+| R10 | Refresh token stateless, tidak bisa dicabut | Cek suspend sudah ditambahkan, tapi token yang sudah terbit tetap valid sampai `exp` | `RefreshTokenUseCase` |
+| R11 | Signature webhook Midtrans tidak diverifikasi | Dimitigasi `CheckTransaction` — status selalu dikonfirmasi ke Midtrans, jadi webhook palsu tidak mengubah apa pun | `HandleMidtransWebhook` |
 
 Isu operasional (chat belum ter-route, Kafka idle, dll.) ada di
 [operations.md → Isu yang Diketahui](operations.md#isu-yang-diketahui).

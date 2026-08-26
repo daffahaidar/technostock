@@ -11,9 +11,10 @@ use crate::infrastructure::errors::AppError;
 pub struct StorageService {
     s3_client: Client,
     bucket_name: String,
-    endpoint: String,
-    port: String,
-    use_ssl: bool,
+    /// Base URL yang dipakai untuk membentuk link publik gambar. Harus dapat
+    /// diakses BROWSER — beda dari endpoint internal S3 (di Docker `minio:9000`
+    /// tidak resolve dari host). Diatur lewat `MINIO_PUBLIC_URL`.
+    public_base_url: String,
 }
 
 impl StorageService {
@@ -45,12 +46,17 @@ impl StorageService {
 
         let s3_client = Client::from_conf(config);
 
+        // Fallback ke endpoint internal agar perilaku lama tetap jalan bila
+        // MINIO_PUBLIC_URL belum diisi.
+        let public_base_url = env::var("MINIO_PUBLIC_URL")
+            .unwrap_or_else(|_| url.clone())
+            .trim_end_matches('/')
+            .to_string();
+
         Self {
             s3_client,
             bucket_name,
-            endpoint,
-            port,
-            use_ssl,
+            public_base_url,
         }
     }
 
@@ -79,10 +85,6 @@ impl StorageService {
                 AppError::InternalServerError
             })?;
 
-        // Generate public URL
-        let protocol = if self.use_ssl { "https" } else { "http" };
-        let public_url = format!("{}://{}:{}/{}/{}", protocol, self.endpoint, self.port, self.bucket_name, key);
-
-        Ok(public_url)
+        Ok(format!("{}/{}/{}", self.public_base_url, self.bucket_name, key))
     }
 }

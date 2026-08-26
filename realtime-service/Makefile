@@ -38,7 +38,7 @@ clean:
 
 # Run database migrations (jika diperlukan manual)
 migrate:
-	sqlx migrate run
+	sqlx migrate run --ignore-missing
 
 # Show available commands
 help:

@@ -56,8 +56,8 @@ async function DashboardContent() {
     }
   }
 
-  // Fetch all pricing plans to show below
-  let pricingData = await getPublicPricingData();
+  // Dipakai hanya untuk mencari nama account type dari langganan aktif.
+  const pricingData = await getPublicPricingData();
   
   // Find which account type the active subscription belongs to
   let activeAccountTypeName = "";
@@ -68,8 +68,6 @@ async function DashboardContent() {
     
     if (matchingAccountType) {
       activeAccountTypeName = matchingAccountType.name;
-      // Filter out the active account type
-      pricingData = pricingData.filter((at: { id: string }) => at.id !== matchingAccountType.id);
     }
   }
 
@@ -86,7 +84,7 @@ async function DashboardContent() {
               : planDetails?.name || "Langganan Premium"
           } 
         />
-      ) : ["admin", "maintainer"].includes(session.user?.role?.toLowerCase() || "") ? (
+      ) : ["admin", "superadmin", "maintainer"].includes(session.user?.role?.toLowerCase() || "") ? (
         <div className="bg-[#D4AF37]/10 border border-[#D4AF37]/30 rounded-2xl p-10 text-center shadow-lg">
           <h2 className="text-2xl font-bold text-[#D4AF37] mb-3">Akses Penuh Sebagai {session.user.role}</h2>
           <p className="text-gray-400 max-w-lg mx-auto">

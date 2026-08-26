@@ -10,8 +10,8 @@ WORKDIR /app
 # Install protoc untuk gRPC codegen (build.rs)
 RUN apt-get update && apt-get install -y protobuf-compiler && rm -rf /var/lib/apt/lists/*
 
-# Install sqlx-cli untuk migrasi
-RUN cargo install sqlx-cli --no-default-features --features postgres
+# Catatan: grpc-service TIDAK punya folder migrations, jadi sqlx-cli tidak
+# di-install di sini (dulu di-install tapi tidak pernah dipakai).
 
 # Proto dari root project (tersedia karena context = root)
 COPY proto/ /proto/
@@ -31,7 +31,7 @@ WORKDIR /app
 
 RUN apt-get update && apt-get install -y ca-certificates libpq5 && rm -rf /var/lib/apt/lists/* && apt-get clean
 
-# Copy hanya binary, sqlx, migrations, dan entrypoint — TIDAK copy .env
+# Copy hanya binary — TIDAK copy .env
 COPY --from=builder /app/target/release/grpc-service .
 
 EXPOSE 8080 50051

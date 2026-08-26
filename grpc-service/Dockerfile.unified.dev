@@ -16,7 +16,7 @@ RUN apt-get update && apt-get install -y protobuf-compiler && rm -rf /var/lib/ap
 RUN cargo install cargo-watch --version 8.4.1 --locked && \
     cargo install sqlx-cli --no-default-features --features postgres
 
-EXPOSE 8000 50051
+EXPOSE 8080 50051
 
 # Source & proto disediakan via volume. Jalankan migrasi dulu lalu watch.
 CMD ["sh", "-c", "sqlx migrate run --ignore-missing && cargo watch --poll -c -x run"]

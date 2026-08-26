@@ -2,8 +2,6 @@ FROM rust:latest
 
 WORKDIR /app
 
-# Install protoc (Protocol Buffer compiler) untuk gRPC codegen di build.rs
-RUN apt-get update && apt-get install -y protobuf-compiler && rm -rf /var/lib/apt/lists/*
 
 RUN cargo install cargo-watch --version 8.4.1 --locked && \
     cargo install sqlx-cli --no-default-features --features postgres

@@ -19,7 +19,7 @@ impl<R: UserRepository> CreateUserUseCase<R> {
     pub async fn execute(&self, requester_role: Role, dto: CreateUserDto) -> Result<UserResponseDto, AppError> {
         // Check permissions: Only Admin and Maintainer can create users
         match requester_role {
-            Role::Admin | Role::Maintainer => {},
+            Role::Admin | Role::SuperAdmin | Role::Maintainer => {},
             _ => return Err(AppError::Forbidden),
         }
 
@@ -148,8 +148,14 @@ impl<R: UserRepository> UpdateUserStatusUseCase<R> {
     pub async fn execute(&self, requester_role: Role, user_id: Uuid, dto: UpdateUserStatusDto) -> Result<UserResponseDto, AppError> {
         // Check permissions: Admin and Maintainer can suspend users
         match requester_role {
-            Role::Admin | Role::Maintainer => {},
+            Role::Admin | Role::SuperAdmin | Role::Maintainer => {},
             _ => return Err(AppError::Forbidden),
+        }
+
+        // Cek keberadaan user dulu: tanpa ini `update_status` memakai `fetch_one`,
+        // sehingga user yang tidak ada menghasilkan RowNotFound -> 500, bukan 404.
+        if self.user_repository.find_by_id(user_id).await?.is_none() {
+            return Err(AppError::UserNotFound);
         }
 
         let updated_user = self.user_repository.update_status(user_id, dto.status).await?;

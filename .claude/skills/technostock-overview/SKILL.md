@@ -94,14 +94,14 @@ Melanggar salah satu = bug arsitektur, bukan sekadar gaya.
 | Nama paket frontend | `package.json` = **`dimentorin`** (nama lama). Teks user = **Technostock** |
 | Cargo workspace | **Tidak ada.** 4 crate berdiri sendiri via `path = "../shared-core"`. Jalankan `cargo` dari dalam folder crate |
 | `realtime-service` | **Tidak** memakai `shared-core` — menduplikasi `User`, `Role`, `AppError`, `JwtService`. Versi `User`-nya tanpa `discord_username` |
-| Dead code | `realtime-service/src/api.rs` + `src/mod.rs` tidak pernah di-compile. Router aktif: `src/routes/api.rs`. Di frontend: `hooks/use-query.ts`, `hooks/use-mutate.ts`, `libs/axios.ts → externalBackend`, `components/layout/sidebar-dispatcher.tsx` |
+| Router realtime | Router aktif = `realtime-service/src/routes/api.rs` (bukan `src/api.rs`, yang sudah dihapus) |
 | Port | Hard-coded di `main.rs` (8000/8001/8080/50051). Hanya `main-service` membaca `PORT` |
 | Dua folder migrations | `auth-service/migrations` (13) & `realtime-service/migrations` (11) berbagi satu `_sqlx_migrations`, keduanya `ignore_missing` |
 | `.sqlx/` | Hanya `realtime-service` pakai makro `sqlx::query!`. Ubah makro → wajib `cargo sqlx prepare` + commit, atau build prod pecah |
 | Build context Docker | Service Rust di-build dari **root repo** (`context: .`). Varian `Dockerfile.unified.*` |
 | Compose per-service | `auth-service/docker-compose.*.yml` & `realtime-service/docker-compose.*.yml` **gagal build** — context terlalu sempit. Pakai compose root |
-| `SuperAdmin` | Valid di DB CHECK & di Go, **tidak ada** di enum Rust `Role` → gagal decode sqlx |
-| `UpdateUserRole` | String role tak dikenal → **downgrade diam-diam ke `User`**, RPC tetap sukses |
+| `SuperAdmin` | Ada di semua lapisan dan diperlakukan setara `Admin`. Endpoint Maintainer-only tetap Maintainer-only |
+| `UpdateUserRole` | String role harus PascalCase persis; nilai tak dikenal ditolak `Status::invalid_argument` |
 | `duration_months = 0` | Berarti **lifetime** |
 | `end_date = NULL` | Berarti **lifetime** |
 | `quota = NULL` | Berarti **tanpa batas** |

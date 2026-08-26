@@ -6,7 +6,10 @@ import { Button } from "@/components/ui/button";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { authClient } from "@/app/auth/sign-in/_handlers/client";
+import { ENDPOINT } from "@/endpoint";
 import { clearAccessToken } from "./actions";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
 export default function StatusContent() {
   const searchParams = useSearchParams();
@@ -31,7 +34,7 @@ export default function StatusContent() {
 
     const syncTransaction = async () => {
       try {
-        const res = await fetch(`http://localhost:8002/api/v1/subscriptions/transactions/${orderId}/sync`, {
+        const res = await fetch(`${API_URL}${ENDPOINT.GOLANG_API.TRANSACTION_SYNC(orderId)}`, {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${token}`

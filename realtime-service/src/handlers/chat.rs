@@ -99,6 +99,7 @@ async fn enrich_messages(state: &AppState, messages: Vec<Message>, current_user_
         // Parse role enum (we sent as debug format string like "User" or "Admin" over gRPC)
         let sender_role = if let Some(s) = sender {
             if s.role == "Admin" { crate::domain::entities::user::Role::Admin }
+            else if s.role == "SuperAdmin" { crate::domain::entities::user::Role::SuperAdmin }
             else if s.role == "Maintainer" { crate::domain::entities::user::Role::Maintainer }
             else if s.role == "Member" { crate::domain::entities::user::Role::Member }
             else { crate::domain::entities::user::Role::User }
@@ -212,6 +213,11 @@ pub async fn chat_ws_handler(
     // Verify token since browsers don't send auth headers automatically in WS constructor
     let claims = state.jwt_service.verify_token(token)
         .map_err(|_| AppError::InvalidToken)?;
+
+    // Sama seperti extractor AuthUser: refresh token tidak boleh membuka WebSocket.
+    if claims.claims.token_type != "access" {
+        return Err(AppError::InvalidToken);
+    }
         
     let user_id = claims.claims.sub;
     

@@ -131,7 +131,7 @@ make dev                # migrasi dijalankan ulang dari nol
 Hal-hal berikut ada di dalam kode tetapi belum berfungsi. Didokumentasikan agar
 tidak menyesatkan saat dikembangkan.
 
-Isu 1 dan 2 hanya menyangkut fitur chat yang statusnya
+Isu 1 dan 3 hanya menyangkut fitur chat yang statusnya
 [on-hold](#status-pengembangan) — bukan blocker untuk pengembangan user dan
 subscription yang sedang berjalan.
 
@@ -151,15 +151,11 @@ langsung ke `realtime-service` (`ws://localhost:8001` dan
 **Perbaikan permanen:** tambahkan route `/api/v1/chat` ke `gateway.rs` —
 `get(proxy_ws)` untuk `/api/v1/chat/ws` dan `any(proxy_realtime)` untuk sisanya.
 
-### 2. URL gambar chat memakai hostname internal
+### 2. Voucher tidak bisa diubah lewat API
 
-[`storage_service.rs`](../realtime-service/src/infrastructure/storage_service.rs)
-membentuk URL publik dari `MINIO_ENDPOINT`, yang di compose dev bernilai `minio`
-(nama service). URL `http://minio:9000/...` tersimpan di
-`message.messages.image_url` dan tidak bisa dibuka dari browser host.
-
-**Workaround:** set `MINIO_ENDPOINT` ke hostname yang bisa diakses browser, atau
-sajikan MinIO lewat reverse proxy.
+`VoucherUseCase.UpdateVoucher` ada di
+[`voucher_usecase.go`](../main-service/usecases/voucher_usecase.go) tetapi tidak
+punya handler maupun route. Voucher hanya bisa dibuat dan dihapus.
 
 ### 3. Kafka berjalan tanpa satu pun producer/consumer
 
@@ -169,31 +165,56 @@ migrasi event `realtime-service` dari RabbitMQ ke Kafka (lihat
 [Status Pengembangan](#status-pengembangan)). Selama chat masih on-hold, service
 `kafka` di [`docker-compose.dev.yml`](../docker-compose.dev.yml) aman dimatikan.
 
-### 4. Voucher tidak bisa diubah lewat API
-
-`VoucherUseCase.UpdateVoucher` ada di
-[`voucher_usecase.go`](../main-service/usecases/voucher_usecase.go) tetapi tidak
-punya handler maupun route. Voucher hanya bisa dibuat dan dihapus.
-
-### 5. Kredensial development di-hardcode
+### 4. Kredensial development di-hardcode
 
 Password Postgres, Redis, RabbitMQ, MinIO, dan Kafka tertulis langsung di file
 compose. Nilai-nilai tersebut hanya untuk development lokal — ganti seluruhnya
 sebelum deploy.
 
-### 6. Midtrans terkunci di mode Sandbox
+### 5. Tidak ada test dan tidak ada CI
 
-[`user_subscription_usecase.go`](../main-service/usecases/user_subscription_usecase.go)
-memanggil `snapClient.New(key, midtrans.Sandbox)` dan
-`apiClient.New(key, midtrans.Sandbox)` dengan environment di-hardcode. Untuk
-production, nilai tersebut perlu dijadikan konfigurasi.
+Nol `#[test]`, nol `_test.go`, nol `*.test.ts`, tidak ada `.github/`. Target
+`make test` ada di lima Makefile tetapi berjalan di atas nol test case.
 
-### 7. Catatan tingkat database
+### 6. Catatan tingkat database
 
-Tiga hal lain — `group_id` chat yang tidak pernah dipersist, role `SuperAdmin`
-yang tidak bisa di-decode enum Rust, dan tidak adanya foreign key dari schema
-`main` ke `users.users` — dijelaskan di
+Dua hal — `group_id` chat yang tidak pernah dipersist dan tidak adanya foreign
+key dari schema `main` ke `users.users` — dijelaskan di
 [database.md → Catatan Integritas Data](database.md#catatan-integritas-data).
+
+---
+
+## Isu yang Sudah Ditutup
+
+Dicatat agar tidak dilaporkan ulang.
+
+| Isu | Perbaikan |
+|---|---|
+| `frontend/.env.*` di-**negasikan** di `.gitignore` & root `.dockerignore` padahal memuat `GITHUB_CLIENT_SECRET` / `BETTER_AUTH_SECRET` | Negasi dihapus di kedua file |
+| Halaman status pembayaran hard-code `http://localhost:8002` + salah prefix | Lewat `NEXT_PUBLIC_API_URL` + `ENDPOINT.GOLANG_API.TRANSACTION_SYNC` |
+| Midtrans terkunci mode Sandbox | Env `MIDTRANS_ENV` (`sandbox`/`production`), divalidasi saat startup |
+| URL gambar chat memakai hostname internal `minio` | Env `MINIO_PUBLIC_URL`, fallback ke perilaku lama |
+| `SuperAdmin` tidak ada di enum Rust → gagal decode sqlx | Varian ditambahkan di `shared-core` + `realtime-service`, setara `Admin` di semua lapisan otorisasi |
+| gRPC `UpdateUserRole` mendowngrade role tak dikenal ke `User` diam-diam | Kini `Status::invalid_argument` |
+| Refresh token tidak memeriksa status suspend | Ditolak dengan `Forbidden`, sama seperti login |
+| WebSocket chat tidak memeriksa `token_type` | Refresh token kini ditolak membuka WS |
+| `GET /users` membalas 401 untuk non-admin | Kini 403 (`AppError::Forbidden`) |
+| `PATCH /users/:id/status` membalas 500 bila user tidak ada | Kini 404 |
+| `PATCH` tidak terdaftar di CorsLayer auth-service | Ditambahkan |
+| `ExtendSubscription` memanggil `Commit()` setelah `Rollback()` | Rollback sekali, lalu fallback `SubscribeUser` |
+| `GetMembers` membuang error query DB | Error dikembalikan |
+| `build.rs` memakai path absolut mesin developer untuk `protoc` | Urutan: env `PROTOC` → PATH → vendored |
+| `realtime-service/build.rs` tanpa `rerun-if-changed` | Ditambahkan |
+| `realtime-service/src/{api,mod}.rs` dead code yang tidak bisa di-compile | Dihapus |
+| `auth-service/Cargo.lock` di-ignore, tiga crate lain di-track | Kini ikut di-track |
+| Zod v4: `required_error` bikin `tsc` gagal | Diganti `error` |
+| ESLint error `set-state-in-effect` + 2 warning React Compiler | `useState`-during-render & `useWatch` |
+| Dead code frontend (`use-query`, `use-mutate`, `externalBackend`, `sidebar-dispatcher`, `getQueryClient`) | Dihapus |
+| Class CSS `hide-arrow` dipakai tapi tidak pernah didefinisikan | Didefinisikan di `globals.css` |
+| `EXPOSE 8000` di `grpc-service/Dockerfile.unified.dev` (gateway di 8080) | Diperbaiki |
+| `sqlx-cli` di-install di image grpc prod tapi tak pernah dipakai; `shared-core` di-copy ke image realtime yang tidak memakainya; `protoc` di-install di image auth yang tak punya `build.rs` | Ketiganya dihapus |
+| `make migrate` per service tanpa `--ignore-missing` → gagal di DB bersama | Flag ditambahkan |
+| `.PHONY` root Makefile tidak lengkap | Dilengkapi |
 
 ---
 

@@ -1,7 +1,7 @@
 import { AppSidebar } from "@/components/ui/app-sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 
-export default function AdminLayout({
+export default function ForumLayout({
   children,
 }: {
   children: React.ReactNode;

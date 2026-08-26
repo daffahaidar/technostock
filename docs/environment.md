@@ -74,7 +74,8 @@ ini hanya memverifikasi token.
 | `MINIO_SECRET_KEY` | ✅ | — | |
 | `MINIO_BUCKET` | ✅ | — | `technostock` |
 | `AUTH_GRPC_URL` | — | `http://127.0.0.1:50051` | **Menunjuk ke `grpc-service`**, bukan `auth-service` |
-| `MINIO_ENDPOINT` | — | `localhost` | Ikut membentuk URL publik gambar — harus bisa diakses browser |
+| `MINIO_ENDPOINT` | — | `localhost` | Endpoint **internal** S3 (koneksi service → MinIO) |
+| `MINIO_PUBLIC_URL` | — | endpoint internal | Base URL publik gambar chat — **harus bisa dibuka browser**. Di Docker isi `http://localhost:9000`; tanpa ini URL memakai host internal `minio` |
 | `MINIO_PORT` | — | `9000` | |
 | `MINIO_USE_SSL` | — | `false` | |
 | `REDIS_HOST` | — | `localhost` | |
@@ -97,6 +98,7 @@ Sumber: [`realtime-service/src/main.rs`](../realtime-service/src/main.rs),
 | `AUTH_GRPC_URL` | ✅ | — | `grpc-service:50051` (tanpa skema `http://`) |
 | `MIDTRANS_SERVER_KEY` | ✅ | — | Dari dashboard Midtrans → Settings → Access Keys |
 | `MIDTRANS_CLIENT_KEY` | — | *(kosong)* | Dibaca `LoadConfig` tetapi **belum dipakai** kode mana pun |
+| `MIDTRANS_ENV` | — | `sandbox` | `sandbox` atau `production`. Nilai lain → `log.Fatal` saat startup |
 | `PORT` | — | `8002` | |
 
 Sumber: [`main-service/config/config.go`](../main-service/config/config.go).

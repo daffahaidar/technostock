@@ -7,6 +7,7 @@ use chrono::{DateTime, Utc};
 pub enum Role {
     Maintainer,
     Admin,
+    SuperAdmin,
     Member,
     User,
 }

@@ -10,12 +10,6 @@ const profileMenu = [
         icon: UserRoundCog,
         isActive: false,
       },
-      {
-        title: "Change Password",
-        url: "/user/password",
-        icon: UserRoundCog,
-        isActive: false,
-      },
     ],
   },
   {

@@ -138,21 +138,21 @@ Nilai role yang valid di database: `User`, `Member`, `Maintainer`, `Admin`,
 
 > Enum `Role` di
 > [`shared-core/src/domain/entities/user.rs`](../shared-core/src/domain/entities/user.rs)
-> hanya berisi `Maintainer`, `Admin`, `Member`, `User` — baris dengan
-> `role = 'SuperAdmin'` gagal di-decode sqlx. Lihat
-> [database.md](database.md#role-superadmin-tidak-bisa-di-decode-rust).
+> memuat kelimanya. `SuperAdmin` diperlakukan setara `Admin` di seluruh lapisan
+> otorisasi (Rust, Go, `proxy.ts`); endpoint Maintainer-only tetap
+> Maintainer-only. Lihat [database.md](database.md#role-superadmin).
 
 Proteksi route frontend diatur di [`frontend/src/proxy.ts`](../frontend/src/proxy.ts):
 
 | Prefix path | Role yang diizinkan |
 |---|---|
-| `/admin` | `Admin` |
+| `/admin` | `Admin`, `SuperAdmin` |
 | `/maintainer` | `Maintainer` |
-| `/forum` | `Maintainer`, `Admin`, `Member` |
+| `/forum` | `Maintainer`, `Admin`, `SuperAdmin`, `Member` |
 | `/user` | semua role yang sudah login (tanpa cek role) |
 
 Role yang ditolak dialihkan ke dashboard-nya sendiri: `Maintainer` →
-`/maintainer/dashboard`, `Admin` → `/admin/dashboard`, `Member` →
+`/maintainer/dashboard`, `Admin`/`SuperAdmin` → `/admin/dashboard`, `Member` →
 `/forum/dashboard`, `User` → `/`.
 
 Otorisasi di `main-service` memakai `RequireRole("Admin", "SuperAdmin",
@@ -224,7 +224,7 @@ technostock/
 │   ├── src/app/              # App Router: (root), auth, admin, maintainer, forum, user, checkout, api
 │   ├── src/modules/          # Fitur per domain: account-type, subscription-plan, member, voucher
 │   ├── src/proxy.ts          # Proteksi route berbasis role
-│   ├── src/libs/axios.ts     # Instance externalBackend & messageBackend
+│   ├── src/libs/axios.ts     # Instance messageBackend (chat)
 │   └── Dockerfile.dev / Dockerfile.prod
 │
 ├── grpc-service/             # API Gateway + gRPC UserService

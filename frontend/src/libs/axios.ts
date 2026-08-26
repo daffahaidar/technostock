@@ -34,10 +34,6 @@ export const clearTokenCache = () => {
   tokenExpiry = null;
 };
 
-export const externalBackend = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL,
-});
-
 const getMessageBaseUrl = () => {
   if (process.env.NEXT_PUBLIC_MESSAGE_API_URL)
     return process.env.NEXT_PUBLIC_MESSAGE_API_URL;
@@ -77,5 +73,4 @@ const setupInterceptors = (instance: AxiosInstance) => {
   );
 };
 
-setupInterceptors(externalBackend);
 setupInterceptors(messageBackend);

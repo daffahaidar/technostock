@@ -14,10 +14,11 @@ impl<R: UserRepository> GetUsersUseCase<R> {
     }
 
     pub async fn execute(&self, role: Role) -> Result<Vec<UserResponseDto>, AppError> {
-        // Authorize: Only Admin and Maintainer can get all users
+        // Authorize: Only Admin, SuperAdmin and Maintainer can get all users.
+        // Forbidden (403), bukan InvalidToken (401) — tokennya sah, role-nya yang kurang.
         match role {
-            Role::Admin | Role::Maintainer => {},
-            _ => return Err(AppError::InvalidToken), // Or create a Forbidden error
+            Role::Admin | Role::SuperAdmin | Role::Maintainer => {}
+            _ => return Err(AppError::Forbidden),
         }
 
         let users = self.user_repository.find_all().await?;

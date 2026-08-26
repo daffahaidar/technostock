@@ -19,13 +19,20 @@ import (
 type UserSubscriptionUseCase struct {
 	db                *gorm.DB
 	midtransServerKey string
+	midtransEnv       midtrans.EnvironmentType
 	authClient        *grpc.AuthClient
 }
 
-func NewUserSubscriptionUseCase(db *gorm.DB, midtransServerKey string, authClient *grpc.AuthClient) *UserSubscriptionUseCase {
+// midtransEnv: "sandbox" atau "production". Nilai lain diperlakukan sebagai sandbox.
+func NewUserSubscriptionUseCase(db *gorm.DB, midtransServerKey, midtransEnv string, authClient *grpc.AuthClient) *UserSubscriptionUseCase {
+	env := midtrans.Sandbox
+	if midtransEnv == "production" {
+		env = midtrans.Production
+	}
 	return &UserSubscriptionUseCase{
 		db:                db,
 		midtransServerKey: midtransServerKey,
+		midtransEnv:       env,
 		authClient:        authClient,
 	}
 }
@@ -242,7 +249,7 @@ func (u *UserSubscriptionUseCase) BuySubscription(userID string, planID uuid.UUI
 
 	// Midtrans setup
 	var snapClient snap.Client
-	snapClient.New(u.midtransServerKey, midtrans.Sandbox) // Use Sandbox for testing
+	snapClient.New(u.midtransServerKey, u.midtransEnv)
 
 	req := &snap.Request{
 		TransactionDetails: midtrans.TransactionDetails{
@@ -292,7 +299,7 @@ func (u *UserSubscriptionUseCase) BuySubscription(userID string, planID uuid.UUI
 
 func (u *UserSubscriptionUseCase) HandleMidtransWebhook(payload map[string]interface{}) error {
 	var apiClient coreapi.Client
-	apiClient.New(u.midtransServerKey, midtrans.Sandbox)
+	apiClient.New(u.midtransServerKey, u.midtransEnv)
 
 	orderID, ok := payload["order_id"].(string)
 	if !ok {

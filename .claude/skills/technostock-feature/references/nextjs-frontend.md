@@ -101,8 +101,8 @@ export const deleteCoupon = async (id: string, token: string) => {
 ```
 
 Aturan:
-- `fetch` global — **bukan** axios. Instance `externalBackend` di
-  `libs/axios.ts` adalah dead code.
+- `fetch` global — **bukan** axios. Satu-satunya instance axios yang tersisa
+  adalah `messageBackend` (khusus chat).
 - `token: string` selalu argumen **terakhir**.
 - List selalu `cache: "no-store"`.
 - Unwrap `data.results`. **Cek dulu** bentuk response backend-nya: endpoint
@@ -333,12 +333,11 @@ hex baru.
 
 Tailwind v4: tidak ada `tailwind.config.*` — tema seluruhnya di `globals.css`.
 
-## Jangan pakai (dead code)
+## Catatan
 
-`src/hooks/use-query.ts`, `src/hooks/use-mutate.ts`,
-`src/libs/axios.ts → externalBackend`,
-`src/components/layout/sidebar-dispatcher.tsx`,
-`getQueryClient` di `src/configs/tanstack-query.ts`.
+Dead code lama (`use-query.ts`, `use-mutate.ts`, `externalBackend`,
+`sidebar-dispatcher.tsx`, `getQueryClient`) sudah **dihapus** dari repo —
+jangan menghidupkannya kembali.
 
 `messageBackend` di `libs/axios.ts` **dipakai**, tapi hanya oleh chat
 (`/maintainer/discussion`) yang statusnya on-hold.

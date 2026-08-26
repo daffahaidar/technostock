@@ -3,8 +3,8 @@
 **/*.rs.bk
 *.pdb
 
-# Cargo
-Cargo.lock
+# Cargo — Cargo.lock SENGAJA di-track (auth-service adalah binary crate, sama
+# seperti grpc-service/realtime-service/shared-core) agar build reproducible.
 
 # Environment variables (IMPORTANT: Do not commit)
 .env

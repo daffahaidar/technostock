@@ -52,9 +52,8 @@ help` (+ `migrate` bila punya migrations). **Tidak ada** Makefile di `frontend/`
 maupun `shared-core/`, dan **tidak ada** target lint/clippy di mana pun.
 
 > `make test` berjalan di atas **nol test case** — repo ini tidak punya test.
-> `make migrate` menjalankan `sqlx migrate run` tanpa `--ignore-missing`, yang
-> akan gagal pada DB bersama. Pakai flag itu manual, atau biarkan service
-> menjalankan migrasi sendiri saat startup.
+> `make migrate` sudah memakai `--ignore-missing` (wajib karena
+> `_sqlx_migrations` dipakai bersama auth-service & realtime-service).
 
 ## Verifikasi perubahan
 
@@ -172,7 +171,7 @@ dari compose — sisanya harus datang dari `./grpc-service/.env`.
 | Podman Windows: `unknown file mode ?rw-rw-rw-` saat build | `.claude/`/`.agents/` berisi junction. Root `.dockerignore` sudah mengecualikannya — jangan hapus baris itu |
 | `entrypoint.sh`: `bad interpreter: /bin/sh^M` | Checkout CRLF. `.gitattributes` sudah memaksa LF — periksa konfigurasi git lokal |
 | Chat `/api/v1/chat/*` mengembalikan HTML frontend | Belum ter-route di gateway. Arahkan `NEXT_PUBLIC_WS_API_URL` / `NEXT_PUBLIC_MESSAGE_API_URL` langsung ke `:8001`. Lihat `docs/operations.md` Isu 1 |
-| Gambar chat tidak muncul di browser | URL memakai hostname internal `minio`. Lihat `docs/operations.md` Isu 2 |
+| Gambar chat tidak muncul di browser | Set `MINIO_PUBLIC_URL` ke URL yang bisa dibuka browser (mis. `http://localhost:9000`) |
 
 ## Hal yang perlu diingat
 

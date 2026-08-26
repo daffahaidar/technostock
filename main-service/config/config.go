@@ -3,6 +3,7 @@ package config
 import (
 	"log"
 	"os"
+	"strings"
 
 	"github.com/joho/godotenv"
 )
@@ -13,6 +14,9 @@ type Config struct {
 	AuthGRPCURL      string
 	MidtransClientKey string
 	MidtransServerKey string
+	// "sandbox" (default) atau "production". Sebelumnya di-hardcode ke Sandbox
+	// di usecase, sehingga tidak mungkin menerima pembayaran nyata.
+	MidtransEnv      string
 }
 
 func LoadConfig() *Config {
@@ -43,11 +47,21 @@ func LoadConfig() *Config {
 
 	midtransClientKey := os.Getenv("MIDTRANS_CLIENT_KEY")
 
+	midtransEnv := strings.ToLower(os.Getenv("MIDTRANS_ENV"))
+	switch midtransEnv {
+	case "":
+		midtransEnv = "sandbox"
+	case "sandbox", "production":
+	default:
+		log.Fatalf("MIDTRANS_ENV must be \"sandbox\" or \"production\", got %q", midtransEnv)
+	}
+
 	return &Config{
 		DatabaseURL:     databaseURL,
 		Port:            port,
 		AuthGRPCURL:     authGRPCURL,
 		MidtransClientKey: midtransClientKey,
 		MidtransServerKey: midtransServerKey,
+		MidtransEnv:       midtransEnv,
 	}
 }

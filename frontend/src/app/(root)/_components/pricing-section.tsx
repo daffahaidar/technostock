@@ -29,7 +29,7 @@ interface AccountType {
 export default function PricingSection({ pricingData, user, compact = false, activeSub = null }: { pricingData: AccountType[], user?: unknown, compact?: boolean, activeSub?: { subscription_plan_id?: string } | null }) {
   const router = useRouter();
   const typedUser = user as { role?: string } | undefined;
-  const isFullAccess = ["admin", "maintainer"].includes(typedUser?.role?.toLowerCase() || "");
+  const isFullAccess = ["admin", "superadmin", "maintainer"].includes(typedUser?.role?.toLowerCase() || "");
   // Store selected plan ID for each account type ID
   const [selectedPlans, setSelectedPlans] = useState<Record<string, string>>(() => {
     const initial: Record<string, string> = {};

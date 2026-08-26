@@ -53,7 +53,7 @@ func main() {
 	subscriptionPlanUseCase := usecases.NewSubscriptionPlanUseCase(db)
 	subscriptionPlanHandler := handlers.NewSubscriptionPlanHandler(subscriptionPlanUseCase)
 
-	userSubscriptionUseCase := usecases.NewUserSubscriptionUseCase(db, cfg.MidtransServerKey, authClient)
+	userSubscriptionUseCase := usecases.NewUserSubscriptionUseCase(db, cfg.MidtransServerKey, cfg.MidtransEnv, authClient)
 	userSubscriptionHandler := handlers.NewUserSubscriptionHandler(userSubscriptionUseCase, authClient)
 
 	memberUseCase := usecases.NewMemberUseCase(db, authClient, userSubscriptionUseCase)

@@ -9,8 +9,6 @@ FROM rust:latest
 
 WORKDIR /app
 
-# Install protoc untuk gRPC codegen (build.rs)
-RUN apt-get update && apt-get install -y protobuf-compiler && rm -rf /var/lib/apt/lists/*
 
 # Install dev tools — layer ini di-cache setelah build pertama
 RUN cargo install cargo-watch --version 8.4.1 --locked && \

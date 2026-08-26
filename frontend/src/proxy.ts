@@ -8,9 +8,14 @@ import { decodeJwt } from "jose";
 const ROLE_DASHBOARDS: Record<string, string> = {
   Maintainer: "/maintainer/dashboard",
   Admin: "/admin/dashboard",
+  SuperAdmin: "/admin/dashboard",
   Member: "/forum/dashboard",
   User: "/",
 };
+
+// Role yang diperlakukan setara Admin. Cocok dengan
+// RequireRole("Admin","SuperAdmin","Maintainer") di main-service.
+const ADMIN_ROLES = ["Admin", "SuperAdmin"];
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -124,7 +129,7 @@ export async function proxy(request: NextRequest) {
       // Check specific role requirements
       let finalResponse = NextResponse.next();
 
-      if (pathname.startsWith("/admin") && userRole !== "Admin") {
+      if (pathname.startsWith("/admin") && !ADMIN_ROLES.includes(userRole)) {
         finalResponse = NextResponse.redirect(
           new URL(ROLE_DASHBOARDS[userRole] || "/", request.url),
         );
@@ -132,7 +137,7 @@ export async function proxy(request: NextRequest) {
         finalResponse = NextResponse.redirect(
           new URL(ROLE_DASHBOARDS[userRole] || "/", request.url),
         );
-      } else if (pathname.startsWith("/forum") && !["Maintainer", "Admin", "Member"].includes(userRole)) {
+      } else if (pathname.startsWith("/forum") && !["Maintainer", "Admin", "SuperAdmin", "Member"].includes(userRole)) {
         finalResponse = NextResponse.redirect(
           new URL("/", request.url), // Redirect User directly to /
         );

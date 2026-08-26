@@ -115,6 +115,12 @@ impl<R: UserRepository> RefreshTokenUseCase<R> {
             .await?
             .ok_or(AppError::UserNotFound)?;
 
+        // Tanpa cek ini, user yang di-suspend tetap bisa memperpanjang sesinya
+        // sampai refresh token kedaluwarsa (7 hari). Sama seperti LoginUseCase.
+        if user.status == shared_core::domain::entities::user::UserStatus::Suspended {
+            return Err(AppError::Forbidden);
+        }
+
         let (access_token, refresh_token) = self.jwt_service.generate_tokens(&user)?;
 
         Ok(AuthResponseDto {

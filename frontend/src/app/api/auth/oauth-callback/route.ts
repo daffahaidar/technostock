@@ -5,6 +5,7 @@ const RUST_API_URL = process.env.SERVER_API_URL || process.env.NEXT_PUBLIC_API_U
 const ROLE_DASHBOARDS: Record<string, string> = {
   Maintainer: "/maintainer/dashboard",
   Admin: "/admin/dashboard",
+  SuperAdmin: "/admin/dashboard",
   Member: "/forum/dashboard",
   User: "/",
 };

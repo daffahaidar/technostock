@@ -235,6 +235,8 @@ services:
       - RABBITMQ_PASS=daffahaidarnz27
       - AUTH_GRPC_URL=http://grpc-service:50051
       - MINIO_ENDPOINT=minio
+      # URL publik harus localhost: dipakai browser, bukan koneksi internal.
+      - MINIO_PUBLIC_URL=http://localhost:9000
       - SQLX_OFFLINE=false
       - MALLOC_ARENA_MAX=2
     # mem_limit: 1G
