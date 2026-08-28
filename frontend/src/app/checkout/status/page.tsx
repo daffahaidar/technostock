@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import StatusContent from "./status-content";
 
 export const metadata: Metadata = {
-  title: "Status Pembayaran - Technostock",
+  title: "Status Pembayaran - AngelTrade",
   description: "Status pembayaran paket langganan Anda.",
 };
 

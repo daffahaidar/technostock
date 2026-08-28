@@ -12,10 +12,10 @@ Skill project tersedia di `.agents/skills/` dan ter-link ke `.claude/skills/`:
 
 | Skill | Pakai saat |
 |---|---|
-| `technostock-overview` | Orientasi awal di repo ini — peta service, invarian, jebakan |
-| `technostock-feature` | Menambah/mengubah fitur di stack mana pun (Go, Rust, Next.js, gRPC) |
-| `technostock-database` | Menyentuh skema, migrasi, atau query |
-| `technostock-ops` | Menjalankan, build, deploy, atau mendiagnosis service |
+| `angeltrade-overview` | Orientasi awal di repo ini — peta service, invarian, jebakan |
+| `angeltrade-feature` | Menambah/mengubah fitur di stack mana pun (Go, Rust, Next.js, gRPC) |
+| `angeltrade-database` | Menyentuh skema, migrasi, atau query |
+| `angeltrade-ops` | Menjalankan, build, deploy, atau mendiagnosis service |
 
 Bila `.claude/skills/` kosong setelah clone (junction tidak ikut ter-commit),
 buat ulang linknya:

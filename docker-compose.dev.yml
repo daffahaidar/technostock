@@ -1,13 +1,13 @@
 # ═══════════════════════════════════════════════════════════════════════════════
-# Technostock Dev — Unified Compose (Docker / Podman)
+# AngelTrade Dev — Unified Compose (Docker / Podman)
 # Jalankan: make dev  atau  <docker|podman> compose -f docker-compose.dev.yml up --build
 # Compose file ini kompatibel Docker & Podman (tanpa key khusus salah satu engine).
 # ═══════════════════════════════════════════════════════════════════════════════
 
-name: technostock-dev
+name: angeltrade-dev
 
 networks:
-  technostock-network:
+  angeltrade-network:
     driver: bridge
 
 volumes:
@@ -39,7 +39,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: admin
-      POSTGRES_DB: technostock
+      POSTGRES_DB: angeltrade
     volumes:
       - pgdata:/var/lib/postgresql/data
     mem_limit: 256M
@@ -50,7 +50,7 @@ services:
       retries: 10
       start_period: 30s
     networks:
-      - technostock-network
+      - angeltrade-network
 
   redis:
     image: redis:7-alpine
@@ -68,7 +68,7 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - technostock-network
+      - angeltrade-network
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -90,7 +90,7 @@ services:
       timeout: 10s
       retries: 5
     networks:
-      - technostock-network
+      - angeltrade-network
 
   minio:
     image: quay.io/minio/minio
@@ -107,7 +107,7 @@ services:
     mem_limit: 256M
     command: server /data --console-address ":9001"
     networks:
-      - technostock-network
+      - angeltrade-network
 
   kafka:
     image: apache/kafka:3.9.0
@@ -141,7 +141,7 @@ services:
       - kafka_data:/var/lib/kafka/data
     mem_limit: 512M
     networks:
-      - technostock-network
+      - angeltrade-network
 
   # ─── auth-service ────────────────────────────────────────────────────────────────
 
@@ -163,7 +163,7 @@ services:
     env_file:
       - ./auth-service/.env
     environment:
-      - DATABASE_URL=postgres://postgres:admin@postgres:5432/technostock
+      - DATABASE_URL=postgres://postgres:admin@postgres:5432/angeltrade
       - SQLX_OFFLINE=false
       - MALLOC_ARENA_MAX=2
     # mem_limit: 1G
@@ -173,7 +173,7 @@ services:
       postgres:
         condition: service_healthy
     networks:
-      - technostock-network
+      - angeltrade-network
 
   grpc-service:
     build:
@@ -194,7 +194,7 @@ services:
     env_file:
       - ./grpc-service/.env
     environment:
-      - DATABASE_URL=postgres://postgres:admin@postgres:5432/technostock
+      - DATABASE_URL=postgres://postgres:admin@postgres:5432/angeltrade
       - SQLX_OFFLINE=false
       - AUTH_SERVICE_URL=http://auth-service:8000
       - MAIN_SERVICE_URL=http://main-service:8002
@@ -207,7 +207,7 @@ services:
       postgres:
         condition: service_healthy
     networks:
-      - technostock-network
+      - angeltrade-network
 
   # ─── realtime-service ─────────────────────────────────────────────────────────────
 
@@ -228,7 +228,7 @@ services:
     env_file:
       - ./realtime-service/.env
     environment:
-      - DATABASE_URL=postgres://postgres:admin@postgres:5432/technostock
+      - DATABASE_URL=postgres://postgres:admin@postgres:5432/angeltrade
       - REDIS_HOST=redis
       - RABBITMQ_HOST=rabbitmq
       - RABBITMQ_USER=daffahaidar
@@ -241,7 +241,7 @@ services:
       - MALLOC_ARENA_MAX=2
     # mem_limit: 1G
     # Jalankan migrasi dulu, baru start dengan hot-reload.
-    # --ignore-missing: DB `technostock` (dan tabel _sqlx_migrations) dipakai
+    # --ignore-missing: DB `angeltrade` (dan tabel _sqlx_migrations) dipakai
     # bersama auth-service, jadi migrasi milik service lain harus di-skip.
     command: sh -c "sqlx migrate run --ignore-missing && cargo watch --poll -c -x run"
     depends_on:
@@ -254,7 +254,7 @@ services:
       grpc-service:
         condition: service_started
     networks:
-      - technostock-network
+      - angeltrade-network
 
   # ─── main-service ────────────────────────────────────────────────────────────
 
@@ -274,7 +274,7 @@ services:
     env_file:
       - ./main-service/.env
     environment:
-      - DATABASE_URL=postgres://postgres:admin@postgres:5432/technostock
+      - DATABASE_URL=postgres://postgres:admin@postgres:5432/angeltrade
       - AUTH_GRPC_URL=grpc-service:50051
       - GOMEMLIMIT=100MiB
       - GOGC=50
@@ -292,7 +292,7 @@ services:
       grpc-service:
         condition: service_started
     networks:
-      - technostock-network
+      - angeltrade-network
 
   # ─── frontend ─────────────────────────────────────────────────────────────────
 
@@ -317,7 +317,7 @@ services:
       - WATCHPACK_POLLING=true
       # - NODE_OPTIONS=--max-old-space-size=256
       # Server-side: gunakan nama service internal
-      - DATABASE_URL=postgres://postgres:admin@postgres:5432/technostock
+      - DATABASE_URL=postgres://postgres:admin@postgres:5432/angeltrade
       - SERVER_API_URL=http://auth-service:8000
       - SERVER_GATEWAY_URL=http://grpc-service:8080   # server-side: nama service internal
       - BETTER_AUTH_URL=http://localhost:3000
@@ -331,4 +331,4 @@ services:
       - realtime-service
       - main-service
     networks:
-      - technostock-network
+      - angeltrade-network

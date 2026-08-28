@@ -1,5 +1,5 @@
 # ═══════════════════════════════════════════════════════════════════════════════
-# Technostock — Docker Hub Deployment Compose
+# AngelTrade — Docker Hub Deployment Compose
 # Dipakai di server/VPS: menggunakan image yang sudah di-push ke Docker Hub
 # Jalankan: make deploy  atau  <docker|podman> compose -f docker-compose.hub.yml up -d
 # Compose file ini kompatibel Docker & Podman (tanpa key khusus salah satu engine).
@@ -10,14 +10,14 @@
 #   3. Pull image: make pull  atau  docker compose -f docker-compose.hub.yml pull
 # ═══════════════════════════════════════════════════════════════════════════════
 
-name: technostock-hub
+name: angeltrade-hub
 
 # Ubah VERSION sesuai tag yang ingin dipakai (default: latest)
 x-image-version: &image-version latest
-x-hub-prefix: &hub-prefix daffahaidarnz/technostock
+x-hub-prefix: &hub-prefix daffahaidarnz/angeltrade
 
 networks:
-  technostock-network:
+  angeltrade-network:
     driver: bridge
 
 volumes:
@@ -39,7 +39,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: admin
-      POSTGRES_DB: technostock
+      POSTGRES_DB: angeltrade
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -49,7 +49,7 @@ services:
       retries: 10
       start_period: 30s
     networks:
-      - technostock-network
+      - angeltrade-network
 
   redis:
     image: redis:7-alpine
@@ -66,7 +66,7 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - technostock-network
+      - angeltrade-network
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -86,7 +86,7 @@ services:
       timeout: 10s
       retries: 5
     networks:
-      - technostock-network
+      - angeltrade-network
 
   minio:
     image: quay.io/minio/minio
@@ -102,12 +102,12 @@ services:
       - minio_data:/data
     command: server /data --console-address ":9001"
     networks:
-      - technostock-network
+      - angeltrade-network
 
   # ─── auth-service ─────────────────────────────────────────────────────────────
 
   auth-service:
-    image: daffahaidarnz/technostock:auth-service-latest  # ganti 'latest' jika pakai VERSION
+    image: daffahaidarnz/angeltrade:auth-service-latest  # ganti 'latest' jika pakai VERSION
     container_name: auth-service
     restart: always
     ports:
@@ -115,7 +115,7 @@ services:
     env_file:
       - ./auth-service/.env
     environment:
-      - DATABASE_URL=postgres://postgres:admin@postgres:5432/technostock
+      - DATABASE_URL=postgres://postgres:admin@postgres:5432/angeltrade
       - MINIO_ENDPOINT=minio
       - RABBITMQ_HOST=rabbitmq
       - RABBITMQ_USER=daffahaidar
@@ -125,12 +125,12 @@ services:
       postgres:
         condition: service_healthy
     networks:
-      - technostock-network
+      - angeltrade-network
 
   # ─── grpc-service ─────────────────────────────────────────────────────────────
 
   grpc-service:
-    image: daffahaidarnz/technostock:grpc-service-latest
+    image: daffahaidarnz/angeltrade:grpc-service-latest
     container_name: grpc-service
     restart: always
     ports:
@@ -138,17 +138,17 @@ services:
     env_file:
       - ./grpc-service/.env
     environment:
-      - DATABASE_URL=postgres://postgres:admin@postgres:5432/technostock
+      - DATABASE_URL=postgres://postgres:admin@postgres:5432/angeltrade
     depends_on:
       postgres:
         condition: service_healthy
     networks:
-      - technostock-network
+      - angeltrade-network
 
   # ─── realtime-service ─────────────────────────────────────────────────────────
 
   realtime-service:
-    image: daffahaidarnz/technostock:realtime-service-latest
+    image: daffahaidarnz/angeltrade:realtime-service-latest
     container_name: realtime-service
     restart: always
     ports:
@@ -156,7 +156,7 @@ services:
     env_file:
       - ./realtime-service/.env
     environment:
-      - DATABASE_URL=postgres://postgres:admin@postgres:5432/technostock
+      - DATABASE_URL=postgres://postgres:admin@postgres:5432/angeltrade
       - REDIS_HOST=redis
       - RABBITMQ_HOST=rabbitmq
       - RABBITMQ_USER=daffahaidar
@@ -173,12 +173,12 @@ services:
       grpc-service:
         condition: service_started
     networks:
-      - technostock-network
+      - angeltrade-network
 
   # ─── main-service ─────────────────────────────────────────────────────────────
 
   main-service:
-    image: daffahaidarnz/technostock:main-service-latest
+    image: daffahaidarnz/angeltrade:main-service-latest
     container_name: main-service
     restart: always
     ports:
@@ -186,7 +186,7 @@ services:
     env_file:
       - ./main-service/.env
     environment:
-      - DATABASE_URL=postgres://postgres:admin@postgres:5432/technostock
+      - DATABASE_URL=postgres://postgres:admin@postgres:5432/angeltrade
       - AUTH_GRPC_URL=grpc-service:50051
     depends_on:
       postgres:
@@ -196,12 +196,12 @@ services:
       grpc-service:
         condition: service_started
     networks:
-      - technostock-network
+      - angeltrade-network
 
   # ─── frontend ─────────────────────────────────────────────────────────────────
 
   frontend:
-    image: daffahaidarnz/technostock:frontend-latest
+    image: daffahaidarnz/angeltrade:frontend-latest
     container_name: frontend
     restart: always
     ports:
@@ -212,7 +212,7 @@ services:
       - NODE_ENV=production
       - PORT=3000
       - HOSTNAME=0.0.0.0
-      - DATABASE_URL=postgres://postgres:admin@postgres:5432/technostock
+      - DATABASE_URL=postgres://postgres:admin@postgres:5432/angeltrade
       - SERVER_API_URL=http://auth-service:8000
       - SERVER_GATEWAY_URL=http://grpc-service:8080   # server-side: nama service internal
     depends_on:
@@ -220,4 +220,4 @@ services:
       - realtime-service
       - main-service
     networks:
-      - technostock-network
+      - angeltrade-network

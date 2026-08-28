@@ -81,7 +81,7 @@ export default function ProductShowcase() {
               <div className="relative flex min-h-[400px] items-center justify-center bg-zinc-900/50 p-12 lg:min-h-[500px]">
                 <Image
                   src="/product-showcase-class.jpg"
-                  alt="Technostock Class Lineup"
+                  alt="AngelTrade Class Lineup"
                   width={500}
                   height={400}
                   className="w-full max-w-md object-contain drop-shadow-2xl transition-transform duration-700 hover:scale-105"
@@ -94,7 +94,7 @@ export default function ProductShowcase() {
                   Program Lengkap
                 </span>
                 <h3 className="mb-4 text-3xl leading-tight font-bold text-white">
-                  Technostock
+                  AngelTrade
                   <br />
                   Masterclass
                 </h3>

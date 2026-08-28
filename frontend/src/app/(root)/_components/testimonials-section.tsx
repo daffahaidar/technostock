@@ -5,7 +5,7 @@ import { useEffect, useRef } from "react";
 const testimonials = [
   {
     quote:
-      "Kelas Technostock benar-benar membuka mata saya. Dari yang awalnya sering boncos tebak-tebakan, sekarang saya bisa konsisten profit 5-10% tiap bulan berkat ilmunya.",
+      "Kelas AngelTrade benar-benar membuka mata saya. Dari yang awalnya sering boncos tebak-tebakan, sekarang saya bisa konsisten profit 5-10% tiap bulan berkat ilmunya.",
     author: "Budi Santoso",
     role: "Trader Pemula",
     company: "Alumni Angkatan 3",

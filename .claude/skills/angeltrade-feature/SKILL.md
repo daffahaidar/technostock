@@ -1,11 +1,11 @@
 ---
-name: technostock-feature
-description: Resep langkah-per-langkah menambah atau mengubah fitur di repo Technostock — resource CRUD baru di main-service (Go/Fiber v3/GORM), endpoint baru di auth-service (Rust/Axum/sqlx), RPC baru di UserService (proto + tonic + regenerate pb Go), modul CRUD admin baru di frontend (Next.js 16 App Router, TanStack Query, AG Grid, react-hook-form + zod), dan handler chat di realtime-service. Berisi file apa saja yang harus dibuat, urutannya, boilerplate wajib, dan checklist verifikasi. Gunakan saat diminta menambah fitur, endpoint, halaman, tabel admin, RPC, atau resource baru di repo technostock.
+name: angeltrade-feature
+description: Resep langkah-per-langkah menambah atau mengubah fitur di repo AngelTrade — resource CRUD baru di main-service (Go/Fiber v3/GORM), endpoint baru di auth-service (Rust/Axum/sqlx), RPC baru di UserService (proto + tonic + regenerate pb Go), modul CRUD admin baru di frontend (Next.js 16 App Router, TanStack Query, AG Grid, react-hook-form + zod), dan handler chat di realtime-service. Berisi file apa saja yang harus dibuat, urutannya, boilerplate wajib, dan checklist verifikasi. Gunakan saat diminta menambah fitur, endpoint, halaman, tabel admin, RPC, atau resource baru di repo angeltrade.
 ---
 
-# Menambah Fitur di Technostock
+# Menambah Fitur di AngelTrade
 
-Prasyarat: baca skill `technostock-overview` dulu (peta service + invarian).
+Prasyarat: baca skill `angeltrade-overview` dulu (peta service + invarian).
 
 Prinsip: **tiru pola tetangga.** Repo ini punya gaya yang konsisten per stack.
 Jangan memperkenalkan library, layer, atau abstraksi baru tanpa alasan yang
@@ -20,7 +20,7 @@ dinyatakan eksplisit.
 | RPC baru antar service | [references/grpc-proto.md](references/grpc-proto.md) |
 | Halaman admin + tabel CRUD di frontend | [references/nextjs-frontend.md](references/nextjs-frontend.md) |
 | Handler atau event chat | [references/realtime-service.md](references/realtime-service.md) |
-| Kolom/tabel database | skill `technostock-database` |
+| Kolom/tabel database | skill `angeltrade-database` |
 
 Fitur end-to-end biasanya menyentuh **tiga** resep: database → backend →
 frontend, plus route gateway bila dipanggil browser.

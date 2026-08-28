@@ -98,7 +98,7 @@ export default function SignUpForm() {
                 </div>
                 <h1 className="text-2xl font-bold text-[#F9E596]">Create an account</h1>
                 <p className="text-white/60 text-balance text-sm">
-                  Sign up to get started with Technostock
+                  Sign up to get started with AngelTrade
                 </p>
               </div>
 

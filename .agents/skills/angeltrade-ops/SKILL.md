@@ -1,11 +1,11 @@
 ---
-name: technostock-ops
-description: Menjalankan, membangun, men-deploy, dan mendiagnosis repo Technostock — Makefile dan compose Docker/Podman (dev, prod, hub), 14 Dockerfile dan kapan varian unified dipakai, env per service, push/pull image ke Docker Hub, serta troubleshooting gejala umum (gagal connect gRPC, panic OAuth, OOM saat build Go, migrasi sqlx gagal, chat tidak ter-route). Gunakan saat diminta menjalankan atau membangun project, mengubah compose/Dockerfile/env, men-deploy, atau saat sebuah service gagal start atau error saat runtime.
+name: angeltrade-ops
+description: Menjalankan, membangun, men-deploy, dan mendiagnosis repo AngelTrade — Makefile dan compose Docker/Podman (dev, prod, hub), 14 Dockerfile dan kapan varian unified dipakai, env per service, push/pull image ke Docker Hub, serta troubleshooting gejala umum (gagal connect gRPC, panic OAuth, OOM saat build Go, migrasi sqlx gagal, chat tidak ter-route). Gunakan saat diminta menjalankan atau membangun project, mengubah compose/Dockerfile/env, men-deploy, atau saat sebuah service gagal start atau error saat runtime.
 ---
 
-# Operasional Technostock
+# Operasional AngelTrade
 
-Prasyarat: skill `technostock-overview`. Referensi lengkap:
+Prasyarat: skill `angeltrade-overview`. Referensi lengkap:
 `docs/setup.md`, `docs/operations.md`, `docs/environment.md`.
 
 ## Menjalankan
@@ -129,7 +129,7 @@ Menambah env baru → `.env` service + blok `environment:` di
 
 ## Deploy via Docker Hub
 
-Image: `daffahaidarnz/technostock:<service>-<VERSION>`, default `latest`.
+Image: `daffahaidarnz/angeltrade:<service>-<VERSION>`, default `latest`.
 
 ```bash
 # dari mesin developer

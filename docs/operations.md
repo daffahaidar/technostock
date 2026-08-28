@@ -90,7 +90,7 @@ make validate   # cek syntax ketiga compose file
 
 ## Deploy via Docker Hub
 
-Image di-publish ke `daffahaidarnz/technostock` dengan tag
+Image di-publish ke `daffahaidarnz/angeltrade` dengan tag
 `<service>-<VERSION>`, default `VERSION=latest`.
 
 Dari mesin developer:

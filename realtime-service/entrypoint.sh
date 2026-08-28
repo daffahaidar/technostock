@@ -3,7 +3,7 @@ set -e
 
 echo "🔄 Running database migrations for realtime-service..."
 # --ignore-missing: auth-service, grpc-service, dan realtime-service memakai DB
-# `technostock` yang sama, jadi satu tabel _sqlx_migrations dipakai bersama.
+# `angeltrade` yang sama, jadi satu tabel _sqlx_migrations dipakai bersama.
 # Tanpa flag ini realtime-service gagal ("migration X was previously applied but
 # is missing in the resolved migrations") begitu auth-service punya migrasi yang
 # belum ada di realtime-service/migrations/.

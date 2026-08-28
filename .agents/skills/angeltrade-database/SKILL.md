@@ -1,16 +1,16 @@
 ---
-name: technostock-database
-description: Panduan skema dan migrasi database repo Technostock — satu PostgreSQL 17 dipakai bersama tiga service, dipisah lewat schema (users milik auth-service via migrasi sqlx, message milik realtime-service via sqlx, main milik main-service via GORM AutoMigrate). Menjelaskan cara menambah kolom/tabel di tiap jalur, aturan _sqlx_migrations bersama, kewajiban cargo sqlx prepare, prefix schema di raw SQL, dan jebakan integritas data lintas service. Gunakan saat menambah atau mengubah tabel, kolom, index, migrasi, atau menulis query di repo technostock.
+name: angeltrade-database
+description: Panduan skema dan migrasi database repo AngelTrade — satu PostgreSQL 17 dipakai bersama tiga service, dipisah lewat schema (users milik auth-service via migrasi sqlx, message milik realtime-service via sqlx, main milik main-service via GORM AutoMigrate). Menjelaskan cara menambah kolom/tabel di tiap jalur, aturan _sqlx_migrations bersama, kewajiban cargo sqlx prepare, prefix schema di raw SQL, dan jebakan integritas data lintas service. Gunakan saat menambah atau mengubah tabel, kolom, index, migrasi, atau menulis query di repo angeltrade.
 ---
 
-# Database Technostock
+# Database AngelTrade
 
-Prasyarat: skill `technostock-overview`. Referensi kolom lengkap:
+Prasyarat: skill `angeltrade-overview`. Referensi kolom lengkap:
 `docs/database.md`.
 
 ## Peta kepemilikan
 
-Satu database `technostock`, tiga schema, tiga pemilik berbeda.
+Satu database `angeltrade`, tiga schema, tiga pemilik berbeda.
 
 | Schema | Tabel | Pemilik | Cara dibuat |
 |---|---|---|---|
@@ -24,7 +24,7 @@ tidak pernah menyentuh `main.*`. Lintas batas selalu lewat gRPC. Itu sebabnya
 `user_id` di schema `main` bertipe `varchar(255)` **tanpa foreign key** — ini
 disengaja, jangan "diperbaiki".
 
-Koneksi dev: `postgres://postgres:admin@localhost:5433/technostock` (host) atau
+Koneksi dev: `postgres://postgres:admin@localhost:5433/angeltrade` (host) atau
 `@postgres:5432` (dalam container).
 
 ## Prefix schema wajib di raw SQL
@@ -112,7 +112,7 @@ Lupa salah satu → compile error atau kolom diam-diam tidak pernah terisi.
 
 Kolom yang dipakai gRPC juga perlu ditambahkan ke `proto/user.proto` dan
 mapping di `grpc-service/src/server/user_service_impl.rs` — lihat skill
-`technostock-feature` → `references/grpc-proto.md`.
+`angeltrade-feature` → `references/grpc-proto.md`.
 
 ## Jalur 3 — Schema `message` (Rust, sqlx) — on-hold
 
@@ -181,9 +181,9 @@ Konsekuensinya:
 ## Inspeksi cepat
 
 ```bash
-docker exec -it postgres psql -U postgres -d technostock
+docker exec -it postgres psql -U postgres -d angeltrade
 # atau dari host:
-psql postgres://postgres:admin@localhost:5433/technostock
+psql postgres://postgres:admin@localhost:5433/angeltrade
 ```
 
 ```sql

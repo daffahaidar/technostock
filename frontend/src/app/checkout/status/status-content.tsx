@@ -94,7 +94,7 @@ export default function StatusContent() {
   if (finalStatus === "capture" || finalStatus === "settlement") {
     statusConfig = {
       title: "Pembayaran Berhasil!",
-      description: "Terima kasih! Pembayaran langganan Anda telah berhasil diproses. Anda sekarang memiliki akses penuh ke fitur eksklusif Technostock.",
+      description: "Terima kasih! Pembayaran langganan Anda telah berhasil diproses. Anda sekarang memiliki akses penuh ke fitur eksklusif AngelTrade.",
       icon: <CheckCircle2 className="w-20 h-20 text-green-500 mb-6" />,
       color: "from-green-500/20 to-transparent",
       borderColor: "border-green-500/30",

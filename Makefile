@@ -23,7 +23,7 @@ endif
 COMPOSE          ?= $(ENGINE) compose
 
 DOCKER_HUB_USER  := daffahaidarnz
-REPO             := technostock
+REPO             := angeltrade
 VERSION          ?= latest
 
 AUTH_IMAGE       := $(DOCKER_HUB_USER)/$(REPO):auth-service-$(VERSION)
@@ -52,7 +52,7 @@ engine:
 	@echo "engine  : $(ENGINE)"
 	@echo "compose : $(COMPOSE)"
 
-# ─── Technostock Dev ──────────────────────────────────────────────────────────
+# ─── AngelTrade Dev ──────────────────────────────────────────────────────────
 
 ## Jalankan semua service dalam mode development (foreground + live logs)
 dev:
@@ -78,7 +78,7 @@ logs-dev:
 ps-dev:
 	$(COMPOSE) -f docker-compose.dev.yml ps
 
-# ─── Technostock Prod (local build) ───────────────────────────────────────────
+# ─── AngelTrade Prod (local build) ───────────────────────────────────────────
 
 ## Jalankan semua service dalam mode production (foreground + live logs)
 prod:
@@ -173,7 +173,7 @@ pull:
 ## Pastikan sudah `make pull` atau image sudah tersedia
 deploy:
 	$(COMPOSE) -f docker-compose.hub.yml up -d
-	@echo "🚀 Technostock production running dari Docker Hub!"
+	@echo "🚀 AngelTrade production running dari Docker Hub!"
 
 ## Hentikan deployment dari Docker Hub
 deploy-down:
@@ -209,7 +209,7 @@ validate:
 ## Tampilkan help
 help:
 	@echo ""
-	@echo "  Technostock Container Commands  (engine: $(ENGINE))"
+	@echo "  AngelTrade Container Commands  (engine: $(ENGINE))"
 	@echo "  ═══════════════════════════════════════════════"
 	@echo "  Engine default per OS: Windows -> podman, macOS/Linux -> docker."
 	@echo "  Override: make <target> ENGINE=docker"

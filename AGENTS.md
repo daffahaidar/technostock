@@ -1,4 +1,4 @@
-# AGENTS.md — Technostock
+# AGENTS.md — AngelTrade
 
 Panduan untuk AI coding agent (Claude Code, Codex, Antigravity, Cursor, Copilot,
 dll.) yang bekerja di repo ini. **Baca ini sebelum menyentuh kode.**
@@ -10,7 +10,7 @@ bertentangan, kode yang benar — dan dokumennya harus diperbaiki.
 
 ## 1. Apa ini
 
-Monorepo microservices untuk **Technostock**, platform langganan edukasi trading
+Monorepo microservices untuk **AngelTrade**, platform langganan edukasi trading
 saham Indonesia. Lima service berjalan: satu frontend Next.js, satu API Gateway
 yang sekaligus server gRPC, dan tiga backend.
 
@@ -65,7 +65,6 @@ Infra: PostgreSQL 17 (`:5433` di host), Redis 7, RabbitMQ 3, MinIO, Kafka 3.9
 | Jebakan | Fakta |
 |---|---|
 | Middleware Next.js | Namanya **`src/proxy.ts`** (konvensi Next 16), bukan `middleware.ts` |
-| Nama paket frontend | `package.json` bernama **`dimentorin`** (nama proyek lama). Teks yang dilihat user selalu **Technostock** |
 | Cargo workspace | **Tidak ada.** 4 crate berdiri sendiri, dihubungkan `path = "../shared-core"`. Jalankan `cargo` dari dalam folder crate |
 | `realtime-service` dan `shared-core` | `realtime-service` **tidak memakai** `shared-core` — ia menduplikasi `User`, `Role`, `AppError`, `JwtService`. Versi `User`-nya **tidak punya** `discord_username` |
 | Dead code | `realtime-service/src/api.rs` dan `src/mod.rs` tidak pernah di-compile. Router aktif = `src/routes/api.rs` |
@@ -213,7 +212,7 @@ Aturan lain:
 ## 6. Resep menambah fitur
 
 Ringkasan; langkah detail per file ada di skill
-[`.agents/skills/technostock-feature/`](.agents/skills/technostock-feature/).
+[`.agents/skills/angeltrade-feature/`](.agents/skills/angeltrade-feature/).
 
 **Resource CRUD baru di `main-service`** → 4 file baru + 2 diedit:
 `domain/entities/x.go` → `usecases/x_usecase.go` → `handlers/x_handler.go` →
@@ -254,8 +253,8 @@ Go via `authClient.GetClient()`.
 | Makefile, deploy, isu diketahui, troubleshooting | [docs/operations.md](docs/operations.md) |
 
 Skill agent (progressive disclosure) ada di [`.agents/skills/`](.agents/skills/):
-`technostock-overview`, `technostock-feature`, `technostock-database`,
-`technostock-ops`.
+`angeltrade-overview`, `angeltrade-feature`, `angeltrade-database`,
+`angeltrade-ops`.
 
 ---
 

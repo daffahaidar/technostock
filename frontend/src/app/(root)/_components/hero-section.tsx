@@ -83,7 +83,7 @@ export default function HeroSection() {
               style={{ transitionDelay: "350ms" }}
             >
               Mulai perjalanan trading dan investasi saham Anda dengan kurikulum terstruktur,
-              komunitas eksklusif, dan mentor berpengalaman di Technostock.
+              komunitas eksklusif, dan mentor berpengalaman di AngelTrade.
             </p>
 
             {/* CTAs */}
@@ -149,7 +149,7 @@ export default function HeroSection() {
               <div className="relative rounded-2xl overflow-hidden border border-[#D4AF37]/20 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
                 <Image
                   src="/hero-dashboard.jpg"
-                  alt="Technostock Trading Dashboard"
+                  alt="AngelTrade Trading Dashboard"
                   width={600}
                   height={600}
                   className="w-full object-cover"

@@ -77,7 +77,7 @@ export default function LandingFooter() {
                 </svg>
               </div>
               <span className="text-[#D4AF37] font-semibold text-lg tracking-tight">
-                Technostock
+                AngelTrade
               </span>
             </Link>
             <p className="text-white/40 text-sm leading-relaxed max-w-xs mb-6">
@@ -87,7 +87,7 @@ export default function LandingFooter() {
             </p>
             <div className="flex flex-col gap-2 text-white/40 text-sm">
               <span>📍 Jakarta, Indonesia</span>
-              <span>📧 hello@technostock.id</span>
+              <span>📧 hello@angeltrade.id</span>
               <span>📞 +62 21 1234 5678</span>
             </div>
           </div>
@@ -117,7 +117,7 @@ export default function LandingFooter() {
         {/* Bottom bar */}
         <div className="border-t border-[#D4AF37]/10 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-[#D4AF37]/40 text-sm">
-            © {new Date().getFullYear()} Technostock. All rights reserved.
+            © {new Date().getFullYear()} AngelTrade. All rights reserved.
           </p>
 
           {/* Socials */}

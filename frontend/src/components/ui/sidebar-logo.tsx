@@ -22,7 +22,7 @@ export function SidebarLogo({
             <Logo className="size-4" />
           </div>
           <div className="grid flex-1 text-left text-sm leading-tight">
-            <span className="truncate font-bold text-gradient-gold text-base">Technostock</span>
+            <span className="truncate font-bold text-gradient-gold text-base">AngelTrade</span>
             <span className="truncate text-xs text-gray-400">{roleLabel}</span>
           </div>
         </SidebarMenuButton>

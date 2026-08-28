@@ -66,7 +66,7 @@ export default function LandingNavbar({ user }: { user?: { name: string; role: s
               </svg>
             </div>
             <span className="text-[#D4AF37] font-semibold text-lg tracking-tight">
-              Technostock
+              AngelTrade
             </span>
           </Link>
 

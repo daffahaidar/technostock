@@ -27,7 +27,7 @@ Port HTTP/gRPC service Rust di-hardcode di kode (`8000`, `8001`, `8080`,
 
 | Variabel | Wajib | Default | Keterangan |
 |---|---|---|---|
-| `DATABASE_URL` | ✅ | — | `postgres://postgres:admin@localhost:5433/technostock` |
+| `DATABASE_URL` | ✅ | — | `postgres://postgres:admin@localhost:5433/angeltrade` |
 | `JWT_PRIVATE_KEY` | ✅ | — | PEM RSA, `\n` di-escape |
 | `JWT_PUBLIC_KEY` | ✅ | — | PEM RSA, `\n` di-escape |
 | `GITHUB_CLIENT_ID` | ✅ | — | Service panic jika kosong, meski OAuth GitHub tidak dipakai |
@@ -72,7 +72,7 @@ ini hanya memverifikasi token.
 | `JWT_PUBLIC_KEY` | ✅ | — | |
 | `MINIO_ACCESS_KEY` | ✅ | — | |
 | `MINIO_SECRET_KEY` | ✅ | — | |
-| `MINIO_BUCKET` | ✅ | — | `technostock` |
+| `MINIO_BUCKET` | ✅ | — | `angeltrade` |
 | `AUTH_GRPC_URL` | — | `http://127.0.0.1:50051` | **Menunjuk ke `grpc-service`**, bukan `auth-service` |
 | `MINIO_ENDPOINT` | — | `localhost` | Endpoint **internal** S3 (koneksi service → MinIO) |
 | `MINIO_PUBLIC_URL` | — | endpoint internal | Base URL publik gambar chat — **harus bisa dibuka browser**. Di Docker isi `http://localhost:9000`; tanpa ini URL memakai host internal `minio` |

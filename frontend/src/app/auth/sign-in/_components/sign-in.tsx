@@ -127,7 +127,7 @@ export default function SignInForm() {
                 </div>
                 <h1 className="text-2xl font-bold text-[#F9E596]">Welcome back</h1>
                 <p className="text-white/60 text-balance text-sm">
-                  Sign in to your Technostock account
+                  Sign in to your AngelTrade account
                 </p>
               </div>
 

@@ -212,7 +212,7 @@ Detail queue ada di [database.md → RabbitMQ](database.md#rabbitmq--event-pesan
 ## Struktur Monorepo
 
 ```
-technostock/
+angeltrade/
 ├── docker-compose.dev.yml    # Unified dev (semua service + infra)
 ├── docker-compose.prod.yml   # Unified prod (build lokal)
 ├── docker-compose.hub.yml    # Deploy dari image Docker Hub

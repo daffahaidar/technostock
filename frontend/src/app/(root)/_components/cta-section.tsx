@@ -40,7 +40,7 @@ export default function CtaSection() {
         <h2 className="reveal opacity-0 translate-y-8 transition-all duration-700 text-5xl lg:text-7xl font-bold text-white tracking-tight leading-[1.05] mb-8">
           Mulai perjalanan trading Anda
           <br />
-          <span className="text-gradient-gold">bersama Technostock.</span>
+          <span className="text-gradient-gold">bersama AngelTrade.</span>
         </h2>
 
         <p className="reveal opacity-0 translate-y-8 transition-all duration-700 text-white/60 text-xl leading-relaxed max-w-2xl mx-auto mb-12">
@@ -50,7 +50,7 @@ export default function CtaSection() {
 
         <div className="reveal opacity-0 translate-y-8 transition-all duration-700 flex flex-wrap justify-center gap-4 mb-20">
           <Link
-            href="mailto:hello@technostock.id"
+            href="mailto:hello@angeltrade.id"
             className="group inline-flex items-center gap-2 bg-gradient-gold text-black font-bold px-8 py-4 rounded-full hover:brightness-110 transition-all duration-300 hover:scale-105 active:scale-95 gold-glow"
           >
             Get in Touch

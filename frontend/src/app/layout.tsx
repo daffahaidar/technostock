@@ -6,7 +6,7 @@ import TanstackQueryProvider from "@/components/context/tanstack-query";
 import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
-  title: "Technostock - Platform Edukasi Trading Saham",
+  title: "AngelTrade - Platform Edukasi Trading Saham",
   description: "Platform edukasi trading saham terdepan di Indonesia.",
 };
 

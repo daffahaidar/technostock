@@ -124,7 +124,7 @@ export default function CheckoutClient({
           </h3>
           <p className="text-sm text-gray-400">
             Pembayaran Anda diproses secara aman menggunakan sistem enkripsi tingkat tinggi (SSL). 
-            Technostock tidak pernah menyimpan data rahasia kartu Anda secara langsung.
+            AngelTrade tidak pernah menyimpan data rahasia kartu Anda secara langsung.
           </p>
         </div>
       </div>

@@ -1,6 +1,6 @@
 # Instalasi & Menjalankan
 
-Panduan menjalankan Technostock di macOS, Windows, dan Linux — baik dengan
+Panduan menjalankan AngelTrade di macOS, Windows, dan Linux — baik dengan
 container (direkomendasikan) maupun manual.
 
 ## Prerequisites
@@ -31,8 +31,8 @@ container (direkomendasikan) maupun manual.
 ### 1. Clone repository
 
 ```bash
-git clone https://github.com/daffahaidar/technostock.git
-cd technostock
+git clone https://github.com/daffahaidar/angeltrade.git
+cd angeltrade
 ```
 
 ### 2. Siapkan file `.env`
@@ -252,7 +252,7 @@ mkdir -p ~/minio-data
 minio server ~/minio-data --console-address ":9001"   # terminal terpisah
 
 psql postgres -c "CREATE USER postgres WITH PASSWORD 'admin';"
-psql postgres -c "CREATE DATABASE technostock OWNER postgres;"
+psql postgres -c "CREATE DATABASE angeltrade OWNER postgres;"
 
 # Toolchain
 brew install node go protobuf
@@ -266,7 +266,7 @@ cargo install sqlx-cli --no-default-features --features postgres
 sudo apt update
 sudo apt install postgresql postgresql-contrib redis-server rabbitmq-server
 sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'admin';"
-sudo -u postgres createdb technostock
+sudo -u postgres createdb angeltrade
 sudo systemctl enable --now rabbitmq-server
 
 wget https://dl.min.io/server/minio/release/linux-amd64/minio
@@ -299,7 +299,7 @@ wsl --install     # PowerShell sebagai Administrator, lalu restart
 Bila tetap ingin Windows murni:
 
 1. **PostgreSQL** — installer [EDB](https://www.enterprisedb.com/downloads/postgres-postgresql-downloads).
-   Set password user `postgres` = `admin`, buat database `technostock`.
+   Set password user `postgres` = `admin`, buat database `angeltrade`.
 2. **Redis** — [Memurai](https://www.memurai.com/) atau jalankan lewat WSL.
 3. **RabbitMQ** — install [Erlang](https://www.erlang.org/downloads) dulu, lalu
    [RabbitMQ Server](https://www.rabbitmq.com/install-windows.html).

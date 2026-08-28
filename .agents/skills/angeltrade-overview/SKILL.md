@@ -1,12 +1,12 @@
 ---
-name: technostock-overview
-description: Orientasi wajib untuk repo Technostock — monorepo microservices Rust (auth-service, grpc-service, shared-core, realtime-service) + Go (main-service, Fiber v3 + GORM) + Next.js 16 (frontend), dengan PostgreSQL, Redis, RabbitMQ, MinIO, Kafka, gRPC, JWT RS256, dan pembayaran Midtrans. Berisi peta service, invarian arsitektur, batas kepemilikan data, dan daftar jebakan yang membuat agent salah. Gunakan skill ini SEBELUM membaca atau mengubah kode apa pun di repo technostock — termasuk saat diminta "tambah fitur", "perbaiki bug", "kenapa error", atau saat bingung file mana yang harus disentuh.
+name: angeltrade-overview
+description: Orientasi wajib untuk repo AngelTrade — monorepo microservices Rust (auth-service, grpc-service, shared-core, realtime-service) + Go (main-service, Fiber v3 + GORM) + Next.js 16 (frontend), dengan PostgreSQL, Redis, RabbitMQ, MinIO, Kafka, gRPC, JWT RS256, dan pembayaran Midtrans. Berisi peta service, invarian arsitektur, batas kepemilikan data, dan daftar jebakan yang membuat agent salah. Gunakan skill ini SEBELUM membaca atau mengubah kode apa pun di repo angeltrade — termasuk saat diminta "tambah fitur", "perbaiki bug", "kenapa error", atau saat bingung file mana yang harus disentuh.
 ---
 
-# Technostock — Orientasi
+# AngelTrade — Orientasi
 
 Baca ini lebih dulu. Setelah paham peta di bawah, lanjut ke skill yang sesuai
-tugasnya: `technostock-feature`, `technostock-database`, atau `technostock-ops`.
+tugasnya: `angeltrade-feature`, `angeltrade-database`, atau `angeltrade-ops`.
 
 Semua isi diverifikasi terhadap kode. Bila kode dan skill ini bertentangan,
 kode yang benar — perbaiki skill-nya.
@@ -91,7 +91,7 @@ Melanggar salah satu = bug arsitektur, bukan sekadar gaya.
 | Jebakan | Fakta |
 |---|---|
 | Middleware Next.js | Namanya **`src/proxy.ts`** (Next 16), bukan `middleware.ts` |
-| Nama paket frontend | `package.json` = **`dimentorin`** (nama lama). Teks user = **Technostock** |
+| Nama paket frontend | `package.json` = **`angeltrade`** (nama lama). Teks user = **AngelTrade** |
 | Cargo workspace | **Tidak ada.** 4 crate berdiri sendiri via `path = "../shared-core"`. Jalankan `cargo` dari dalam folder crate |
 | `realtime-service` | **Tidak** memakai `shared-core` — menduplikasi `User`, `Role`, `AppError`, `JwtService`. Versi `User`-nya tanpa `discord_username` |
 | Router realtime | Router aktif = `realtime-service/src/routes/api.rs` (bukan `src/api.rs`, yang sudah dihapus) |
@@ -151,9 +151,9 @@ Verifikasi perubahan:
 
 | Tugas | Skill / dokumen |
 |---|---|
-| Menambah fitur atau endpoint | skill `technostock-feature` |
-| Menyentuh skema / migrasi / query | skill `technostock-database` |
-| Menjalankan, build, deploy, debug | skill `technostock-ops` |
+| Menambah fitur atau endpoint | skill `angeltrade-feature` |
+| Menyentuh skema / migrasi / query | skill `angeltrade-database` |
+| Menjalankan, build, deploy, debug | skill `angeltrade-ops` |
 | Kontrak endpoint | `docs/api.md` |
 | Status produk & daftar risiko | `docs/PRD.md` |
 | Isu yang diketahui | `docs/operations.md` |

@@ -18,7 +18,7 @@ services:
       - .env
     environment:
       # Override localhost to host.docker.internal to connect to host's database
-      - DATABASE_URL=postgres://postgres:admin@host.docker.internal:5433/technostock
+      - DATABASE_URL=postgres://postgres:admin@host.docker.internal:5433/angeltrade
 
 volumes:
   cargo-cache:

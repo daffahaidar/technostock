@@ -79,7 +79,7 @@ export default function FeaturesSection() {
           <div>
             <div className="reveal opacity-0 translate-y-8 transition-all duration-700">
               <span className="inline-block text-[#D4AF37] text-xs font-semibold tracking-[0.2em] uppercase mb-5">
-                Mengapa Technostock
+                Mengapa AngelTrade
               </span>
               <h2 className="text-4xl lg:text-5xl font-bold text-white tracking-tight leading-tight">
                 Platform Belajar

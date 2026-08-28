@@ -88,13 +88,13 @@ async function DashboardContent() {
         <div className="bg-[#D4AF37]/10 border border-[#D4AF37]/30 rounded-2xl p-10 text-center shadow-lg">
           <h2 className="text-2xl font-bold text-[#D4AF37] mb-3">Akses Penuh Sebagai {session.user.role}</h2>
           <p className="text-gray-400 max-w-lg mx-auto">
-            Anda memiliki akses ke seluruh fitur eksklusif member Technostock karena peran Anda sebagai {session.user.role}.
+            Anda memiliki akses ke seluruh fitur eksklusif member AngelTrade karena peran Anda sebagai {session.user.role}.
           </p>
         </div>
       ) : (
         <div className="bg-white/5 border border-white/10 rounded-2xl p-10 text-center shadow-lg">
           <h2 className="text-2xl font-bold text-white mb-3">Belum Ada Langganan Aktif</h2>
-          <p className="text-gray-400 mb-8 max-w-lg mx-auto">Anda belum memiliki paket langganan yang aktif saat ini. Berlangganan sekarang untuk mengakses semua fitur eksklusif member Technostock.</p>
+          <p className="text-gray-400 mb-8 max-w-lg mx-auto">Anda belum memiliki paket langganan yang aktif saat ini. Berlangganan sekarang untuk mengakses semua fitur eksklusif member AngelTrade.</p>
           <Link href="/#pricing">
             <Button className="h-12 px-8 rounded-xl bg-[#D4AF37] hover:bg-[#F3CA52] text-black font-bold text-base transition-all shadow-[0_0_15px_rgba(212,175,55,0.3)]">
               Lihat Paket Langganan

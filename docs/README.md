@@ -1,4 +1,4 @@
-# Dokumentasi Technostock
+# Dokumentasi AngelTrade
 
 Seluruh dokumentasi proyek ada di folder ini. Isinya diturunkan dari kode yang
 benar-benar ada di repo saat ini — bukan dari rancangan atau rencana.
@@ -38,10 +38,10 @@ ter-link ke `.claude/skills/`:
 
 | Skill | Untuk |
 |---|---|
-| `technostock-overview` | Orientasi awal — baca sebelum menyentuh kode |
-| `technostock-feature` | Menambah fitur/endpoint/halaman di stack mana pun |
-| `technostock-database` | Skema, migrasi, query |
-| `technostock-ops` | Menjalankan, build, deploy, troubleshooting |
+| `angeltrade-overview` | Orientasi awal — baca sebelum menyentuh kode |
+| `angeltrade-feature` | Menambah fitur/endpoint/halaman di stack mana pun |
+| `angeltrade-database` | Skema, migrasi, query |
+| `angeltrade-ops` | Menjalankan, build, deploy, troubleshooting |
 
 ## Konvensi
 

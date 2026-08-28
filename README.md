@@ -1,4 +1,4 @@
-# Technostock
+# AngelTrade
 
 Monorepo microservices: satu frontend Next.js, satu API Gateway yang sekaligus
 menjadi server gRPC, dan tiga backend service.
@@ -24,8 +24,8 @@ akan dialihkan ke `notification-service` yang belum dibuat.
 ## Cara cepat
 
 ```bash
-git clone https://github.com/daffahaidar/technostock.git
-cd technostock
+git clone https://github.com/daffahaidar/angeltrade.git
+cd angeltrade
 # siapkan .env tiap service — lihat docs/setup.md
 make dev
 ```

@@ -1,4 +1,4 @@
-# PRD — Technostock
+# PRD — AngelTrade
 
 **Product Requirements Document.** Dokumen ini menyatukan *apa yang dibangun*,
 *untuk siapa*, dan *sejauh mana sudah jadi*. Setiap klaim tentang status
@@ -6,10 +6,10 @@ diturunkan dari kode yang ada di repo, bukan dari rencana.
 
 | | |
 |---|---|
-| Nama produk (user-facing) | **Technostock** — "Platform Edukasi Trading Saham" ([`frontend/src/app/layout.tsx`](../frontend/src/app/layout.tsx)) |
-| Nama paket npm | `dimentorin` ([`frontend/package.json`](../frontend/package.json)) — sisa nama proyek lama, **jangan** dipakai di teks user |
-| Nama repo | `technostock` |
-| Domain di copy | `hello@technostock.id` ([`cta-section.tsx`](../frontend/src/app/%28root%29/_components/cta-section.tsx)) |
+| Nama produk (user-facing) | **AngelTrade** — "Platform Edukasi Trading Saham" ([`frontend/src/app/layout.tsx`](../frontend/src/app/layout.tsx)) |
+| Nama paket npm | `angeltrade` ([`frontend/package.json`](../frontend/package.json)) |
+| Nama repo | `angeltrade` |
+| Domain di copy | `hello@angeltrade.id` ([`cta-section.tsx`](../frontend/src/app/%28root%29/_components/cta-section.tsx)) |
 | Bahasa UI | Indonesia |
 | Mata uang | IDR, `Intl.NumberFormat("id-ID")` |
 | Status | Pre-launch. Fokus aktif: **manajemen user + subscription**. Chat on-hold. |
@@ -23,7 +23,7 @@ isu). Panduan untuk AI agent: [`AGENTS.md`](../AGENTS.md) di root.
 
 ## 1. Ringkasan Produk
 
-Technostock menjual **langganan berbayar ke komunitas edukasi trading saham**.
+AngelTrade menjual **langganan berbayar ke komunitas edukasi trading saham**.
 Yang benar-benar diproses sistem hari ini: *akses berbayar bertingkat (tipe akun
 × durasi) yang, setelah lunas, menaikkan role user menjadi `Member` dan mencatat
 Discord username untuk pemberian akses grup*.
@@ -396,7 +396,7 @@ Setiap perubahan pada repo ini dianggap selesai bila:
 
 1. **Mengikuti pola yang sudah ada.** Jangan memperkenalkan library, layer, atau
    gaya baru tanpa alasan. Pola per stack ada di skill
-   [`technostock-feature`](../.agents/skills/technostock-feature/SKILL.md).
+   [`angeltrade-feature`](../.agents/skills/angeltrade-feature/SKILL.md).
 2. **Otorisasi ditegakkan di backend**, bukan hanya di `proxy.ts`.
 3. **Batas kepemilikan data dihormati** — Go tidak menyentuh `users.users`;
    Rust tidak menyentuh `main.*`.

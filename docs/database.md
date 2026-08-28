@@ -4,8 +4,8 @@ Referensi skema data yang **saat ini benar-benar ada di kode**. Diturunkan
 langsung dari file migrasi sqlx dan struct GORM, bukan dari rancangan.
 
 - **Engine:** PostgreSQL 17
-- **Nama database:** `technostock`
-- **Koneksi dev:** `postgres://postgres:admin@localhost:5433/technostock` (dari
+- **Nama database:** `angeltrade`
+- **Koneksi dev:** `postgres://postgres:admin@localhost:5433/angeltrade` (dari
   host) atau `@postgres:5432` (dari dalam container)
 
 ---
@@ -476,7 +476,7 @@ yang bisa didokumentasikan.
 
 ### MinIO — object storage
 
-- Bucket: dari env `MINIO_BUCKET` (default dev: `technostock`)
+- Bucket: dari env `MINIO_BUCKET` (default dev: `angeltrade`)
 - Key gambar chat: `chat-images/{uuid}.{ext}`
 - URL publik hasil upload disimpan di `message.messages.image_url`, dibentuk
   `{http|https}://{MINIO_ENDPOINT}:{MINIO_PORT}/{bucket}/{key}`
@@ -492,10 +492,10 @@ yang bisa didokumentasikan.
 
 ```bash
 # Masuk ke psql (container dev)
-docker exec -it postgres psql -U postgres -d technostock
+docker exec -it postgres psql -U postgres -d angeltrade
 
 # Dari host
-psql postgres://postgres:admin@localhost:5433/technostock
+psql postgres://postgres:admin@localhost:5433/angeltrade
 ```
 
 ```sql

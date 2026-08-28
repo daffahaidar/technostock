@@ -3,8 +3,8 @@ import SignUpForm from "./_components/sign-up";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Sign Up - Technostock",
-  description: "Create an account on Technostock",
+  title: "Sign Up - AngelTrade",
+  description: "Create an account on AngelTrade",
 };
 
 export default function SignUpPage() {

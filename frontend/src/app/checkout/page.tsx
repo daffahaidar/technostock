@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Checkout - Technostock",
+  title: "Checkout - AngelTrade",
   description: "Selesaikan pembayaran Anda untuk memulai investasi.",
 };
 
