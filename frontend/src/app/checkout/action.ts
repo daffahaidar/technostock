@@ -12,8 +12,6 @@ export async function processCheckout(planId: string, returnUrl: string, discord
   const cookieStore = await cookies();
   const token = cookieStore.get("access_token")?.value;
 
-  // SERVER_GATEWAY_URL dipakai saat jalan di dalam container: dari sana
-  // "localhost:8080" menunjuk ke container frontend sendiri, bukan API gateway.
   const API_URL =
     process.env.SERVER_GATEWAY_URL ||
     process.env.NEXT_PUBLIC_API_URL ||
@@ -51,8 +49,6 @@ export async function checkVoucher(code: string) {
   const cookieStore = await cookies();
   const token = cookieStore.get("access_token")?.value;
 
-  // SERVER_GATEWAY_URL dipakai saat jalan di dalam container: dari sana
-  // "localhost:8080" menunjuk ke container frontend sendiri, bukan API gateway.
   const API_URL =
     process.env.SERVER_GATEWAY_URL ||
     process.env.NEXT_PUBLIC_API_URL ||

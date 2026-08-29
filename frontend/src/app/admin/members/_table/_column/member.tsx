@@ -1,5 +1,5 @@
 import { ColDef } from "ag-grid-community";
-import { MemberActionCell } from "../components/member-action-cell";
+import { MemberActionCell } from "../_components/member-action-cell";
 import { ICellRendererParams } from "ag-grid-community";
 
 export const MemberColumn: ColDef[] = [

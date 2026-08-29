@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify, importSPKI } from "jose";
 
-const RUST_API_URL = process.env.SERVER_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const AUTH_SERVICE_URL = process.env.SERVER_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export async function POST(req: NextRequest) {
   const path = req.nextUrl.pathname.replace("/api/auth", "");
@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
   if (path === "/sign-in/email") {
     try {
       const body = await req.json();
-      const response = await fetch(`${RUST_API_URL}/api/v1/auth/sign-in`, {
+      const response = await fetch(`${AUTH_SERVICE_URL}/api/v1/auth/sign-in`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -151,7 +151,7 @@ export async function GET(req: NextRequest) {
     // If access token is missing or invalid/expired, try refresh
     if (refreshToken) {
       try {
-        const response = await fetch(`${RUST_API_URL}/api/v1/auth/refresh`, {
+        const response = await fetch(`${AUTH_SERVICE_URL}/api/v1/auth/refresh`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

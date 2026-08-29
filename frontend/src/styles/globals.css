@@ -39,10 +39,10 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-  --color-gold-300: #F9E596;
-  --color-gold-400: #F3CA52;
-  --color-gold-500: #D4AF37;
-  --color-gold-600: #AA8C2C;
+  --color-gold-300: #f9e596;
+  --color-gold-400: #f3ca52;
+  --color-gold-500: #d4af37;
+  --color-gold-600: #aa8c2c;
   --color-gold-700: #806921;
 }
 
@@ -54,8 +54,8 @@
   --card-foreground: oklch(0.141 0.005 285.823);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.141 0.005 285.823);
-  --primary: oklch(0.21 0.006 285.885);
-  --primary-foreground: oklch(0.985 0 0);
+  --primary: #d4af37;
+  --primary-foreground: #000000;
   --secondary: oklch(0.967 0.001 286.375);
   --secondary-foreground: oklch(0.21 0.006 285.885);
   --muted: oklch(0.967 0.001 286.375);
@@ -88,8 +88,8 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.21 0.006 285.885);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.92 0.004 286.32);
-  --primary-foreground: oklch(0.21 0.006 285.885);
+  --primary: #d4af37;
+  --primary-foreground: #000000;
   --secondary: oklch(0.274 0.006 286.033);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.274 0.006 286.033);
@@ -107,12 +107,12 @@
   --chart-5: oklch(0.645 0.246 16.439);
   --sidebar: oklch(0.141 0.005 285.823); /* Matches main background */
   --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: #D4AF37;
+  --sidebar-primary: #d4af37;
   --sidebar-primary-foreground: #000000;
   --sidebar-accent: #1a1a1a;
-  --sidebar-accent-foreground: #D4AF37;
+  --sidebar-accent-foreground: #d4af37;
   --sidebar-border: rgba(255, 255, 255, 0.05);
-  --sidebar-ring: #D4AF37;
+  --sidebar-ring: #d4af37;
 }
 
 @layer base {
@@ -128,35 +128,35 @@
   }
 
   ::-webkit-scrollbar {
-    @apply w-2.5;
+    @apply w-2.5 h-2.5;
   }
 
   ::-webkit-scrollbar-track {
-    @apply bg-accent;
+    @apply bg-accent/30 rounded-full;
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-primary rounded-full;
+    @apply bg-primary/80 rounded-full border-2 border-transparent bg-clip-padding;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-primary/80;
+    @apply bg-primary;
   }
 
   .sub-sidebar ::-webkit-scrollbar {
-    @apply w-1;
+    @apply w-1 h-1;
   }
 }
 
 @layer utilities {
   .text-gradient-gold {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-gold-300 via-gold-500 to-gold-700;
+    @apply from-gold-300 via-gold-500 to-gold-700 bg-gradient-to-r bg-clip-text text-transparent;
   }
   .bg-gradient-gold {
-    @apply bg-gradient-to-r from-gold-400 via-gold-500 to-gold-600 text-black;
+    @apply from-gold-400 via-gold-500 to-gold-600 bg-gradient-to-r text-black;
   }
   .border-gold-glow {
-    @apply border border-gold-500/30 shadow-[0_0_15px_-3px_rgba(212,175,55,0.3)];
+    @apply border-gold-500/30 border shadow-[0_0_15px_-3px_rgba(212,175,55,0.3)];
   }
   .gold-glow {
     @apply shadow-[0_0_40px_-10px_rgba(212,175,55,0.4)];
@@ -165,13 +165,13 @@
     @apply bg-[#0a0a0a];
   }
   .bg-luxury-card {
-    @apply bg-[#121212] border-white/5;
+    @apply border-white/5 bg-[#121212];
   }
   .glass-card-gold {
-    @apply bg-[#0a0a0a]/50 backdrop-blur-2xl border border-[#D4AF37]/20 shadow-[0_8px_32px_rgba(0,0,0,0.4)];
+    @apply border border-[#D4AF37]/20 bg-[#0a0a0a]/50 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-2xl;
   }
   .glass-panel-gold {
-    @apply bg-gradient-to-br from-[#1a1a1a]/80 to-[#0a0a0a]/60 backdrop-blur-xl border border-[#D4AF37]/20;
+    @apply border border-[#D4AF37]/20 bg-gradient-to-br from-[#1a1a1a]/80 to-[#0a0a0a]/60 backdrop-blur-xl;
   }
 }
 

@@ -4,7 +4,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
 export async function getAccountTypes(token: string) {
   try {
-    const res = await fetch(`${API_URL}${ENDPOINT.GOLANG_API.ACCOUNT_TYPE}`, {
+    const res = await fetch(`${API_URL}${ENDPOINT.MAIN_SERVICE.ACCOUNT_TYPE}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -30,7 +30,7 @@ export async function createAccountType(
   token: string
 ) {
   try {
-    const res = await fetch(`${API_URL}${ENDPOINT.GOLANG_API.ACCOUNT_TYPE}`, {
+    const res = await fetch(`${API_URL}${ENDPOINT.MAIN_SERVICE.ACCOUNT_TYPE}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -56,7 +56,7 @@ export async function updateAccountType(
   token: string
 ) {
   try {
-    const res = await fetch(`${API_URL}${ENDPOINT.GOLANG_API.ACCOUNT_TYPE}/${id}`, {
+    const res = await fetch(`${API_URL}${ENDPOINT.MAIN_SERVICE.ACCOUNT_TYPE}/${id}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
@@ -78,7 +78,7 @@ export async function updateAccountType(
 
 export async function deleteAccountType(id: string, token: string) {
   try {
-    const res = await fetch(`${API_URL}${ENDPOINT.GOLANG_API.ACCOUNT_TYPE}/${id}`, {
+    const res = await fetch(`${API_URL}${ENDPOINT.MAIN_SERVICE.ACCOUNT_TYPE}/${id}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",

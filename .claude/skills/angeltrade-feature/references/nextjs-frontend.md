@@ -10,9 +10,9 @@ Next 16), bukan `middleware.ts`.
 
 ## Dua pola, pilih yang sesuai
 
-| Pola | Untuk | Lokasi |
-|---|---|---|
-| **A. Module** | Fitur CRUD admin dengan tabel | `src/modules/<domain>/` |
+| Pola                | Untuk                                          | Lokasi                             |
+| ------------------- | ---------------------------------------------- | ---------------------------------- |
+| **A. Module**       | Fitur CRUD admin dengan tabel                  | `src/modules/<domain>/`            |
 | **B. Route-scoped** | Halaman dengan komponen/hook khususnya sendiri | `src/app/<route>/_components` dll. |
 
 Modul yang ada: `account-type`, `subscription-plan`, `member`, `voucher`.
@@ -32,7 +32,7 @@ Konvensi turunan nama: entity kebab `coupon`, plural `coupons`, PascalCase
 ### 1. `src/endpoint/index.ts`
 
 ```ts
-COUPON: `${GOLANG_PREFIX}/coupons`,   // GOLANG_PREFIX = "/api/v1/main"
+COUPON: `${MAIN_PREFIX}/coupons`,   // MAIN_PREFIX = "/api/v1/main"
 ```
 
 ### 2. `src/modules/coupon/schema/coupon.ts`
@@ -44,7 +44,10 @@ import { z } from "zod";
 
 export const CouponSchema = z.object({
   code: z.string().min(1, { message: "Kode kupon harus diisi" }),
-  discount_percentage: z.number().min(0).max(100, { message: "Diskon maksimal 100%" }),
+  discount_percentage: z
+    .number()
+    .min(0)
+    .max(100, { message: "Diskon maksimal 100%" }),
   quota: z.number().nullable().optional(),
 });
 
@@ -70,7 +73,7 @@ import { CouponSchema, CouponType } from "../schema/coupon";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
 export const getCoupons = async (token: string): Promise<CouponType[]> => {
-  const res = await fetch(`${API_URL}${ENDPOINT.GOLANG_API.COUPON}`, {
+  const res = await fetch(`${API_URL}${ENDPOINT.MAIN_SERVICE.COUPON}`, {
     headers: { Authorization: `Bearer ${token}` },
     cache: "no-store",
   });
@@ -79,10 +82,16 @@ export const getCoupons = async (token: string): Promise<CouponType[]> => {
   return data.results || [];
 };
 
-export const createCoupon = async (data: z.infer<typeof CouponSchema>, token: string) => {
-  const res = await fetch(`${API_URL}${ENDPOINT.GOLANG_API.COUPON}`, {
+export const createCoupon = async (
+  data: z.infer<typeof CouponSchema>,
+  token: string,
+) => {
+  const res = await fetch(`${API_URL}${ENDPOINT.MAIN_SERVICE.COUPON}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
     body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error("Failed to create coupon");
@@ -91,7 +100,7 @@ export const createCoupon = async (data: z.infer<typeof CouponSchema>, token: st
 };
 
 export const deleteCoupon = async (id: string, token: string) => {
-  const res = await fetch(`${API_URL}${ENDPOINT.GOLANG_API.COUPON}/${id}`, {
+  const res = await fetch(`${API_URL}${ENDPOINT.MAIN_SERVICE.COUPON}/${id}`, {
     method: "DELETE",
     headers: { Authorization: `Bearer ${token}` },
   });
@@ -101,6 +110,7 @@ export const deleteCoupon = async (id: string, token: string) => {
 ```
 
 Aturan:
+
 - `fetch` global — **bukan** axios. Satu-satunya instance axios yang tersisa
   adalah `messageBackend` (khusus chat).
 - `token: string` selalu argumen **terakhir**.
@@ -124,9 +134,17 @@ export const CouponColumn: ColDef[] = [
   {
     field: "quota",
     headerName: "Kuota",
-    valueFormatter: (p: ValueFormatterParams) => (p.value != null ? p.value.toString() : "∞"),
+    valueFormatter: (p: ValueFormatterParams) =>
+      p.value != null ? p.value.toString() : "∞",
   },
-  { headerName: "Aksi", field: "id", cellRenderer: "actionRenderer", width: 120, sortable: false, filter: false },
+  {
+    headerName: "Aksi",
+    field: "id",
+    cellRenderer: "actionRenderer",
+    width: 120,
+    sortable: false,
+    filter: false,
+  },
 ];
 ```
 
@@ -148,12 +166,18 @@ export const CouponColumn: ColDef[] = [
 ```tsx
 "use client";
 
-export default function AddCouponForm({ onSuccessSubmit }: { onSuccessSubmit?: () => void }) {
-  const revalidate = useRevalidateQuery();                 // @/hooks/use-revalidate
-  const { data: sessionData } = authClient.useSession();   // @/app/auth/sign-in/_handlers/client
+export default function AddCouponForm({
+  onSuccessSubmit,
+}: {
+  onSuccessSubmit?: () => void;
+}) {
+  const revalidate = useRevalidateQuery(); // @/hooks/use-revalidate
+  const { data: sessionData } = authClient.useSession(); // @/app/auth/sign-in/_handlers/client
 
   const form = useForm<z.infer<typeof CouponSchema>>({
-    resolver: zodResolver(CouponSchema) as unknown as Resolver<z.infer<typeof CouponSchema>>,
+    resolver: zodResolver(CouponSchema) as unknown as Resolver<
+      z.infer<typeof CouponSchema>
+    >,
     defaultValues: { code: "", discount_percentage: 0, quota: null },
   });
 
@@ -176,17 +200,28 @@ export default function AddCouponForm({ onSuccessSubmit }: { onSuccessSubmit?: (
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit((values) => mutate(values))} className="grid gap-4 py-4">
+      <form
+        onSubmit={form.handleSubmit((values) => mutate(values))}
+        className="grid gap-4 py-4"
+      >
         <FieldGroup>
-          <FormField control={form.control} name="code" render={({ field }) => (
-            <FormItem>
-              <FormLabel>Kode Kupon</FormLabel>
-              <FormControl><Input {...field} /></FormControl>
-              <FormMessage />
-            </FormItem>
-          )} />
+          <FormField
+            control={form.control}
+            name="code"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Kode Kupon</FormLabel>
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </FieldGroup>
-        <Button type="submit" disabled={isPending}>{isPending ? "Menyimpan..." : "Simpan"}</Button>
+        <Button type="submit" disabled={isPending}>
+          {isPending ? "Menyimpan..." : "Simpan"}
+        </Button>
       </form>
     </Form>
   );
@@ -211,10 +246,13 @@ const [open, setOpen] = useState(false);
     </Button>
   </DialogTrigger>
   <DialogContent className="sm:max-w-[425px]">
-    <DialogHeader><DialogTitle>…</DialogTitle><DialogDescription>…</DialogDescription></DialogHeader>
+    <DialogHeader>
+      <DialogTitle>…</DialogTitle>
+      <DialogDescription>…</DialogDescription>
+    </DialogHeader>
     <AddCouponForm onSuccessSubmit={() => setOpen(false)} />
   </DialogContent>
-</Dialog>
+</Dialog>;
 ```
 
 `Sheet` tidak dipakai modul mana pun.
@@ -235,7 +273,10 @@ const { data, isPending } = useQuery({
 
 // delete: useMutation + confirm() bawaan browser + toast + revalidate(["get-coupons"])
 
-if (isPending) return <div className="flex h-64 items-center justify-center">Loading...</div>;
+if (isPending)
+  return (
+    <div className="flex h-64 items-center justify-center">Loading...</div>
+  );
 
 return (
   <div className="size-full">
@@ -258,11 +299,19 @@ export default function CouponsPage() {
     <SidebarLayout
       title="Daftar Kupon"
       additionalComponents={<ButtonAddCoupon />}
-      breadcrumb={[{ name: "Admin" }, { name: "Subscription" }, { name: "Kupon", path: "/admin/subscriptions/coupons" }]}
+      breadcrumb={[
+        { name: "Admin" },
+        { name: "Subscription" },
+        { name: "Kupon", path: "/admin/subscriptions/coupons" },
+      ]}
     >
-      <Suspense fallback={<div className="w-full text-white">Loading dashboard...</div>}>
+      <Suspense
+        fallback={<div className="w-full text-white">Loading dashboard...</div>}
+      >
         <div className="flex flex-1 flex-col gap-4 h-[calc(100vh-12rem)] min-h-[500px]">
-          <div className="flex-1 w-full"><CouponTable /></div>
+          <div className="flex-1 w-full">
+            <CouponTable />
+          </div>
         </div>
       </Suspense>
     </SidebarLayout>
@@ -284,16 +333,16 @@ ke group yang sesuai.
 
 ## Pola B — Halaman route-scoped
 
-| Folder | Isi |
-|---|---|
-| `_components/` | Komponen milik route itu saja |
-| `_handlers/` | Adapter auth (`client.ts` = `createAuthClient`, `server.ts` = `getSession`/`logout`) |
-| `_mutations/` | Hook `useMutation` khusus route, nama `useXxx` |
-| `_queries/` | Export `queryXxx()` (objek opsi) + `useGetXxx()` (wrapper) |
-| `types/` | Interface TS lokal |
-| `schema.ts` | Zod schema level route |
-| `action.ts` / `actions.ts` | Server action lokal (`"use server"` baris 1) |
-| `<route>-client.tsx` | Alternatif `_components` untuk satu komponen client sibling page |
+| Folder                     | Isi                                                                                  |
+| -------------------------- | ------------------------------------------------------------------------------------ |
+| `_components/`             | Komponen milik route itu saja                                                        |
+| `_handlers/`               | Adapter auth (`client.ts` = `createAuthClient`, `server.ts` = `getSession`/`logout`) |
+| `_mutations/`              | Hook `useMutation` khusus route, nama `useXxx`                                       |
+| `_queries/`                | Export `queryXxx()` (objek opsi) + `useGetXxx()` (wrapper)                           |
+| `types/`                   | Interface TS lokal                                                                   |
+| `schema.ts`                | Zod schema level route                                                               |
+| `action.ts` / `actions.ts` | Server action lokal (`"use server"` baris 1)                                         |
+| `<route>-client.tsx`       | Alternatif `_components` untuk satu komponen client sibling page                     |
 
 `getSession()` dari `@/app/auth/sign-in/_handlers/server` dipakai lintas app —
 di landing, checkout, forum dashboard, dan admin dashboard.
@@ -302,19 +351,21 @@ di landing, checkout, forum dashboard, dan admin dashboard.
 
 ## Data fetching: pilih yang mana
 
-| Konteks | Cara |
-|---|---|
-| Server Component | `await getSession()` + `fetch(...)` langsung. `cache: "no-store"` untuk data user; `next: { revalidate: N, tags: [...] }` untuk data publik |
-| Komponen client | TanStack `useQuery` + fungsi dari `modules/*/actions/` |
-| Mutasi dari form | `useMutation` + `revalidate([...])` |
-| Data publik yang perlu SSR + cache | Server action `"use server"` dengan `next: { tags: [...] }` — tiru `get-public-pricing.ts` |
+| Konteks                            | Cara                                                                                                                                        |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| Server Component                   | `await getSession()` + `fetch(...)` langsung. `cache: "no-store"` untuk data user; `next: { revalidate: N, tags: [...] }` untuk data publik |
+| Komponen client                    | TanStack `useQuery` + fungsi dari `modules/*/actions/`                                                                                      |
+| Mutasi dari form                   | `useMutation` + `revalidate([...])`                                                                                                         |
+| Data publik yang perlu SSR + cache | Server action `"use server"` dengan `next: { tags: [...] }` — tiru `get-public-pricing.ts`                                                  |
 
 Base URL:
+
 - Client: `process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"`
 - Server-side ke gateway: `SERVER_GATEWAY_URL || NEXT_PUBLIC_API_URL || "http://localhost:8080"`
 - Server-side ke auth-service: `SERVER_API_URL || NEXT_PUBLIC_API_URL || "http://localhost:8000"`
 
 Invalidasi:
+
 - Client cache → `useRevalidateQuery()` dari `@/hooks/use-revalidate`
 - Server cache → `revalidateServerTag("<tag>")` dari `@/app/actions/revalidate`
   (satu-satunya pemakai saat ini: toggle `is_recommended` di

@@ -45,9 +45,9 @@ export async function proxy(request: NextRequest) {
   } | null = null;
   if (!accessToken && refreshToken) {
     try {
-      const RUST_API_URL =
+      const AUTH_SERVICE_URL =
         process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-      const refreshRes = await fetch(`${RUST_API_URL}/api/v1/auth/refresh`, {
+      const refreshRes = await fetch(`${AUTH_SERVICE_URL}/api/v1/auth/refresh`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ refresh_token: refreshToken }),

@@ -3,6 +3,10 @@ import axios, { AxiosInstance } from "axios";
 let cachedToken: string | null = null;
 let tokenExpiry: number | null = null;
 
+export const gatewayAPI = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
+});
+
 export const getAccessToken = async () => {
   if (typeof window === "undefined") {
     return null; // Avoid relative fetch errors on server side

@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { Trash } from "lucide-react";
 
 import { authClient } from "@/app/auth/sign-in/_handlers/client";
-import { revalidateServerTag } from "@/app/actions/revalidate";
+import { revalidateServerTag } from "@/actions/revalidate";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import {

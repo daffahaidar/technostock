@@ -12,7 +12,7 @@ export async function getPublicPricingData() {
 
   try {
     const res = await fetch(
-      `${API_URL}${ENDPOINT.GOLANG_API.PUBLIC_ACCOUNT_TYPE}`,
+      `${API_URL}${ENDPOINT.MAIN_SERVICE.PUBLIC_ACCOUNT_TYPE}`,
       {
         method: "GET",
         headers: {
@@ -33,7 +33,7 @@ export async function getPublicPricingData() {
     const accountTypes = accountTypesData.results || [];
 
     const plansRes = await fetch(
-      `${API_URL}${ENDPOINT.GOLANG_API.PUBLIC_SUBSCRIPTION_PLAN}`,
+      `${API_URL}${ENDPOINT.MAIN_SERVICE.PUBLIC_SUBSCRIPTION_PLAN}`,
       {
         method: "GET",
         headers: {

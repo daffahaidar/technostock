@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const RUST_API_URL = process.env.SERVER_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const AUTH_SERVICE_URL = process.env.SERVER_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 const ROLE_DASHBOARDS: Record<string, string> = {
   Maintainer: "/maintainer/dashboard",
@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
 
   try {
     // Forward the authorization code to the Rust backend callback endpoint
-    const backendUrl = `${RUST_API_URL}/api/v1/auth/${provider}/callback?code=${encodeURIComponent(code)}`;
+    const backendUrl = `${AUTH_SERVICE_URL}/api/v1/auth/${provider}/callback?code=${encodeURIComponent(code)}`;
 
     const response = await fetch(backendUrl, {
       method: "GET",

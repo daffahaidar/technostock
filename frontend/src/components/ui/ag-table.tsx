@@ -9,29 +9,28 @@ import {
 } from "ag-grid-community";
 import type { ColDef, GridOptions } from "ag-grid-community";
 
-import { useMemo, useEffect, useState } from "react";
-import { BeatLoader } from "react-spinners";
+import { useMemo } from "react";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 interface AgTableProps<T> {
-  rowData: T[];
+  rowData?: T[] | undefined;
   columnDefs: ColDef<T>[];
   gridOptions?: GridOptions<T>;
   height?: string | number;
+  loading?: boolean;
+  loadingOverlayComponent?: GridOptions<T>["loadingOverlayComponent"];
+  noRowsOverlayComponent?: GridOptions<T>["noRowsOverlayComponent"];
 }
 
 export default function AgTable<T>({
   rowData,
   columnDefs,
   gridOptions,
+  loading,
+  loadingOverlayComponent,
+  noRowsOverlayComponent,
 }: AgTableProps<T>) {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setMounted(true);
-  }, []);
 
   const myTheme = themeQuartz.withPart(colorSchemeDark).withParams({
     headerBackgroundColor: "#111111",
@@ -55,15 +54,6 @@ export default function AgTable<T>({
     };
   }, []);
 
-  // Prevent hydration mismatch
-  if (!mounted) {
-    return (
-      <div className="flex size-full items-center justify-center">
-        <BeatLoader color="var(--primary)" />
-      </div>
-    );
-  }
-
   return (
     <div className="size-full">
       <AgGridReact
@@ -74,6 +64,9 @@ export default function AgTable<T>({
         pagination={true}
         paginationPageSize={10}
         paginationPageSizeSelector={[10, 20, 50, 100]}
+        loading={loading}
+        loadingOverlayComponent={loadingOverlayComponent}
+        noRowsOverlayComponent={noRowsOverlayComponent}
         {...gridOptions}
       />
     </div>

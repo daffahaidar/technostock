@@ -34,7 +34,7 @@ export default function StatusContent() {
 
     const syncTransaction = async () => {
       try {
-        const res = await fetch(`${API_URL}${ENDPOINT.GOLANG_API.TRANSACTION_SYNC(orderId)}`, {
+        const res = await fetch(`${API_URL}${ENDPOINT.MAIN_SERVICE.TRANSACTION_SYNC(orderId)}`, {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${token}`
