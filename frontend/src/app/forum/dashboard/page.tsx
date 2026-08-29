@@ -4,7 +4,7 @@ import { getSession } from "@/app/auth/sign-in/_handlers/server";
 import { redirect } from "next/navigation";
 import SubscriptionCountdown from "./_components/subscription-countdown";
 import Link from "next/link";
-import { getPublicPricingData } from "@/modules/subscription-plan/actions/get-public-pricing";
+import { getPublicPricingData } from "@/app/admin/subscriptions/plans/_queries/public-pricing";
 
 import { Suspense } from "react";
 

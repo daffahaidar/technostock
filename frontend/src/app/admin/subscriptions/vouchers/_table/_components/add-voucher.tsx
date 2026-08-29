@@ -1,13 +1,12 @@
 "use client";
 
 import z from "zod";
-import { VoucherSchema } from "../schema/voucher";
+import { VoucherSchema } from "../../_schemas/voucher";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
+import { useCreateVoucher } from "../../_mutations/voucher";
 import { useRevalidateQuery } from "@/hooks/use-revalidate";
 import { toast } from "sonner";
-import { createVoucher } from "../actions/voucher-actions";
 import { Field, FieldGroup } from "@/components/ui/field";
 import {
   Form,
@@ -36,12 +35,10 @@ export default function AddVoucherForm({ onSuccessSubmit }: { onSuccessSubmit?: 
     },
   });
 
-  const { mutate, isPending } = useMutation({
-    mutationFn: async (values: z.infer<typeof VoucherSchema>) => {
-      const token = sessionData?.session?.token;
-      if (!token) throw new Error("Unauthorized");
-      return await createVoucher(values, token);
-    },
+  const token = sessionData?.session?.token || "";
+
+  const { mutate, isPending } = useCreateVoucher({
+    accessToken: token,
     onSuccess: () => {
       toast.success("Voucher berhasil dibuat");
       form.reset();

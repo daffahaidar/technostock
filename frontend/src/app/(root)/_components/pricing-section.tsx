@@ -6,6 +6,9 @@ import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
+import { useGetPublicPricing } from "@/app/admin/subscriptions/plans/_queries/public-pricing-query";
+import { useGetActiveSubscription } from "@/app/admin/subscriptions/plans/_queries/active-subscription";
+import { authClient } from "@/app/auth/sign-in/_handlers/client";
 
 interface Plan {
   id: string;
@@ -26,14 +29,24 @@ interface AccountType {
   plans: Plan[];
 }
 
-export default function PricingSection({ pricingData, user, compact = false, activeSub = null }: { pricingData: AccountType[], user?: unknown, compact?: boolean, activeSub?: { subscription_plan_id?: string } | null }) {
+export default function PricingSection({ compact = false }: { compact?: boolean }) {
   const router = useRouter();
-  const typedUser = user as { role?: string } | undefined;
+  
+  const { data: sessionData } = authClient.useSession();
+  const typedUser = sessionData?.user as { role?: string } | undefined;
   const isFullAccess = ["admin", "superadmin", "maintainer"].includes(typedUser?.role?.toLowerCase() || "");
+  const token = sessionData?.session?.token || "";
+
+  const { pricingData } = useGetPublicPricing();
+  const { activeSubscriptionData } = useGetActiveSubscription(token);
+  const activeSub = activeSubscriptionData?.data || null;
+
+  const validPricingData = (pricingData as AccountType[]) || [];
+
   // Store selected plan ID for each account type ID
   const [selectedPlans, setSelectedPlans] = useState<Record<string, string>>(() => {
     const initial: Record<string, string> = {};
-    pricingData.forEach((at) => {
+    validPricingData.forEach((at) => {
       if (at.plans && at.plans.length > 0) {
         // Default to the first plan (e.g. Monthly)
         initial[at.id] = at.plans[0].id;
@@ -87,19 +100,19 @@ export default function PricingSection({ pricingData, user, compact = false, act
         </div>
         )}
 
-        {pricingData.length === 0 ? (
+        {validPricingData.length === 0 ? (
           <div className="text-center text-gray-500 py-12">
             Belum ada paket langganan yang tersedia saat ini.
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8 max-w-7xl mx-auto">
-            {pricingData.map((at, index) => {
+            {validPricingData.map((at, index) => {
               const selectedPlanId = selectedPlans[at.id];
               const selectedPlan = at.plans.find((p) => p.id === selectedPlanId) || at.plans[0];
               const isRecommended = at.is_recommended;
 
               // Determine grid column span based on total items
-              const total = pricingData.length;
+              const total = validPricingData.length;
               let colSpanClass = "lg:col-span-2"; // default for 3 items
               
               if (total === 1) colSpanClass = "lg:col-span-6";
@@ -214,7 +227,7 @@ export default function PricingSection({ pricingData, user, compact = false, act
                         onClick={() => {
                           if (at.plans.length === 0 || isFullAccess || hasLifetimeForThisAccountType || (selectedPlan?.duration_months === 0 && selectedPlan?.quota != null && (selectedPlan.used_quota || 0) >= selectedPlan.quota)) return;
                           
-                          if (!user) {
+                          if (!typedUser) {
                             router.push(`/auth/sign-in?callbackUrl=/checkout?planId=${selectedPlan.id}`);
                           } else {
                             router.push(`/checkout?planId=${selectedPlan.id}`);

@@ -2,8 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { ColDef, ICellRendererParams, ValueFormatterParams } from "ag-grid-community";
-import { deleteSubscriptionPlan } from "../actions/subscription-plan-actions";
-import { useMutation } from "@tanstack/react-query";
+import { useDeletePlan } from "../../_mutations/plan";
 import { useRevalidateQuery } from "@/hooks/use-revalidate";
 import { toast } from "sonner";
 import { Trash } from "lucide-react";
@@ -22,15 +21,10 @@ const ActionsRenderer = (props: ICellRendererParams) => {
   
   const userCount = props.data.user_count || 0;
 
-  const { mutate, isPending } = useMutation({
-    mutationFn: async () => {
-      if (confirm("Are you sure you want to delete this subscription plan?")) {
-        const token = sessionData?.session?.token;
-        if (!token) throw new Error("Unauthorized");
-        return await deleteSubscriptionPlan(props.data.id, token);
-      }
-      throw new Error("Cancelled");
-    },
+  const token = sessionData?.session?.token || "";
+
+  const { mutate, isPending } = useDeletePlan({
+    accessToken: token,
     onSuccess: () => {
       toast.success("Subscription plan deleted successfully");
       revalidate(["get-subscription-plans"]);
@@ -41,6 +35,12 @@ const ActionsRenderer = (props: ICellRendererParams) => {
       }
     },
   });
+
+  const handleDelete = () => {
+    if (confirm("Are you sure you want to delete this subscription plan?")) {
+      mutate(props.data.id);
+    }
+  };
 
   const isDeleteDisabled = userCount > 0 || isPending;
 
@@ -53,7 +53,7 @@ const ActionsRenderer = (props: ICellRendererParams) => {
               <Button 
                 size="xs" 
                 className="h-auto py-1 bg-transparent border border-red-900 text-red-500 hover:bg-red-950 hover:text-red-400 disabled:opacity-50 disabled:pointer-events-none"
-                onClick={() => mutate()} 
+                onClick={handleDelete} 
                 disabled={isDeleteDisabled}
               >
                 <Trash className="w-3.5 h-3.5 mr-1" />

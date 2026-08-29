@@ -11,3 +11,5 @@ export const accountTypeSchema = z.object({
     })
   ).optional(),
 });
+
+export type AccountTypeFormValues = z.infer<typeof accountTypeSchema>;

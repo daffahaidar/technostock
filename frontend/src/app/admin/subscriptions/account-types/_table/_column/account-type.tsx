@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/ui/button";
 import { ColDef, ICellRendererParams } from "ag-grid-community";
-import { useMutation } from "@tanstack/react-query";
 import { useRevalidateQuery } from "@/hooks/use-revalidate";
 import { toast } from "sonner";
 import { Trash } from "lucide-react";
@@ -17,23 +16,17 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { updateAccountType, deleteAccountType } from "../actions/account-type-actions";
+import { useUpdateAccountType, useDeleteAccountType } from "../../_mutations/account-type";
 
 const ActionsRenderer = (props: ICellRendererParams) => {
   const revalidate = useRevalidateQuery();
   const { data: sessionData } = authClient.useSession();
   
   const userCount = props.data.user_count || 0;
+  const token = sessionData?.session?.token || "";
   
-  const { mutate, isPending } = useMutation({
-    mutationFn: async () => {
-      if (confirm("Are you sure you want to delete this account type? This will also delete all associated subscription plans.")) {
-        const token = sessionData?.session?.token;
-        if (!token) throw new Error("Unauthorized");
-        return await deleteAccountType(props.data.id, token);
-      }
-      throw new Error("Cancelled");
-    },
+  const { mutate, isPending } = useDeleteAccountType({
+    accessToken: token,
     onSuccess: () => {
       toast.success("Account type deleted successfully");
       revalidate(["get-account-types"]);
@@ -44,6 +37,12 @@ const ActionsRenderer = (props: ICellRendererParams) => {
       }
     },
   });
+
+  const handleDelete = () => {
+    if (confirm("Are you sure you want to delete this account type? This will also delete all associated subscription plans.")) {
+      mutate(props.data.id);
+    }
+  };
 
   const isDeleteDisabled = userCount > 0 || isPending;
 
@@ -56,7 +55,7 @@ const ActionsRenderer = (props: ICellRendererParams) => {
               <Button 
                 size="xs" 
                 className="h-auto py-1 bg-transparent border border-red-900 text-red-500 hover:bg-red-950 hover:text-red-400 disabled:opacity-50 disabled:pointer-events-none"
-                onClick={() => mutate()} 
+                onClick={handleDelete} 
                 disabled={isDeleteDisabled}
               >
                 <Trash className="w-3.5 h-3.5" />
@@ -80,13 +79,10 @@ const ActionsRenderer = (props: ICellRendererParams) => {
 const RecommendedRenderer = (props: ICellRendererParams) => {
   const revalidate = useRevalidateQuery();
   const { data: sessionData } = authClient.useSession();
+  const token = sessionData?.session?.token || "";
 
-  const { mutate, isPending } = useMutation({
-    mutationFn: async (checked: boolean) => {
-      const token = sessionData?.session?.token;
-      if (!token) throw new Error("Unauthorized");
-      return await updateAccountType(props.data.id, { is_recommended: checked }, token);
-    },
+  const { mutate, isPending } = useUpdateAccountType({
+    accessToken: token,
     onSuccess: async () => {
       toast.success("Account type recommendation updated");
       revalidate(["get-account-types"]);
@@ -101,7 +97,7 @@ const RecommendedRenderer = (props: ICellRendererParams) => {
     <div className="flex items-center h-full">
       <Checkbox 
         checked={props.data.is_recommended} 
-        onCheckedChange={(checked) => mutate(!!checked)}
+        onCheckedChange={(checked) => mutate({ id: props.data.id, is_recommended: !!checked })}
         disabled={isPending}
       />
     </div>

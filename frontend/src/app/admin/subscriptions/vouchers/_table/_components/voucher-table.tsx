@@ -1,9 +1,18 @@
 "use client";
 
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { getVouchers, deleteVoucher } from "@/modules/voucher/actions/voucher-actions";
-import { VoucherColumn } from "@/modules/voucher/column/voucher";
+import { useGetVouchers } from "../../_queries/voucher";
+import { useDeleteVoucher } from "../../_mutations/voucher";
+import { VoucherColumn } from "../_column/voucher";
 import { Button } from "@/components/ui/button";
+import { Folder } from "lucide-react";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
+import { BeatLoader } from "react-spinners";
 import AgTable from "@/components/ui/ag-table";
 import { toast } from "sonner";
 import { useRevalidateQuery } from "@/hooks/use-revalidate";
@@ -14,23 +23,12 @@ import { ICellRendererParams } from "ag-grid-community";
 export default function VoucherTable() {
   const revalidate = useRevalidateQuery();
   const { data: sessionData } = authClient.useSession();
+  const token = sessionData?.session?.token || "";
   
-  const { data} = useQuery({
-    queryKey: ["get-vouchers", sessionData?.session?.token],
-    queryFn: async () => {
-      const token = sessionData?.session?.token;
-      if (!token) return [];
-      return await getVouchers(token);
-    },
-    enabled: !!sessionData?.session?.token,
-  });
+  const { vouchersData: data, isVouchersDataLoading } = useGetVouchers(token);
 
-  const { mutate: doDelete, isPending: isDeleting } = useMutation({
-    mutationFn: async (id: string) => {
-      const token = sessionData?.session?.token;
-      if (!token) throw new Error("Unauthorized");
-      return await deleteVoucher(id, token);
-    },
+  const { mutate: doDelete, isPending: isDeleting } = useDeleteVoucher({
+    accessToken: token,
     onSuccess: () => {
       toast.success("Voucher berhasil dihapus");
       revalidate(["get-vouchers"]);
@@ -39,6 +37,7 @@ export default function VoucherTable() {
       toast.error((error as Error)?.message || "Gagal menghapus voucher");
     },
   });
+
 
   const ActionRenderer = (params: ICellRendererParams) => {
     return (
@@ -61,8 +60,27 @@ export default function VoucherTable() {
   return (
     <div className="size-full">
       <AgTable
-        rowData={data || []}
+        rowData={data?.results || []}
         columnDefs={VoucherColumn}
+        loading={isVouchersDataLoading}
+        loadingOverlayComponent={()=>(
+          <div className="flex flex-1 flex-col items-center justify-center">
+            <BeatLoader color="var(--primary)" />
+          </div>
+        )}
+        noRowsOverlayComponent={()=>(
+          <Empty>
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <Folder />
+              </EmptyMedia>
+              <EmptyTitle>Belum Ada Kode Voucher</EmptyTitle>
+              <EmptyDescription>
+                Belum ada data kode voucher yang tersedia saat ini.
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        )}
         gridOptions={{
           components: {
             actionRenderer: ActionRenderer,

@@ -9,33 +9,33 @@ import TestimonialsSection from "./_components/testimonials-section";
 import CtaSection from "./_components/cta-section";
 import LandingFooter from "./_components/landing-footer";
 import PricingSection from "./_components/pricing-section";
-import { getPublicPricingData } from "@/modules/subscription-plan/actions/get-public-pricing";
+import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
+import { getQueryClient } from "@/configs/tanstack-query";
+import { queryPublicPricing } from "@/app/admin/subscriptions/plans/_queries/public-pricing-query";
+import { queryActiveSubscription } from "@/app/admin/subscriptions/plans/_queries/active-subscription";
+
+async function ServerSideData() {
+  const session = await getSession();
+  const token = session?.session?.token || "";
+
+  const queryClient = getQueryClient();
+  await queryClient.prefetchQuery(queryPublicPricing());
+  
+  if (token) {
+    await queryClient.prefetchQuery(queryActiveSubscription(token));
+  }
+
+  const dehydratedState = dehydrate(queryClient);
+
+  return (
+    <HydrationBoundary state={dehydratedState}>
+      <PricingSection compact={false} />
+    </HydrationBoundary>
+  );
+}
 
 export default async function Home() {
   const session = await getSession();
-  const pricingData = await getPublicPricingData();
-
-  let activeSub = null;
-  if (session?.user) {
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
-    try {
-      const mySubRes = await fetch(`${API_URL}/api/v1/main/subscriptions/my-active`, {
-        headers: {
-          "Authorization": `Bearer ${session.session.token}`,
-          "Content-Type": "application/json"
-        },
-        cache: "no-store"
-      });
-      if (mySubRes.ok) {
-        const subData = await mySubRes.json();
-        if (subData?.data) {
-          activeSub = subData.data;
-        }
-      }
-    } catch (e) {
-      console.error("Failed to fetch active subscription for pricing section", e);
-    }
-  }
 
   return (
     <main className="relative">
@@ -46,7 +46,7 @@ export default async function Home() {
       <ProductShowcase />
       <HowItWorksSection />
       <TestimonialsSection />
-      <PricingSection pricingData={pricingData} user={session?.user || null} activeSub={activeSub} />
+      <ServerSideData />
       <CtaSection />
       <LandingFooter />
     </main>

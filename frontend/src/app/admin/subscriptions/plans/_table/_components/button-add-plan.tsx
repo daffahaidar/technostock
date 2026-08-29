@@ -10,7 +10,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import AddSubscriptionPlanForm from "./add-subscription-plan";
+import AddSubscriptionPlanForm from "./add-plan";
 
 export function ButtonAddSubscriptionPlan() {
   const [open, setOpen] = useState(false);

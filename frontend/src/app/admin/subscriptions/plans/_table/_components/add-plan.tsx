@@ -1,14 +1,15 @@
 "use client";
 
 import z from "zod";
-import { subscriptionPlanSchema } from "../schema/subscription-plan";
+import { subscriptionPlanSchema } from "../../_schemas/plan";
 import { useForm, type Resolver, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useGetAccountTypes } from "../../../account-types/_queries/account-type";
+import { useGetPlanSubscription } from "../../_queries/plan";
+import { useCreatePlan } from "../../_mutations/plan";
 import { useRevalidateQuery } from "@/hooks/use-revalidate";
 import { toast } from "sonner";
-import { createSubscriptionPlan, getSubscriptionPlans } from "../actions/subscription-plan-actions";
-import { getAccountTypes } from "@/modules/account-type/actions/account-type-actions";
+
 import { Field, FieldGroup } from "@/components/ui/field";
 import {
   Form,
@@ -37,25 +38,10 @@ export default function AddSubscriptionPlanForm({ onSuccessSubmit }: { onSuccess
   const revalidate = useRevalidateQuery();
   const { data: sessionData } = authClient.useSession();
   
-  const { data: dataAccountType, isLoading: isLoadingAccountTypes } = useQuery({
-    queryKey: ["get-account-types", sessionData?.session?.token],
-    queryFn: async () => {
-      const token = sessionData?.session?.token;
-      if (!token) return { results: [] };
-      return (await getAccountTypes(token)) as { results: { id: string; name: string }[] };
-    },
-    enabled: !!sessionData?.session?.token,
-  });
+  const token = sessionData?.session?.token || "";
+  const { accountTypesData: dataAccountType, isAccountTypesDataLoading: isLoadingAccountTypes } = useGetAccountTypes(token);
 
-  const { data: dataPlans } = useQuery({
-    queryKey: ["get-subscription-plans", sessionData?.session?.token],
-    queryFn: async () => {
-      const token = sessionData?.session?.token;
-      if (!token) return { results: [] };
-      return (await getSubscriptionPlans(token)) as { results: { account_type_id: string; duration_months: number }[] };
-    },
-    enabled: !!sessionData?.session?.token,
-  });
+  const { planSubscriptionData: dataPlans } = useGetPlanSubscription(token);
 
   const form = useForm<z.infer<typeof subscriptionPlanSchema>>({
     resolver: zodResolver(subscriptionPlanSchema) as unknown as Resolver<z.infer<typeof subscriptionPlanSchema>>,
@@ -71,14 +57,10 @@ export default function AddSubscriptionPlanForm({ onSuccessSubmit }: { onSuccess
   // useWatch (bukan form.watch) agar React Compiler dapat memoize komponen ini.
   const selectedAccountTypeId = useWatch({ control: form.control, name: "account_type_id" });
   const durationMonths = useWatch({ control: form.control, name: "duration_months" });
-  const hasLifetimePlan = dataPlans?.results?.some((plan) => plan.account_type_id === selectedAccountTypeId && plan.duration_months === 0) || false;
+  const hasLifetimePlan = dataPlans?.results?.some((plan: { account_type_id: string; duration_months: number }) => plan.account_type_id === selectedAccountTypeId && plan.duration_months === 0) || false;
 
-  const { mutate, isPending } = useMutation({
-    mutationFn: async (values: z.infer<typeof subscriptionPlanSchema>) => {
-      const token = sessionData?.session?.token;
-      if (!token) throw new Error("Unauthorized");
-      return await createSubscriptionPlan(values, token);
-    },
+  const { mutate, isPending } = useCreatePlan({
+    accessToken: token,
     onSuccess: () => {
       toast.success("Subscription Plan created successfully");
       form.reset();
