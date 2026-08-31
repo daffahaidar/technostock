@@ -1,5 +1,14 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { LayoutDashboard, Package, Tag, Layers, MessageSquare, Users, Ticket } from "lucide-react";
+import {
+  LayoutDashboard,
+  Package,
+  Tag,
+  Layers,
+  MessageSquare,
+  Users,
+  Ticket,
+  Wallet,
+} from "lucide-react";
 
 const managementMenu = [
   {
@@ -42,6 +51,7 @@ const managementMenu = [
       },
     ],
   },
+
   {
     group: "Member Management",
     menus: [
@@ -49,6 +59,17 @@ const managementMenu = [
         title: "Member",
         url: "/management/members",
         icon: Users,
+        isActive: false,
+      },
+    ],
+  },
+  {
+    group: "Financial Management",
+    menus: [
+      {
+        title: "Financial Reports",
+        url: "/management/finances/reports",
+        icon: Wallet,
         isActive: false,
       },
     ],

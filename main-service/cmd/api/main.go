@@ -62,6 +62,9 @@ func main() {
 	voucherUseCase := usecases.NewVoucherUseCase(db)
 	voucherHandler := handlers.NewVoucherHandler(voucherUseCase)
 
+	financeUseCase := usecases.NewFinanceUseCase(db)
+	financeHandler := handlers.NewFinanceHandler(financeUseCase)
+
 	app := fiber.New()
 
 	app.Use(logger.New())
@@ -70,8 +73,7 @@ func main() {
 
 	api := app.Group("/api/v1")
 	routes.SetupSubscriptionRoutes(api, accountTypeHandler, subscriptionPlanHandler, userSubscriptionHandler, memberHandler, voucherHandler, authClient)
-
-
+	routes.SetupFinanceRoutes(api, financeHandler, authClient)
 	log.Printf("Server listening on port %s", cfg.Port)
 	if err := app.Listen(":" + cfg.Port); err != nil {
 		log.Fatalf("Error starting server: %v", err)

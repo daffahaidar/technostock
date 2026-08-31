@@ -18,6 +18,7 @@ export const ENDPOINT = {
     SUBSCRIPTION_MY_ACTIVE: `${MAIN_PREFIX}/subscriptions/my-active`,
     TRANSACTION_SYNC: (orderId: string) =>
       `${MAIN_PREFIX}/subscriptions/transactions/${encodeURIComponent(orderId)}/sync`,
+    FINANCE_BALANCE: `${MAIN_PREFIX}/finances/balance`,
   },
   AUTH_SERVICE: {
     USERS: `/api/v1/users`,
