@@ -215,6 +215,9 @@ Aturan lain:
   data. Ingat efek lintas fitur: CRUD account type & plan → `["get-public-pricing"]`;
   promote/extend/revoke member & pembayaran sukses → `["get-subscription-plans"]`
   + `["get-public-pricing"]` (kuota ikut berubah).
+- Logout wajib memanggil `useClearQueryCache()` dari hook yang sama **sebelum**
+  redirect — cache TanStack hidup di browser dan akan terbawa ke sesi user
+  berikutnya kalau tidak dibuang.
 - Toast: `sonner`. Konfirmasi hapus: `confirm()` bawaan browser.
 - Pakai token warna `gold-*` dari `globals.css`, bukan hex mentah baru.
 

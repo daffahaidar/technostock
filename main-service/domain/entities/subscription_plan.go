@@ -10,7 +10,9 @@ import (
 type SubscriptionPlan struct {
 	ID             uuid.UUID      `gorm:"type:uuid;default:gen_random_uuid();primaryKey" json:"id"`
 	AccountTypeID  uuid.UUID      `gorm:"type:uuid;not null" json:"account_type_id"`
-	AccountType    AccountType    `gorm:"foreignKey:AccountTypeID" json:"account_type,omitempty"`
+	// Pointer supaya `omitempty` benar-benar bekerja: tanpa Preload field ini
+	// nil dan tidak ikut dikirim, bukan objek kosong.
+	AccountType    *AccountType   `gorm:"foreignKey:AccountTypeID" json:"account_type,omitempty"`
 	Name           string         `gorm:"type:varchar(255);not null" json:"name"`
 	Description    string         `gorm:"type:text" json:"description"`
 	DurationMonths int            `gorm:"type:int;not null" json:"duration_months"` // 0 means lifetime

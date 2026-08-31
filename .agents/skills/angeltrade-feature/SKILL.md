@@ -38,7 +38,8 @@ frontend, plus route gateway bila dipanggil browser.
    `grpc-service/src/gateway.rs`. Prefix yang sudah ada: `/api/v1/auth`,
    `/api/v1/users`, `/api/v1/main`, `/ws`. Endpoint `main-service` otomatis
    aman bila dipanggil sebagai `/api/v1/main/<path>`.
-5. **Frontend:** modul + halaman + entri menu.
+5. **Frontend:** folder route-scoped (`_queries`/`_mutations`/`_schemas`/`_table`)
+   + halaman + entri menu. Tidak ada `src/modules/`.
 6. **Dokumen:** perbarui `docs/api.md`, `docs/database.md`, dan `docs/PRD.md`
    bila kontrak/skema/status berubah.
 
@@ -61,7 +62,7 @@ frontend, plus route gateway bila dipanggil browser.
 - [ ] Otorisasi ada di backend, bukan hanya frontend
 - [ ] Raw SQL memakai prefix schema (`main.`, `users.`, `message.`)
 - [ ] Endpoint browser dapat ditembus lewat gateway `:8080`
-- [ ] Compile bersih: `cargo check` / `go vet ./... && go build ./...` / `npx tsc --noEmit && npm run lint`
+- [ ] Compile bersih: `cargo check` / `go vet ./... && go build ./...` / `npx tsc --noEmit && npm run lint && npm run build`
 - [ ] Makro `sqlx::query!` di `realtime-service` berubah → `cargo sqlx prepare` + commit `.sqlx/*.json`
 - [ ] Kolom baru pada `User` → ditambahkan juga ke `USER_COLUMNS` dan semua tempat `User { ... }` dikonstruksi
 - [ ] RPC baru → `main-service/pb/*.go` diregenerate dan di-commit

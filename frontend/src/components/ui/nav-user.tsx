@@ -26,11 +26,13 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { authClient } from "@/app/auth/sign-in/_handlers/client";
+import { useClearQueryCache } from "@/hooks/use-revalidate";
 import { useRouter } from "next/navigation";
 
 export function NavUser() {
   const { isMobile } = useSidebar();
   const router = useRouter();
+  const clearQueryCache = useClearQueryCache();
   const { data: session, isPending } = authClient.useSession();
 
   const user = session?.user;
@@ -47,6 +49,7 @@ export function NavUser() {
 
   async function handleLogout() {
     await authClient.signOut();
+    clearQueryCache();
     router.push("/auth/sign-in");
     router.refresh();
   }

@@ -9,3 +9,12 @@ export const useRevalidateQuery = () => {
     });
   };
 };
+
+// Dipakai saat logout: seluruh cache dibuang, bukan cuma di-invalidate, supaya
+// data user sebelumnya tidak sempat terlihat oleh user berikutnya di browser
+// yang sama.
+export const useClearQueryCache = () => {
+  const queryClient = useQueryClient();
+
+  return () => queryClient.clear();
+};

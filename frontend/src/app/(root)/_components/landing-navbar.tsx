@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { logout } from "@/app/auth/sign-in/_handlers/server";
+import { useClearQueryCache } from "@/hooks/use-revalidate";
 
 const navLinks = [
   { label: "Services", href: "#services" },
@@ -38,6 +39,7 @@ const getDashboardUrl = (role: string) => {
 export default function LandingNavbar({ user }: { user?: { name: string; role: string; avatar_url?: string | null } | null }) {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const clearQueryCache = useClearQueryCache();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 40);
@@ -110,6 +112,9 @@ export default function LandingNavbar({ user }: { user?: { name: string; role: s
                   <DropdownMenuSeparator className="bg-white/10" />
                   <DropdownMenuItem 
                     onClick={async () => {
+                      // logout() diakhiri redirect() di server, jadi cache
+                      // dibersihkan lebih dulu.
+                      clearQueryCache();
                       await logout();
                     }}
                     className="hover:bg-red-500/20 focus:bg-red-500/20 text-red-400 focus:text-red-400 cursor-pointer flex items-center gap-2"
@@ -189,6 +194,7 @@ export default function LandingNavbar({ user }: { user?: { name: string; role: s
                   <DropdownMenuItem 
                     onClick={async () => {
                       setMenuOpen(false);
+                      clearQueryCache();
                       await logout();
                     }}
                     className="hover:bg-red-500/20 focus:bg-red-500/20 text-red-400 focus:text-red-400 cursor-pointer flex items-center gap-2"

@@ -14,8 +14,12 @@ func TestParseBenefits(t *testing.T) {
 		`[]`:                               {},
 		``:                                 {},
 		`null`:                             {},
-		// Baris lama sebelum benefits disimpan sebagai JSON.
-		`Sinyal harian, Grup Discord`: {"Sinyal harian", "Grup Discord"},
+		// Baris lama: string JSON berisi daftar dipisah koma.
+		`"Sinyal harian, Grup Discord"`: {"Sinyal harian", "Grup Discord"},
+		`""`:                            {},
+		// Bukan JSON sama sekali — tidak mungkin ada di kolom jsonb, tapi
+		// jangan sampai panik kalau tipe kolomnya berubah.
+		`Sinyal harian, Grup Discord`: {},
 	}
 
 	for raw, want := range cases {

@@ -92,7 +92,7 @@ func (u *MemberUseCase) GetMembers() ([]MemberResponse, error) {
 			member.SubscriptionStatus = string(sub.Status)
 			if sub.SubscriptionPlan.ID != uuid.Nil {
 				member.SubscriptionPlanName = sub.SubscriptionPlan.Name
-				if sub.SubscriptionPlan.AccountType.ID != uuid.Nil {
+				if sub.SubscriptionPlan.AccountType != nil {
 					member.AccountTypeName = sub.SubscriptionPlan.AccountType.Name
 				}
 			}

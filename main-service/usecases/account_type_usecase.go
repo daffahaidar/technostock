@@ -119,8 +119,15 @@ func parseBenefits(raw string) []string {
 		return parsed
 	}
 
+	// Kolomnya jsonb, jadi teks mentah tidak mungkin tersimpan — tapi baris lama
+	// bisa berisi *string* JSON berisi daftar dipisah koma ("a, b").
+	var legacy string
+	if err := json.Unmarshal([]byte(raw), &legacy); err != nil {
+		return []string{}
+	}
+
 	benefits := []string{}
-	for _, part := range strings.Split(raw, ",") {
+	for _, part := range strings.Split(legacy, ",") {
 		if trimmed := strings.TrimSpace(part); trimmed != "" {
 			benefits = append(benefits, trimmed)
 		}
