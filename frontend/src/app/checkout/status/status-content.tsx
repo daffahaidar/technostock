@@ -6,10 +6,9 @@ import { Button } from "@/components/ui/button";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { authClient } from "@/app/auth/sign-in/_handlers/client";
-import { ENDPOINT } from "@/endpoint";
+import { useRevalidateQuery } from "@/hooks/use-revalidate";
+import { useSyncTransaction } from "../_mutations/transaction";
 import { clearAccessToken } from "./actions";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
 export default function StatusContent() {
   const searchParams = useSearchParams();
@@ -19,52 +18,40 @@ export default function StatusContent() {
   const { data: sessionData } = authClient.useSession();
   const token = sessionData?.session.token;
 
+  const revalidate = useRevalidateQuery();
   const [realStatus, setRealStatus] = useState<string | null>(null);
-  const [isSyncing, setIsSyncing] = useState<boolean>(true);
+  const [isSynced, setIsSynced] = useState<boolean>(false);
+
+  const { mutate: syncTransaction } = useSyncTransaction({
+    onSuccess: async (data) => {
+      const status = (data?.data as { status?: string } | undefined)?.status;
+      setRealStatus(status || urlTransactionStatus);
+      setIsSynced(true);
+
+      if (status === "capture" || status === "settlement") {
+        // Langganan baru aktif dan kuota plan berkurang — buang cache lamanya
+        // supaya dashboard & halaman pricing tidak menampilkan data sebelum bayar.
+        revalidate(["get-active-subscription"], ["get-public-pricing"]);
+        // Force session refresh by deleting access_token
+        // proxy.ts (middleware) will use refresh_token to fetch new token with updated role
+        await clearAccessToken();
+      }
+    },
+    onError: () => {
+      setRealStatus(urlTransactionStatus);
+      setIsSynced(true);
+    },
+    accessToken: token || "",
+  });
 
   useEffect(() => {
-    // Jika tidak ada orderId, tidak perlu sinkronisasi
-    if (!orderId) {
-      setIsSyncing(false);
-      return;
-    }
-    
-    // Tunggu sampai token tersedia
-    if (!token) return;
-
-    const syncTransaction = async () => {
-      try {
-        const res = await fetch(`${API_URL}${ENDPOINT.MAIN_SERVICE.TRANSACTION_SYNC(orderId)}`, {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${token}`
-          }
-        });
-        const data = await res.json();
-        if (data && data.data && data.data.status) {
-          const fetchedStatus = data.data.status;
-          setRealStatus(fetchedStatus);
-          
-          if (fetchedStatus === "capture" || fetchedStatus === "settlement") {
-            // Force session refresh by deleting access_token
-            // proxy.ts (middleware) will use refresh_token to fetch new token with updated role
-            await clearAccessToken();
-          }
-        } else {
-          setRealStatus(urlTransactionStatus);
-        }
-      } catch (error) {
-        console.error("Failed to sync transaction:", error);
-        setRealStatus(urlTransactionStatus);
-      } finally {
-        setIsSyncing(false);
-      }
-    };
-
-    syncTransaction();
-  }, [orderId, token, urlTransactionStatus]);
+    // Tunggu sampai token tersedia; tanpa orderId tidak ada yang disinkronkan.
+    if (!orderId || !token) return;
+    syncTransaction(orderId);
+  }, [orderId, token, syncTransaction]);
 
   const finalStatus = realStatus || urlTransactionStatus;
+  const isSyncing = !!orderId && !isSynced;
 
   if (isSyncing) {
     return (

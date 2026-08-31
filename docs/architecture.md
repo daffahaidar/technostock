@@ -222,9 +222,9 @@ angeltrade/
 │
 ├── frontend/                 # Next.js 16
 │   ├── src/app/              # App Router: (root), auth, admin, maintainer, forum, user, checkout, api
-│   ├── src/modules/          # Fitur per domain: account-type, subscription-plan, member, voucher
+│   │                         # Fitur route-scoped: _queries/, _mutations/, _schemas/, _table/
 │   ├── src/proxy.ts          # Proteksi route berbasis role
-│   ├── src/libs/axios.ts     # Instance messageBackend (chat)
+│   ├── src/libs/axios.ts     # Instance gatewayAPI (:8080) & messageBackend (chat)
 │   └── Dockerfile.dev / Dockerfile.prod
 │
 ├── grpc-service/             # API Gateway + gRPC UserService

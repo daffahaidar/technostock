@@ -7,7 +7,6 @@ import { toast } from "sonner";
 import { Trash } from "lucide-react";
 
 import { authClient } from "@/app/auth/sign-in/_handlers/client";
-import { revalidateServerTag } from "@/actions/revalidate";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -29,7 +28,7 @@ const ActionsRenderer = (props: ICellRendererParams) => {
     accessToken: token,
     onSuccess: () => {
       toast.success("Account type deleted successfully");
-      revalidate(["get-account-types"]);
+      revalidate(["get-account-types"], ["get-public-pricing"]);
     },
     onError: (error: unknown) => {
       if ((error as Error).message !== "Cancelled") {
@@ -83,10 +82,9 @@ const RecommendedRenderer = (props: ICellRendererParams) => {
 
   const { mutate, isPending } = useUpdateAccountType({
     accessToken: token,
-    onSuccess: async () => {
+    onSuccess: () => {
       toast.success("Account type recommendation updated");
-      revalidate(["get-account-types"]);
-      await revalidateServerTag("public-account-types");
+      revalidate(["get-account-types"], ["get-public-pricing"]);
     },
     onError: (error: unknown) => {
       toast.error((error as Error)?.message || "Failed to update recommendation");

@@ -1,6 +1,8 @@
 import { useMutation } from "@tanstack/react-query";
 import { z } from "zod";
 import { signUpSchema } from "../schema";
+import { gatewayAPI, getErrorMessage } from "@/libs/axios";
+import { ENDPOINT } from "@/endpoint";
 
 
 export const useSignUp = ({
@@ -39,24 +41,21 @@ export const useSignUp = ({
         }
 
         // Call the API Gateway for Register
-        const res = await fetch(`${API_URL}/api/v1/auth/sign-up`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name: body.values.name,
-            email: body.values.email,
-            password: body.values.password,
-          }),
-        });
-
-        if (!res.ok) {
-          const errorData = await res.json().catch(() => null);
-          throw new Error(errorData?.message || errorData?.error || "Gagal melakukan registrasi");
+        try {
+          const { data } = await gatewayAPI.post(
+            `${ENDPOINT.AUTH_SERVICE.SIGN_UP}`,
+            {
+              name: body.values.name,
+              email: body.values.email,
+              password: body.values.password,
+            },
+          );
+          return data;
+        } catch (error) {
+          throw new Error(
+            getErrorMessage(error, "Gagal melakukan registrasi"),
+          );
         }
-
-        return await res.json();
       } else {
         // OAuth logic (reuse same as sign in)
         let targetUrl = `${API_URL}/api/v1/auth/${body.provider}`;

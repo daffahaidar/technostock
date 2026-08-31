@@ -1,7 +1,10 @@
 package usecases
 
 import (
+	"encoding/json"
 	"errors"
+	"strings"
+
 	"main-service/domain/entities"
 
 	"github.com/google/uuid"
@@ -55,6 +58,74 @@ func (u *AccountTypeUseCase) GetAllAccountTypes() ([]entities.AccountType, error
 		return nil, err
 	}
 	return accountTypes, nil
+}
+
+// PricingItem menggabungkan satu account type dengan plan-plannya untuk halaman
+// pricing publik. Benefits di sini sudah berupa array (di DB tersimpan sebagai
+// string JSON), dan field ini menimpa Benefits milik AccountType saat di-encode.
+type PricingItem struct {
+	entities.AccountType
+	Benefits []string                    `json:"benefits"`
+	Plans    []entities.SubscriptionPlan `json:"plans"`
+}
+
+// GetPublicPricing mengembalikan seluruh account type beserta plan-nya dalam satu
+// response, supaya frontend cukup satu kali request untuk merender pricing.
+func (u *AccountTypeUseCase) GetPublicPricing() ([]PricingItem, error) {
+	var accountTypes []entities.AccountType
+	if err := u.db.Order("created_at asc").Find(&accountTypes).Error; err != nil {
+		return nil, err
+	}
+
+	var plans []entities.SubscriptionPlan
+	if err := u.db.
+		Order("CASE WHEN duration_months = 0 THEN 9999 ELSE duration_months END ASC").
+		Find(&plans).Error; err != nil {
+		return nil, err
+	}
+
+	plansByAccountType := make(map[uuid.UUID][]entities.SubscriptionPlan, len(accountTypes))
+	for _, plan := range plans {
+		plansByAccountType[plan.AccountTypeID] = append(plansByAccountType[plan.AccountTypeID], plan)
+	}
+
+	pricing := make([]PricingItem, 0, len(accountTypes))
+	for _, accountType := range accountTypes {
+		item := PricingItem{
+			AccountType: accountType,
+			Benefits:    parseBenefits(accountType.Benefits),
+			Plans:       plansByAccountType[accountType.ID],
+		}
+		if item.Plans == nil {
+			item.Plans = []entities.SubscriptionPlan{}
+		}
+		pricing = append(pricing, item)
+	}
+	return pricing, nil
+}
+
+// parseBenefits membaca kolom benefits yang tersimpan sebagai array JSON, dengan
+// fallback ke teks dipisah koma untuk baris lama.
+func parseBenefits(raw string) []string {
+	if strings.TrimSpace(raw) == "" {
+		return []string{}
+	}
+
+	var parsed []string
+	if err := json.Unmarshal([]byte(raw), &parsed); err == nil {
+		if parsed == nil {
+			return []string{}
+		}
+		return parsed
+	}
+
+	benefits := []string{}
+	for _, part := range strings.Split(raw, ",") {
+		if trimmed := strings.TrimSpace(part); trimmed != "" {
+			benefits = append(benefits, trimmed)
+		}
+	}
+	return benefits
 }
 
 func (u *AccountTypeUseCase) UpdateAccountType(accountType *entities.AccountType) error {

@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { processCheckout, checkVoucher } from "./action";
 import { toast } from "sonner";
 import { CheckCircle2, ShieldCheck, Tag, X } from "lucide-react";
+import { authClient } from "@/app/auth/sign-in/_handlers/client";
+import { getErrorMessage } from "@/libs/axios";
+import { useCheckVoucher, useProcessCheckout } from "./_mutations/checkout";
 
 export default function CheckoutClient({ 
   planDetails, 
@@ -17,14 +19,52 @@ export default function CheckoutClient({
   initialDiscordUsername?: string | null;
   hasActiveSubscription?: boolean;
 }) {
-  const [isLoading, setIsLoading] = useState(false);
   const [discordUsername, setDiscordUsername] = useState("");
   const [discordUsernameError, setDiscordUsernameError] = useState("");
 
   const [voucherCode, setVoucherCode] = useState("");
   const [appliedVoucher, setAppliedVoucher] = useState<{ discount_percentage: number, max_discount_amount: number, code: string } | null>(null);
-  const [isCheckingVoucher, setIsCheckingVoucher] = useState(false);
   const [voucherError, setVoucherError] = useState("");
+
+  const { data: sessionData } = authClient.useSession();
+  const token = sessionData?.session?.token || "";
+
+  const { mutate: processCheckout, isPending: isProcessCheckoutPending } =
+    useProcessCheckout({
+      onSuccess: (data) => {
+        const redirectUrl = data?.redirect_url as string | undefined;
+        if (redirectUrl) {
+          window.location.href = redirectUrl;
+          return;
+        }
+        toast.error("Gagal mendapatkan link pembayaran");
+      },
+      onError: (error) => {
+        toast.error(
+          getErrorMessage(error, "Terjadi kesalahan saat memproses pembayaran"),
+        );
+      },
+      accessToken: token,
+    });
+
+  const { mutate: checkVoucher, isPending: isCheckVoucherPending } =
+    useCheckVoucher({
+      onSuccess: (data) => {
+        setAppliedVoucher(
+          data as unknown as {
+            discount_percentage: number;
+            max_discount_amount: number;
+            code: string;
+          },
+        );
+        toast.success("Voucher berhasil digunakan");
+      },
+      onError: (error) => {
+        setVoucherError(getErrorMessage(error, "Gagal mengecek voucher."));
+        setAppliedVoucher(null);
+      },
+      accessToken: token,
+    });
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("id-ID", {
@@ -34,51 +74,31 @@ export default function CheckoutClient({
     }).format(price);
   };
 
-  const handleCheckout = async () => {
+  const handleCheckout = () => {
     let finalDiscordUsername = initialDiscordUsername || discordUsername;
-    
+
     if (!finalDiscordUsername || finalDiscordUsername.trim() === "") {
       setDiscordUsernameError("Discord Username wajib diisi");
       return;
     }
-    
+
     // Remove @ if user added it
     if (finalDiscordUsername.startsWith("@")) {
       finalDiscordUsername = finalDiscordUsername.substring(1);
     }
-    
-    try {
-      setIsLoading(true);
-      const returnUrl = window.location.origin + "/checkout/status";
-      
-      const result = await processCheckout(planId, returnUrl, finalDiscordUsername, appliedVoucher?.code);
-      
-      if (result?.redirect_url) {
-        window.location.href = result.redirect_url;
-      } else {
-        toast.error("Gagal mendapatkan link pembayaran");
-        setIsLoading(false);
-      }
-    } catch (error) {
-      toast.error((error as Error).message || "Terjadi kesalahan saat memproses pembayaran");
-      setIsLoading(false);
-    }
+
+    processCheckout({
+      plan_id: planId,
+      return_url: window.location.origin + "/checkout/status",
+      discord_username: finalDiscordUsername,
+      voucher_code: appliedVoucher?.code,
+    });
   };
 
-  const handleApplyVoucher = async () => {
+  const handleApplyVoucher = () => {
     if (!voucherCode.trim()) return;
-    try {
-      setIsCheckingVoucher(true);
-      setVoucherError("");
-      const result = await checkVoucher(voucherCode);
-      setAppliedVoucher(result);
-      toast.success("Voucher berhasil digunakan");
-    } catch (err) {
-      setVoucherError((err as Error).message);
-      setAppliedVoucher(null);
-    } finally {
-      setIsCheckingVoucher(false);
-    }
+    setVoucherError("");
+    checkVoucher(voucherCode);
   };
 
   let discountAmount = 0;
@@ -215,12 +235,12 @@ export default function CheckoutClient({
                         placeholder="Contoh: PROMO2026"
                         className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all"
                       />
-                      <Button 
+                      <Button
                         onClick={handleApplyVoucher}
-                        disabled={isCheckingVoucher || !voucherCode}
+                        disabled={isCheckVoucherPending || !voucherCode}
                         className="h-12 px-6 rounded-xl bg-white/10 hover:bg-white/20 text-white"
                       >
-                        {isCheckingVoucher ? "Cek..." : "Gunakan"}
+                        {isCheckVoucherPending ? "Cek..." : "Gunakan"}
                       </Button>
                     </div>
                     {voucherError && (
@@ -233,9 +253,9 @@ export default function CheckoutClient({
               <Button 
                 className="w-full h-12 rounded-xl text-base font-bold bg-[#D4AF37] hover:bg-[#F3CA52] text-black shadow-[0_0_15px_rgba(212,175,55,0.4)] transition-all"
                 onClick={handleCheckout}
-                disabled={isLoading}
+                disabled={isProcessCheckoutPending}
               >
-                {isLoading ? "Memproses..." : "Konfirmasi Pembayaran"}
+                {isProcessCheckoutPending ? "Memproses..." : "Konfirmasi Pembayaran"}
               </Button>
             </>
           )}

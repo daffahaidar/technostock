@@ -52,6 +52,15 @@ func (h *AccountTypeHandler) GetAllAccountTypes(c fiber.Ctx) error {
 	return c.JSON(fiber.Map{"results": accountTypes})
 }
 
+// GetPublicPricing: account type + plan-nya dalam satu response untuk halaman pricing.
+func (h *AccountTypeHandler) GetPublicPricing(c fiber.Ctx) error {
+	pricing, err := h.usecase.GetPublicPricing()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+	return c.JSON(fiber.Map{"results": pricing})
+}
+
 func (h *AccountTypeHandler) UpdateAccountType(c fiber.Ctx) error {
 	idParam := c.Params("id")
 	id, err := uuid.Parse(idParam)

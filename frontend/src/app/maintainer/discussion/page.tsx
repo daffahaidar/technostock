@@ -15,10 +15,13 @@ import { useChatWebSocket } from "./_queries/chat-websocket";
 import { authClient } from "@/app/auth/sign-in/_handlers/client";
 import BubbleChat from "./_components/bubble-chat";
 import { useGetChatHistory } from "./_queries/chat-history";
+import { useMarkChatRead } from "./_mutations/chat";
+import { useRevalidateQuery } from "@/hooks/use-revalidate";
 import { useInView } from "react-intersection-observer";
 
 export default function DiscussionPage() {
   const { data } = authClient.useSession();
+  const revalidate = useRevalidateQuery();
   const { ref, inView } = useInView();
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const { isMounted } = useMounted();
@@ -28,6 +31,10 @@ export default function DiscussionPage() {
     useState<MessageWithSender | null>(null);
   const { chatHistoryData, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useGetChatHistory(data?.session.token);
+  const { mutate: markChatRead } = useMarkChatRead({
+    onSuccess: () => revalidate(["get-chat-unread-count"]),
+    accessToken: data?.session.token,
+  });
 
   const {
     messages,
@@ -151,17 +158,9 @@ export default function DiscussionPage() {
 
   useEffect(() => {
     if (data?.session.token) {
-      const apiUrl = (process.env.NEXT_PUBLIC_WS_API_URL || "ws://localhost:8000")
-        .replace("ws://", "http://").replace("wss://", "https://");
-        
-      fetch(`${apiUrl}/api/v1/chat/read`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${data.session.token}`,
-        },
-      }).catch(console.error);
+      markChatRead();
     }
-  }, [data?.session.token]);
+  }, [data?.session.token, markChatRead]);
 
   const handleSendMessage = (content: string, imageUrl?: string | null) => {
     flushSync(() => {

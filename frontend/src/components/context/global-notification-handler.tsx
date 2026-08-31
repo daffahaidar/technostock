@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { useNotificationStore } from "@/store/useNotificationStore";
 import { authClient } from "@/app/auth/sign-in/_handlers/client";
+import { useGetChatUnreadCount } from "@/app/maintainer/discussion/_queries/unread-count";
 
 export function GlobalNotificationHandler() {
   const { data } = authClient.useSession();
@@ -12,7 +13,19 @@ export function GlobalNotificationHandler() {
   const pathname = usePathname();
   const wsRef = useRef<WebSocket | null>(null);
 
+  const { chatUnreadCountData } = useGetChatUnreadCount(
+    data?.session?.token,
+    !!pathname?.startsWith("/maintainer"),
+  );
 
+  // Sinkronkan badge dengan jumlah unread dari server, kecuali saat user sedang
+  // membuka halaman diskusi.
+  useEffect(() => {
+    const count = chatUnreadCountData?.results?.count;
+    if (typeof count !== "number") return;
+    if (pathname?.startsWith("/maintainer/discussion")) return;
+    useNotificationStore.setState({ unreadCount: count });
+  }, [chatUnreadCountData, pathname]);
 
   useEffect(() => {
     if (!pathname?.startsWith("/maintainer")) return;
@@ -23,39 +36,7 @@ export function GlobalNotificationHandler() {
     // Use the backend WebSocket endpoint mapped globally (defaulting group_id=general assumption)
     // process.env.NEXT_PUBLIC_WS_API_URL is typically provided in .env
     const apiUrl = process.env.NEXT_PUBLIC_WS_API_URL || "ws://localhost:8000";
-    const httpApiUrl = apiUrl.replace("ws://", "http://").replace("wss://", "https://");
     const wsUrl = `${apiUrl}/api/v1/chat/ws?token=${token}&group_id=general`;
-
-    // Fetch initial unread count from the new Read Receipts Backend implementation
-    fetch(`${httpApiUrl}/api/v1/chat/unread-count`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then(async (res) => {
-        if (!res.ok) {
-          // Fail silently to avoid Next.js dev overlay catching console.error
-          return null;
-        }
-        const text = await res.text();
-        return text ? JSON.parse(text) : null;
-      })
-      .then((data) => {
-        if (data && data?.meta?.status === "success" && typeof data?.results?.count === "number") {
-          // If we are currently NOT on the discussion page, set the loaded unread count.
-          if (!window.location.pathname.startsWith("/maintainer/discussion")) {
-            // Note: we might want to just set it to the count exactly.
-            // Since `useNotificationStore` only has increment and reset, we'll augment it!
-            // Wait, we need a setUnread method in the store. Let's just do it directly if needed,
-            // or we'll have to useNotificationStore.setState({ unreadCount: count });
-            useNotificationStore.setState({ unreadCount: data.results.count });
-          }
-        }
-      })
-      .catch(() => {
-        // Silently ignore connection errors when the chat service is not running
-      });
 
     const ws = new WebSocket(wsUrl);
 

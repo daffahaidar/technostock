@@ -19,6 +19,19 @@ export function queryPlanSubscription(accessToken: string) {
   };
 }
 
+export function queryPublicPlanDetail(planId: string) {
+  return {
+    queryKey: ["get-public-plan-detail", planId],
+    queryFn: async () => {
+      const { data } = await gatewayAPI.get(
+        `${ENDPOINT.MAIN_SERVICE.PUBLIC_SUBSCRIPTION_PLAN_DETAIL(planId)}`,
+      );
+      return data;
+    },
+    enabled: !!planId,
+  };
+}
+
 export const useGetPlanSubscription = (accessToken: string) => {
   const {
     data: planSubscriptionData,

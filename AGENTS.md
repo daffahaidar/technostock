@@ -173,39 +173,50 @@ layer, DTO package, atau library validasi.
 
 ### Frontend (`frontend/`)
 
-Dua pola hidup berdampingan — pilih sesuai kasus:
-
-**A. Fitur CRUD admin → `src/modules/<domain>/`**
+Satu pola saja: **route-scoped di `src/app/<route>/`**. `src/modules/` sudah
+dihapus — jangan dibuat lagi. Template: **`src/app/admin/members/`**.
 
 ```
-actions/<domain>-actions.ts   fetch biasa (BUKAN "use server"), argumen terakhir `token: string`
-schema/<domain>.ts            zod + type
-column/<domain>.tsx           ColDef[] AG Grid
-components/<domain>-table.tsx     "use client", useQuery + <AgTable/>, default export
-components/add-<domain>.tsx       "use client", RHF + zodResolver + useMutation, default export
-components/button-add-<domain>.tsx "use client", Dialog, named export
+_queries/<domain>.ts        query<Domain>(accessToken) → {queryKey, queryFn} + hook use<Get…>()
+_mutations/<domain>.ts      use<Aksi>({ onSuccess, onError, accessToken }) → useMutation
+_schemas/<domain>.ts        zod + type (form), atau type bentuk response
+_table/_column/<domain>.tsx ColDef[] AG Grid
+_table/_components/…        "use client": <domain>-table, add-<domain>, button-add-<domain>
+_components/…               komponen client lain milik route ini
+page.tsx                    Server Component: getSession → prefetchQuery → <HydrationBoundary>
 ```
 
-Template terbaik: **`src/modules/voucher/`** (paling ringkas & lengkap) — tapi
-perbaiki dua penyimpangannya: URL-nya hard-code, seharusnya lewat
-`src/endpoint/index.ts`. Untuk form dengan dropdown relasi tiru
-`subscription-plan`; untuk PATCH & field array tiru `account-type`.
-
-**B. Halaman/route-scoped → `src/app/<route>/`**
-`_components/`, `_handlers/`, `_mutations/`, `_queries/`, `types/`, `schema.ts`,
-`action.ts`.
+Untuk form dengan dropdown relasi tiru `subscriptions/plans`; untuk PATCH &
+field array tiru `subscriptions/account-types`.
 
 Aturan lain:
-- Token diambil di komponen client via `authClient.useSession()` lalu **di-drill**
-  ke fungsi action. Base URL: `process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"`.
-- Query key: `["get-<plural-kebab>", token]` + `enabled: !!token`.
-- Invalidasi cache client: `useRevalidateQuery()` dari `@/hooks/use-revalidate`.
-  Cache server: `revalidateServerTag("<tag>")` dari `@/app/actions/revalidate`.
+- **Semua data fetching lewat TanStack Query + axios** (`gatewayAPI` /
+  `messageBackend` dari `@/libs/axios`) — tidak ada `fetch()` mentah dan tidak
+  ada server action untuk ambil/kirim data. Pengecualian: plumbing auth
+  (`src/app/api/auth/**`, `src/proxy.ts`), ping ketersediaan backend
+  (`mode: "no-cors"` di `_mutations/sign-in.ts` & `sign-up.ts` — tidak bisa
+  lewat axios), dan server action yang memang harus menyentuh cookie httpOnly
+  (`checkout/status/actions.ts`).
+- URL selalu dari `src/endpoint/index.ts`, jangan di-hardcode di query/mutation.
+- Query key `["get-<plural-kebab>"]` **tanpa token**, supaya hasil prefetch di
+  server terpakai ulang saat hydrate di client. Mutation key `["<verb>-<domain>"]`.
+- Token di-drill, bukan diambil interceptor: client `authClient.useSession()`,
+  server `getSession()`, lalu dikirim ke `query…(token)` /
+  `use…({ accessToken })` sebagai header `Authorization`.
+- `gatewayAPI` memilih base URL sendiri: `SERVER_GATEWAY_URL` saat jalan di
+  server, `NEXT_PUBLIC_API_URL` di browser. Jangan bangun URL absolut manual.
+- Prefetch di Server Component: `getQueryClient()` + `prefetchQuery` +
+  `<HydrationBoundary>`. Pakai `fetchQuery` bila hasilnya menentukan
+  `redirect()` — lihat `src/app/checkout/page.tsx`.
+- **Satu-satunya cara revalidate: `useRevalidateQuery()`** dari
+  `@/hooks/use-revalidate`, dipanggil di `onSuccess` mutation dengan query key
+  yang datanya jadi basi — `revalidate(["get-x"], ["get-y"])`. Jangan pakai
+  `revalidateTag`/`revalidatePath`/server action atau `router.refresh()` untuk
+  data. Ingat efek lintas fitur: CRUD account type & plan → `["get-public-pricing"]`;
+  promote/extend/revoke member & pembayaran sukses → `["get-subscription-plans"]`
+  + `["get-public-pricing"]` (kuota ikut berubah).
 - Toast: `sonner`. Konfirmasi hapus: `confirm()` bawaan browser.
 - Pakai token warna `gold-*` dari `globals.css`, bukan hex mentah baru.
-- **Jangan pakai** `src/hooks/use-query.ts`, `use-mutate.ts`, `libs/axios.ts →
-  externalBackend`, `components/layout/sidebar-dispatcher.tsx` — semuanya dead
-  code.
 
 ---
 
@@ -229,9 +240,11 @@ atau method HTTP baru di CorsLayer).
 regenerate `main-service/pb/*.go` dengan `protoc` **dari root repo** → pakai di
 Go via `authClient.GetClient()`.
 
-**Halaman admin baru** → `src/modules/<domain>/{schema,actions,column,components}`
-→ `src/app/admin/.../page.tsx` (Server Component, `SidebarLayout` + `Suspense`)
-→ entri di `src/constants/admin-menu.ts`. Tidak perlu menyentuh `proxy.ts`.
+**Halaman admin baru** → `src/endpoint/index.ts` →
+`src/app/admin/<route>/{_queries,_mutations,_schemas,_table}` →
+`src/app/admin/<route>/page.tsx` (Server Component, `SidebarLayout` +
+`Suspense` + prefetch/`HydrationBoundary`) → entri di
+`src/constants/admin-menu.ts`. Tidak perlu menyentuh `proxy.ts`.
 
 **Kolom DB baru pada user** → migrasi di `auth-service/migrations/`
 (`<UTCTIMESTAMP>_<nama>.sql`, qualify `users.`) → field di

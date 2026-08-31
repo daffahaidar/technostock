@@ -6,28 +6,10 @@ import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
-import { useGetPublicPricing } from "@/app/admin/subscriptions/plans/_queries/public-pricing-query";
+import { useGetPublicPricing } from "@/app/admin/subscriptions/plans/_queries/public-pricing";
 import { useGetActiveSubscription } from "@/app/admin/subscriptions/plans/_queries/active-subscription";
+import type { PricingItem } from "@/app/admin/subscriptions/plans/_schemas/pricing";
 import { authClient } from "@/app/auth/sign-in/_handlers/client";
-
-interface Plan {
-  id: string;
-  name: string;
-  duration_months: number;
-  price: number;
-  description: string;
-  quota?: number | null;
-  used_quota?: number;
-}
-
-interface AccountType {
-  id: string;
-  name: string;
-  description: string;
-  is_recommended: boolean;
-  parsedBenefits: string[];
-  plans: Plan[];
-}
 
 export default function PricingSection({ compact = false }: { compact?: boolean }) {
   const router = useRouter();
@@ -41,7 +23,7 @@ export default function PricingSection({ compact = false }: { compact?: boolean 
   const { activeSubscriptionData } = useGetActiveSubscription(token);
   const activeSub = activeSubscriptionData?.data || null;
 
-  const validPricingData = (pricingData as AccountType[]) || [];
+  const validPricingData = (pricingData?.results as PricingItem[]) || [];
 
   // Store selected plan ID for each account type ID
   const [selectedPlans, setSelectedPlans] = useState<Record<string, string>>(() => {
@@ -208,7 +190,7 @@ export default function PricingSection({ compact = false }: { compact?: boolean 
                       <div className="flex-grow">
                         <p className="text-sm font-medium mb-4 text-gray-300">Yang akan Anda dapatkan:</p>
                         <ul className="space-y-3 mb-8">
-                          {at.parsedBenefits?.map((benefit, i) => (
+                          {at.benefits?.map((benefit, i) => (
                             <li key={i} className="flex items-start gap-3">
                               <CheckCircle2 className="w-5 h-5 text-[#D4AF37] shrink-0 mt-0.5" />
                               <span className="text-sm text-gray-300">{benefit}</span>

@@ -175,7 +175,7 @@ Status: ✅ jalan · 🟡 sebagian · ⛔ belum ada · ⏸️ on-hold.
 | F7.10 | Paket berdurasi > 0 dipaksa tanpa kuota                                  | ✅     | `plan.Quota = nil` di `CreatePlan`                                           |
 | F7.11 | Paket tidak boleh dihapus bila masih ada langganan aktif                 | ✅     | Guard `Count`                                                                |
 | F7.12 | Endpoint update paket dapat mengubah kuota & tipe akun                   | ⛔     | `UpdatePlan` hanya menyalin `Name`, `Description`, `DurationMonths`, `Price` |
-| F7.13 | Katalog tampil di landing page tanpa login                               | ✅     | `get-public-pricing.ts` + `/public/*`                                        |
+| F7.13 | Katalog tampil di landing page tanpa login                               | ✅     | `public-pricing.ts` + `GET /public/pricing` (satu request)                   |
 
 ### 4.4 Voucher
 

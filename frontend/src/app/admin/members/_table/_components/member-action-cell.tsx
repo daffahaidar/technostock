@@ -59,7 +59,12 @@ export function MemberActionCell(params: ICellRendererParams) {
   const { mutate: removeMembership, isPending: removeMembershipPending } =
     useRemoveMembership({
       onSuccess: () => {
-        revalidate(["get-members"]);
+        // Kuota plan ikut dilepas saat revoke.
+        revalidate(
+          ["get-members"],
+          ["get-subscription-plans"],
+          ["get-public-pricing"],
+        );
         toast.success("Keanggotaan berhasil dihapus");
       },
       onError: (error) => {

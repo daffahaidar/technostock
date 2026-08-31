@@ -63,7 +63,12 @@ export function MemberActionModal({
   const { mutate: promoteMember, isPending: isPromoteMemberPending } =
     usePromoteMember({
       onSuccess: () => {
-        revalidate(["get-members"]);
+        // Promote memakai kuota plan, jadi data plan & pricing ikut basi.
+        revalidate(
+          ["get-members"],
+          ["get-subscription-plans"],
+          ["get-public-pricing"],
+        );
         setIsOpen(false);
         setSelectedPlanId("");
         toast.success("Berhasil mempromosikan member");
@@ -79,7 +84,11 @@ export function MemberActionModal({
   const { mutate: extendMembership, isPending: isExtendMembershipPending } =
     useExtendMembership({
       onSuccess: () => {
-        revalidate(["get-members"]);
+        revalidate(
+          ["get-members"],
+          ["get-subscription-plans"],
+          ["get-public-pricing"],
+        );
         setIsOpen(false);
         setSelectedPlanId("");
         toast.success("Berhasil memperpanjang subscription");

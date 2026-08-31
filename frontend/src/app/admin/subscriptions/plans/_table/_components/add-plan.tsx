@@ -64,7 +64,7 @@ export default function AddSubscriptionPlanForm({ onSuccessSubmit }: { onSuccess
     onSuccess: () => {
       toast.success("Subscription Plan created successfully");
       form.reset();
-      revalidate(["get-subscription-plans"]);
+      revalidate(["get-subscription-plans"], ["get-public-pricing"]);
       onSuccessSubmit?.();
     },
     onError: (error: unknown) => {

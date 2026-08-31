@@ -1,108 +1,55 @@
 import SidebarLayout from "@/components/layout/sidebar";
-import { Button } from "@/components/ui/button";
 import { getSession } from "@/app/auth/sign-in/_handlers/server";
 import { redirect } from "next/navigation";
-import SubscriptionCountdown from "./_components/subscription-countdown";
-import Link from "next/link";
-import { getPublicPricingData } from "@/app/admin/subscriptions/plans/_queries/public-pricing";
-
 import { Suspense } from "react";
+import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
+import { getQueryClient } from "@/configs/tanstack-query";
+import { queryActiveSubscription } from "@/app/admin/subscriptions/plans/_queries/active-subscription";
+import { queryPublicPricing } from "@/app/admin/subscriptions/plans/_queries/public-pricing";
+import DashboardSubscription from "./_components/dashboard-subscription";
 
-export default function MemberDashboardPage() {
-  return (
-    <SidebarLayout
-      
-      breadcrumb={[{ name: "Forum", path: "/forum" }, { name: "Dashboard" }]}
-    >
-      <Suspense fallback={<div className="w-full text-white">Loading dashboard...</div>}>
-        <DashboardContent />
-      </Suspense>
-    </SidebarLayout>
-  );
-}
-
-async function DashboardContent() {
+async function ServerSideData() {
   const session = await getSession();
   if (!session?.user) {
     redirect("/auth/sign-in");
   }
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
-  
-  const mySubRes = await fetch(`${API_URL}/api/v1/main/subscriptions/my-active`, {
-    headers: {
-      "Authorization": `Bearer ${session.session.token}`,
-      "Content-Type": "application/json"
-    },
-    cache: "no-store"
-  });
-  
-  let activeSub = null;
-  let planDetails = null;
+  const token = session.session?.token || "";
 
-  if (mySubRes.ok) {
-    const subData = await mySubRes.json();
-    if (subData?.data) {
-      activeSub = subData.data;
-      
-      // Fetch plan details to get the name
-      const planRes = await fetch(`${API_URL}/api/v1/main/public/subscription-plans/${activeSub.subscription_plan_id}`, {
-        next: { revalidate: 3600 }
-      });
-      if (planRes.ok) {
-        const planData = await planRes.json();
-        planDetails = planData.results;
-      }
-    }
-  }
+  const queryClient = getQueryClient();
+  await Promise.all([
+    queryClient.prefetchQuery(queryActiveSubscription(token)),
+    queryClient.prefetchQuery(queryPublicPricing()),
+  ]);
 
-  // Dipakai hanya untuk mencari nama account type dari langganan aktif.
-  const pricingData = await getPublicPricingData();
-  
-  // Find which account type the active subscription belongs to
-  let activeAccountTypeName = "";
-  if (activeSub && activeSub.subscription_plan_id) {
-    const matchingAccountType = pricingData.find((at: { id: string; name: string; plans: { id: string }[] }) => 
-      at.plans.some((p: { id: string }) => p.id === activeSub.subscription_plan_id)
-    );
-    
-    if (matchingAccountType) {
-      activeAccountTypeName = matchingAccountType.name;
-    }
-  }
+  const dehydratedState = dehydrate(queryClient);
 
   return (
-    <div className="w-full">
-      <h1 className="text-3xl font-bold mb-8 text-white">Halo, <span className="text-[#D4AF37]">{session.user.name || session.user.email}</span>!</h1>
-      
-      {activeSub ? (
-        <SubscriptionCountdown 
-          endDateStr={activeSub.end_date} 
-          planName={
-            activeAccountTypeName && planDetails?.name
-              ? `${activeAccountTypeName} - ${planDetails.name}`
-              : planDetails?.name || "Langganan Premium"
-          } 
-        />
-      ) : ["admin", "superadmin", "maintainer"].includes(session.user?.role?.toLowerCase() || "") ? (
-        <div className="bg-[#D4AF37]/10 border border-[#D4AF37]/30 rounded-2xl p-10 text-center shadow-lg">
-          <h2 className="text-2xl font-bold text-[#D4AF37] mb-3">Akses Penuh Sebagai {session.user.role}</h2>
-          <p className="text-gray-400 max-w-lg mx-auto">
-            Anda memiliki akses ke seluruh fitur eksklusif member AngelTrade karena peran Anda sebagai {session.user.role}.
-          </p>
-        </div>
-      ) : (
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-10 text-center shadow-lg">
-          <h2 className="text-2xl font-bold text-white mb-3">Belum Ada Langganan Aktif</h2>
-          <p className="text-gray-400 mb-8 max-w-lg mx-auto">Anda belum memiliki paket langganan yang aktif saat ini. Berlangganan sekarang untuk mengakses semua fitur eksklusif member AngelTrade.</p>
-          <Link href="/#pricing">
-            <Button className="h-12 px-8 rounded-xl bg-[#D4AF37] hover:bg-[#F3CA52] text-black font-bold text-base transition-all shadow-[0_0_15px_rgba(212,175,55,0.3)]">
-              Lihat Paket Langganan
-            </Button>
-          </Link>
-        </div>
-      )}
+    <HydrationBoundary state={dehydratedState}>
+      <div className="w-full">
+        <h1 className="text-3xl font-bold mb-8 text-white">
+          Halo,{" "}
+          <span className="text-[#D4AF37]">
+            {session.user.name || session.user.email}
+          </span>
+          !
+        </h1>
+        <DashboardSubscription role={session.user.role} />
+      </div>
+    </HydrationBoundary>
+  );
+}
 
-    </div>
+export default function MemberDashboardPage() {
+  return (
+    <SidebarLayout
+      breadcrumb={[{ name: "Forum", path: "/forum" }, { name: "Dashboard" }]}
+    >
+      <Suspense
+        fallback={<div className="w-full text-white">Loading dashboard...</div>}
+      >
+        <ServerSideData />
+      </Suspense>
+    </SidebarLayout>
   );
 }

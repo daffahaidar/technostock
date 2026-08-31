@@ -185,11 +185,29 @@ Body `POST /vouchers`:
 
 | Method | Path | Keterangan |
 |---|---|---|
-| GET | `/public/account-types` | Dipakai landing page & halaman pricing |
+| GET | `/public/pricing` | Account type **beserta plan-nya** — dipakai landing page, halaman pricing, dashboard member |
+| GET | `/public/account-types` | |
 | GET | `/public/subscription-plans` | |
-| GET | `/public/subscription-plans/:id` | |
+| GET | `/public/subscription-plans/:id` | Dipakai halaman checkout (butuh `account_type` yang ter-preload) |
 | GET | `/public/vouchers/check/:code` | Validasi kode: cek ada, belum kedaluwarsa, kuota tersisa |
 | POST | `/public/subscription/midtrans-webhook` | Webhook Midtrans |
+
+`/public/pricing` menggantikan pemanggilan ganda `/public/account-types` +
+`/public/subscription-plans` di frontend. Bentuknya `{"results":[...]}`, satu
+item per account type:
+
+```json
+{
+  "id": "…", "name": "Gold", "description": "…", "is_recommended": true,
+  "benefits": ["Sinyal harian", "Grup Discord"],
+  "plans": [ { "id": "…", "name": "Bulanan", "duration_months": 1, "price": 500000, "quota": null, "used_quota": 0 } ]
+}
+```
+
+Berbeda dari `/public/account-types`, `benefits` di sini sudah berupa **array**
+(di DB kolomnya `jsonb` berisi array JSON) sehingga frontend tidak perlu parsing.
+`plans` urut durasi menaik dengan lifetime (`duration_months = 0`) di posisi
+terakhir, dan berupa array kosong bila account type belum punya plan.
 
 Webhook membaca `order_id` dari body, mengonfirmasi status langsung ke Midtrans
 Core API (`CheckTransaction`), lalu mencocokkan baris berdasarkan `external_id`.

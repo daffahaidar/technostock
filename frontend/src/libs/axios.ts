@@ -1,11 +1,24 @@
-import axios, { AxiosInstance } from "axios";
+import axios, { AxiosError, AxiosInstance } from "axios";
 
 let cachedToken: string | null = null;
 let tokenExpiry: number | null = null;
 
+// Saat query dijalankan di server (prefetch Server Component), "localhost:8080"
+// menunjuk ke container frontend sendiri — bukan API gateway. Karena itu
+// SERVER_GATEWAY_URL dipakai lebih dulu di sisi server.
 export const gatewayAPI = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  baseURL:
+    (typeof window === "undefined" ? process.env.SERVER_GATEWAY_URL : "") ||
+    process.env.NEXT_PUBLIC_API_URL ||
+    "http://localhost:8080",
 });
+
+// Backend mengirim pesan error di meta.message (envelope) atau error (fiber.Map).
+export const getErrorMessage = (error: unknown, fallback: string) => {
+  const data = (error as AxiosError<{ meta?: { message?: string }; error?: string }>)
+    ?.response?.data;
+  return data?.meta?.message || data?.error || fallback;
+};
 
 export const getAccessToken = async () => {
   if (typeof window === "undefined") {

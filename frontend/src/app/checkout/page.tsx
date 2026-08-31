@@ -4,6 +4,9 @@ import CheckoutClient from "./checkout-client";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Metadata } from "next";
+import { getQueryClient } from "@/configs/tanstack-query";
+import { queryPublicPlanDetail } from "@/app/admin/subscriptions/plans/_queries/plan";
+import { queryActiveSubscription } from "@/app/admin/subscriptions/plans/_queries/active-subscription";
 
 export const metadata: Metadata = {
   title: "Checkout - AngelTrade",
@@ -26,40 +29,26 @@ async function CheckoutPageContent({ searchParams }: { searchParams: Promise<{ p
     redirect("/#pricing");
   }
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
-  
-  // Fetch plan details from public endpoint
-  const res = await fetch(`${API_URL}/api/v1/main/public/subscription-plans/${planId}`, {
-    next: { revalidate: 60 }
-  });
+  const queryClient = getQueryClient();
 
-  if (!res.ok) {
-    redirect("/#pricing");
-  }
-
-  const data = await res.json();
-  const planDetails = data.results;
+  // fetchQuery (bukan prefetchQuery) supaya error-nya terlihat di sini dan bisa
+  // diarahkan balik ke halaman pricing.
+  const planDetails = await queryClient
+    .fetchQuery(queryPublicPlanDetail(planId))
+    .then((data) => data?.results)
+    .catch(() => null);
 
   if (!planDetails) {
     redirect("/#pricing");
   }
 
-  // Check for active subscription
-  let hasActiveSubscription = false;
-  const mySubRes = await fetch(`${API_URL}/api/v1/main/subscriptions/my-active`, {
-    headers: {
-      "Authorization": `Bearer ${session.session.token}`,
-      "Content-Type": "application/json"
-    },
-    cache: "no-store"
-  });
-  
-  if (mySubRes.ok) {
-    const subData = await mySubRes.json();
-    if (subData?.data?.subscription_plan_id === planId) {
-      hasActiveSubscription = true;
-    }
-  }
+  const activeSubscription = await queryClient
+    .fetchQuery(queryActiveSubscription(session.session.token))
+    .then((data) => data?.data)
+    .catch(() => null);
+
+  const hasActiveSubscription =
+    activeSubscription?.subscription_plan_id === planId;
 
   return (
     <CheckoutClient 

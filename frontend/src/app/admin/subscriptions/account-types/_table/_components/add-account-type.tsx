@@ -52,7 +52,7 @@ export default function AddAccountTypeForm({
     onSuccess: () => {
       toast.success("Account Type created successfully");
       form.reset();
-      revalidate(["get-account-types"]);
+      revalidate(["get-account-types"], ["get-public-pricing"]);
       if (onSuccessSubmit) {
         onSuccessSubmit();
       }

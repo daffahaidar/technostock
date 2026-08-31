@@ -58,6 +58,7 @@ func SetupSubscriptionRoutes(
 
 	// ==================== Public Routes ====================
 	publicGroup := api.Group("/public")
+	publicGroup.Get("/pricing", accountTypeHandler.GetPublicPricing)
 	publicGroup.Get("/account-types", accountTypeHandler.GetAllAccountTypes)
 	publicGroup.Get("/subscription-plans", subscriptionPlanHandler.GetAllPlans)
 	publicGroup.Get("/subscription-plans/:id", subscriptionPlanHandler.GetPlanByID)
