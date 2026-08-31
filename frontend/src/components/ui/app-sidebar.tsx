@@ -16,16 +16,18 @@ import mainMenu from "@/constants/main-menu";
 import profileMenu from "@/constants/profile-menu";
 import maintainerMenu from "@/constants/maintainer-menu";
 import adminMenu from "@/constants/admin-menu";
+import managementMenu from "@/constants/management-menu";
 
 const getRoleLabel = (menu: string) => {
   if (menu === "admin") return "Admin Panel";
+  if (menu === "management") return "Management Area";
   if (menu === "maintainer") return "Developer Area";
   return "Member Area";
 };
 
 import { GlobalNotificationHandler } from "@/components/context/global-notification-handler";
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
-  menu: "main" | "profile" | "admin" | "maintainer";
+  menu: "main" | "profile" | "admin" | "maintainer" | "management";
 }
 
 export function AppSidebar({ menu, ...props }: AppSidebarProps) {
@@ -34,9 +36,11 @@ export function AppSidebar({ menu, ...props }: AppSidebarProps) {
       ? profileMenu
       : menu === "admin"
         ? adminMenu
-        : menu === "maintainer"
-          ? maintainerMenu
-          : mainMenu;
+        : menu === "management"
+          ? managementMenu
+          : menu === "maintainer"
+            ? maintainerMenu
+            : mainMenu;
 
   return (
     <>

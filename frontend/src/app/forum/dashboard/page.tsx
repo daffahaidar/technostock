@@ -4,8 +4,8 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import { getQueryClient } from "@/configs/tanstack-query";
-import { queryActiveSubscription } from "@/app/admin/subscriptions/plans/_queries/active-subscription";
-import { queryPublicPricing } from "@/app/admin/subscriptions/plans/_queries/public-pricing";
+import { queryActiveSubscription } from "@/app/[panel]/subscriptions/plans/_queries/active-subscription";
+import { queryPublicPricing } from "@/app/[panel]/subscriptions/plans/_queries/public-pricing";
 import DashboardSubscription from "./_components/dashboard-subscription";
 
 async function ServerSideData() {

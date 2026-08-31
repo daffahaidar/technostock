@@ -27,7 +27,8 @@ async function ServerSideData() {
   );
 }
 
-export default function AccountTypesPage() {
+export default async function AccountTypesPage({ params }: { params: Promise<{ panel: string }> }) {
+  const { panel } = await params;
   return (
     <SidebarLayout
       title="Daftar Tipe Akun"
@@ -35,7 +36,7 @@ export default function AccountTypesPage() {
       breadcrumb={[
         { name: "Admin" },
         { name: "Subscription" },
-        { name: "Daftar Tipe Akun", path: "/admin/subscriptions/account-types" },
+        { name: "Daftar Tipe Akun", path: `/${panel}/subscriptions/account-types` },
       ]}
     >
       <Suspense

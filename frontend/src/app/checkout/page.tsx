@@ -5,8 +5,8 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Metadata } from "next";
 import { getQueryClient } from "@/configs/tanstack-query";
-import { queryPublicPlanDetail } from "@/app/admin/subscriptions/plans/_queries/plan";
-import { queryActiveSubscription } from "@/app/admin/subscriptions/plans/_queries/active-subscription";
+import { queryPublicPlanDetail } from "@/app/[panel]/subscriptions/plans/_queries/plan";
+import { queryActiveSubscription } from "@/app/[panel]/subscriptions/plans/_queries/active-subscription";
 
 export const metadata: Metadata = {
   title: "Checkout - AngelTrade",

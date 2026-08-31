@@ -6,9 +6,9 @@ import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
-import { useGetPublicPricing } from "@/app/admin/subscriptions/plans/_queries/public-pricing";
-import { useGetActiveSubscription } from "@/app/admin/subscriptions/plans/_queries/active-subscription";
-import type { PricingItem } from "@/app/admin/subscriptions/plans/_schemas/pricing";
+import { useGetPublicPricing } from "@/app/[panel]/subscriptions/plans/_queries/public-pricing";
+import { useGetActiveSubscription } from "@/app/[panel]/subscriptions/plans/_queries/active-subscription";
+import type { PricingItem } from "@/app/[panel]/subscriptions/plans/_schemas/pricing";
 import { authClient } from "@/app/auth/sign-in/_handlers/client";
 import { isFullAccessRole } from "@/constants/roles";
 

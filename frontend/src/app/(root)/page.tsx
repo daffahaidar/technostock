@@ -11,8 +11,8 @@ import LandingFooter from "./_components/landing-footer";
 import PricingSection from "./_components/pricing-section";
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import { getQueryClient } from "@/configs/tanstack-query";
-import { queryPublicPricing } from "@/app/admin/subscriptions/plans/_queries/public-pricing";
-import { queryActiveSubscription } from "@/app/admin/subscriptions/plans/_queries/active-subscription";
+import { queryPublicPricing } from "@/app/[panel]/subscriptions/plans/_queries/public-pricing";
+import { queryActiveSubscription } from "@/app/[panel]/subscriptions/plans/_queries/active-subscription";
 
 async function ServerSideData() {
   const session = await getSession();

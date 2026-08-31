@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/app/auth/sign-in/_handlers/client";
-import { useGetActiveSubscription } from "@/app/admin/subscriptions/plans/_queries/active-subscription";
-import { useGetPublicPricing } from "@/app/admin/subscriptions/plans/_queries/public-pricing";
-import type { PricingItem } from "@/app/admin/subscriptions/plans/_schemas/pricing";
+import { useGetActiveSubscription } from "@/app/[panel]/subscriptions/plans/_queries/active-subscription";
+import { useGetPublicPricing } from "@/app/[panel]/subscriptions/plans/_queries/public-pricing";
+import type { PricingItem } from "@/app/[panel]/subscriptions/plans/_schemas/pricing";
 import { isFullAccessRole } from "@/constants/roles";
 import SubscriptionCountdown from "./subscription-countdown";
 

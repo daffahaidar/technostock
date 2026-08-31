@@ -20,7 +20,7 @@ export type Role = (typeof ROLES)[number];
 // Halaman awal tiap role setelah login / saat ditolak dari route lain.
 export const ROLE_DASHBOARDS: Record<string, string> = {
   Maintainer: "/maintainer/dashboard",
-  Owner: "/admin/dashboard",
+  Owner: "/management/dashboard",
   Admin: "/admin/dashboard",
   Member: "/forum/dashboard",
   User: "/",

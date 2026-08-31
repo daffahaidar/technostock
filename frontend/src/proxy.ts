@@ -14,6 +14,7 @@ export async function proxy(request: NextRequest) {
   const isAuthRoute = pathname.startsWith("/auth");
   const isProtectedRoute =
     pathname.startsWith("/admin") ||
+    pathname.startsWith("/management") ||
     pathname.startsWith("/maintainer") ||
     pathname.startsWith("/forum") ||
     pathname.startsWith("/user");
@@ -120,6 +121,10 @@ export async function proxy(request: NextRequest) {
       let finalResponse = NextResponse.next();
 
       if (pathname.startsWith("/admin") && !ADMIN_ROLES.includes(userRole)) {
+        finalResponse = NextResponse.redirect(
+          new URL(ROLE_DASHBOARDS[userRole] || "/", request.url),
+        );
+      } else if (pathname.startsWith("/management") && !["Owner", "Maintainer"].includes(userRole)) {
         finalResponse = NextResponse.redirect(
           new URL(ROLE_DASHBOARDS[userRole] || "/", request.url),
         );

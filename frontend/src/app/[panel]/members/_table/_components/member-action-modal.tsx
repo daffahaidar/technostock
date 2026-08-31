@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useGetPlanSubscription } from "@/app/admin/subscriptions/plans/_queries/plan";
+import { useGetPlanSubscription } from "@/app/[panel]/subscriptions/plans/_queries/plan";
 import { Loader2 } from "lucide-react";
 import { useExtendMembership, usePromoteMember } from "../../_mutations/member";
 import { useRevalidateQuery } from "@/hooks/use-revalidate";
