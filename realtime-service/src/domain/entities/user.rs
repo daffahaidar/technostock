@@ -4,10 +4,11 @@ use chrono::{DateTime, Utc};
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, sqlx::Type)]
 #[sqlx(type_name = "varchar", rename_all = "PascalCase")]
+/// Duplikat dari `shared-core` — urut dari wewenang tertinggi ke terendah.
 pub enum Role {
     Maintainer,
+    Owner,
     Admin,
-    SuperAdmin,
     Member,
     User,
 }

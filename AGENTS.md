@@ -69,12 +69,12 @@ Infra: PostgreSQL 17 (`:5433` di host), Redis 7, RabbitMQ 3, MinIO, Kafka 3.9
 | `realtime-service` dan `shared-core` | `realtime-service` **tidak memakai** `shared-core` — ia menduplikasi `User`, `Role`, `AppError`, `JwtService`. Versi `User`-nya **tidak punya** `discord_username` |
 | Dead code | `realtime-service/src/api.rs` dan `src/mod.rs` tidak pernah di-compile. Router aktif = `src/routes/api.rs` |
 | Port | Port service Rust **hard-coded** di `main.rs` (8000/8001/8080/50051). Hanya `main-service` yang membaca `PORT` |
-| Dua folder migrations | `auth-service/migrations` (13) dan `realtime-service/migrations` (11) berbagi satu tabel `_sqlx_migrations`. Keduanya jalan dengan `ignore_missing` |
+| Dua folder migrations | `auth-service/migrations` (14) dan `realtime-service/migrations` (11) berbagi satu tabel `_sqlx_migrations`. Keduanya jalan dengan `ignore_missing` |
 | `.sqlx/` | Hanya `realtime-service` memakai makro `sqlx::query!`. Ubah makro → **wajib** `cargo sqlx prepare` + commit `.sqlx/query-*.json`, atau build prod pecah |
 | Build context Docker | Service Rust di-build dari **root repo** (`context: .`) karena butuh `proto/` dan `shared-core/`. Varian `Dockerfile.unified.*` yang dipakai compose root |
 | Compose per-service | `auth-service/docker-compose.*.yml` dan `realtime-service/docker-compose.*.yml` **gagal build** (context terlalu sempit). Pakai compose root |
 | Role lintas bahasa | Rust mengirim role sebagai `format!("{:?}", role)` → PascalCase. Go menghapus tanda kutip sebelum membandingkan. String tak dikenal di `UpdateUserRole` → **downgrade diam-diam ke `User`** |
-| `SuperAdmin` | Valid di DB CHECK dan di Go, **tidak ada** di enum Rust `Role`. Baris user `SuperAdmin` gagal di-decode sqlx |
+| Role | Urut wewenang: `Maintainer` > `Owner` > `Admin` > `Member` > `User`. `SuperAdmin` **sudah tidak ada** — diganti `Owner`. `Owner` belum punya fitur pembeda, jadi selalu ikut di daftar yang sama dengan `Admin` |
 | `duration_months = 0` | Berarti **lifetime**, bukan nol bulan |
 | `last_read_at` di proto | Dikomentari "Unix timestamp" tapi nilainya **milidetik** |
 | Test | **Tidak ada satu pun test di repo.** Target `make test` ada tapi jalan di atas nol test case |

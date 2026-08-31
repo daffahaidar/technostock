@@ -1,21 +1,11 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { decodeJwt } from "jose";
-
-
-
-// Role-based dashboard mapping
-const ROLE_DASHBOARDS: Record<string, string> = {
-  Maintainer: "/maintainer/dashboard",
-  Admin: "/admin/dashboard",
-  SuperAdmin: "/admin/dashboard",
-  Member: "/forum/dashboard",
-  User: "/",
-};
-
-// Role yang diperlakukan setara Admin. Cocok dengan
-// RequireRole("Admin","SuperAdmin","Maintainer") di main-service.
-const ADMIN_ROLES = ["Admin", "SuperAdmin"];
+import {
+  ADMIN_ROLES,
+  FORUM_ROLES,
+  ROLE_DASHBOARDS,
+} from "@/constants/roles";
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -137,7 +127,7 @@ export async function proxy(request: NextRequest) {
         finalResponse = NextResponse.redirect(
           new URL(ROLE_DASHBOARDS[userRole] || "/", request.url),
         );
-      } else if (pathname.startsWith("/forum") && !["Maintainer", "Admin", "SuperAdmin", "Member"].includes(userRole)) {
+      } else if (pathname.startsWith("/forum") && !FORUM_ROLES.includes(userRole)) {
         finalResponse = NextResponse.redirect(
           new URL("/", request.url), // Redirect User directly to /
         );

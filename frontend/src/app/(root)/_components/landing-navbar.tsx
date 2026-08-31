@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { logout } from "@/app/auth/sign-in/_handlers/server";
 import { useClearQueryCache } from "@/hooks/use-revalidate";
+import { ROLE_DASHBOARDS } from "@/constants/roles";
 
 const navLinks = [
   { label: "Services", href: "#services" },
@@ -23,18 +24,7 @@ const navLinks = [
   { label: "Contact", href: "#contact" },
 ];
 
-const getDashboardUrl = (role: string) => {
-  switch (role) {
-    case "Maintainer":
-      return "/maintainer/dashboard";
-    case "Admin":
-      return "/admin/dashboard";
-    case "Member":
-      return "/forum/dashboard";
-    default:
-      return "/";
-  }
-};
+const getDashboardUrl = (role: string) => ROLE_DASHBOARDS[role] || "/";
 
 export default function LandingNavbar({ user }: { user?: { name: string; role: string; avatar_url?: string | null } | null }) {
   const [scrolled, setScrolled] = useState(false);

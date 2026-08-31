@@ -12,6 +12,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useRouter, useSearchParams } from "next/navigation";
+import { ROLE_DASHBOARDS } from "@/constants/roles";
 import { useEffect, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 
@@ -41,7 +42,7 @@ export default function SignInForm() {
   const searchParams = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
 
-  const callbackUrl = searchParams.get("callbackUrl") || "/forum/dashboard";
+  const callbackUrl = searchParams.get("callbackUrl");
 
   const form = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
@@ -55,23 +56,7 @@ export default function SignInForm() {
     onSuccess: (result: unknown) => {
       const data = result as { user?: { role?: string } };
       const role = data?.user?.role || "User";
-      switch (role) {
-        case "Maintainer":
-          router.push(callbackUrl || "/maintainer/dashboard");
-          break;
-        case "Admin":
-        case "SuperAdmin":
-          router.push(callbackUrl || "/admin/dashboard");
-          break;
-        case "Member":
-          router.push(callbackUrl || "/forum/dashboard");
-          break;
-        case "User":
-          router.push(callbackUrl || "/");
-          break;
-        default:
-          router.push("/");
-      }
+      router.push(callbackUrl || ROLE_DASHBOARDS[role] || "/");
     },
     onError: (error: unknown) => {
       const err = error as { meta?: { message?: string }; message?: string };

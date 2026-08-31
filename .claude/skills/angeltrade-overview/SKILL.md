@@ -100,7 +100,7 @@ Melanggar salah satu = bug arsitektur, bukan sekadar gaya.
 | `.sqlx/` | Hanya `realtime-service` pakai makro `sqlx::query!`. Ubah makro → wajib `cargo sqlx prepare` + commit, atau build prod pecah |
 | Build context Docker | Service Rust di-build dari **root repo** (`context: .`). Varian `Dockerfile.unified.*` |
 | Compose per-service | `auth-service/docker-compose.*.yml` & `realtime-service/docker-compose.*.yml` **gagal build** — context terlalu sempit. Pakai compose root |
-| `SuperAdmin` | Ada di semua lapisan dan diperlakukan setara `Admin`. Endpoint Maintainer-only tetap Maintainer-only |
+| Role | `Maintainer` > `Owner` > `Admin` > `Member` > `User`. `SuperAdmin` sudah diganti `Owner`; `Owner` diperlakukan setara `Admin` sampai fitur approval-nya dibuat. Endpoint Maintainer-only tetap Maintainer-only |
 | `UpdateUserRole` | String role harus PascalCase persis; nilai tak dikenal ditolak `Status::invalid_argument` |
 | `duration_months = 0` | Berarti **lifetime** |
 | `end_date = NULL` | Berarti **lifetime** |

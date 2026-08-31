@@ -133,30 +133,36 @@ WebSocket tidak bisa mengirim header `Authorization` dari browser, jadi
 
 ## Role
 
-Nilai role yang valid di database: `User`, `Member`, `Maintainer`, `Admin`,
-`SuperAdmin` (CHECK constraint pada `users.users`).
+Lima role, urut dari wewenang tertinggi (CHECK constraint pada `users.users`):
+
+| Role | Wewenang |
+|---|---|
+| `Maintainer` | Tertinggi, akses penuh. Satu-satunya yang boleh update/hapus user |
+| `Owner` | Menyetujui tindakan Admin — **fiturnya belum diimplementasikan**, jadi untuk sekarang wewenangnya sama persis dengan `Admin` |
+| `Admin` | Kelola tipe akun, plan, voucher, dan member |
+| `Member` | User dengan langganan aktif |
+| `User` | Role default saat registrasi |
 
 > Enum `Role` di
 > [`shared-core/src/domain/entities/user.rs`](../shared-core/src/domain/entities/user.rs)
-> memuat kelimanya. `SuperAdmin` diperlakukan setara `Admin` di seluruh lapisan
-> otorisasi (Rust, Go, `proxy.ts`); endpoint Maintainer-only tetap
-> Maintainer-only. Lihat [database.md](database.md#role-superadmin).
+> memuat kelimanya dengan urutan yang sama. Frontend memakai satu sumber
+> kebenaran: [`frontend/src/constants/roles.ts`](../frontend/src/constants/roles.ts).
 
 Proteksi route frontend diatur di [`frontend/src/proxy.ts`](../frontend/src/proxy.ts):
 
 | Prefix path | Role yang diizinkan |
 |---|---|
-| `/admin` | `Admin`, `SuperAdmin` |
+| `/admin` | `Maintainer`, `Owner`, `Admin` |
 | `/maintainer` | `Maintainer` |
-| `/forum` | `Maintainer`, `Admin`, `SuperAdmin`, `Member` |
+| `/forum` | `Maintainer`, `Owner`, `Admin`, `Member` |
 | `/user` | semua role yang sudah login (tanpa cek role) |
 
 Role yang ditolak dialihkan ke dashboard-nya sendiri: `Maintainer` →
-`/maintainer/dashboard`, `Admin`/`SuperAdmin` → `/admin/dashboard`, `Member` →
+`/maintainer/dashboard`, `Owner`/`Admin` → `/admin/dashboard`, `Member` →
 `/forum/dashboard`, `User` → `/`.
 
-Otorisasi di `main-service` memakai `RequireRole("Admin", "SuperAdmin",
-"Maintainer")` untuk seluruh endpoint tulis dan endpoint admin.
+Otorisasi di `main-service` memakai `RequireRole("Maintainer", "Owner",
+"Admin")` untuk seluruh endpoint tulis dan endpoint admin.
 
 ## Perubahan Role Lintas Service
 

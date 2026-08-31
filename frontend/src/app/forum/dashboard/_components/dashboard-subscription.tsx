@@ -6,9 +6,8 @@ import { authClient } from "@/app/auth/sign-in/_handlers/client";
 import { useGetActiveSubscription } from "@/app/admin/subscriptions/plans/_queries/active-subscription";
 import { useGetPublicPricing } from "@/app/admin/subscriptions/plans/_queries/public-pricing";
 import type { PricingItem } from "@/app/admin/subscriptions/plans/_schemas/pricing";
+import { isFullAccessRole } from "@/constants/roles";
 import SubscriptionCountdown from "./subscription-countdown";
-
-const FULL_ACCESS_ROLES = ["admin", "superadmin", "maintainer"];
 
 export default function DashboardSubscription({ role }: { role?: string }) {
   const { data: sessionData } = authClient.useSession();
@@ -46,7 +45,7 @@ export default function DashboardSubscription({ role }: { role?: string }) {
     );
   }
 
-  if (FULL_ACCESS_ROLES.includes(role?.toLowerCase() || "")) {
+  if (isFullAccessRole(role)) {
     return (
       <div className="bg-[#D4AF37]/10 border border-[#D4AF37]/30 rounded-2xl p-10 text-center shadow-lg">
         <h2 className="text-2xl font-bold text-[#D4AF37] mb-3">

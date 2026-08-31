@@ -24,7 +24,7 @@ func SetupSubscriptionRoutes(
 	accountTypeGroup.Get("/", accountTypeHandler.GetAllAccountTypes)
 	
 	// Admin only
-	adminRole := middleware.RequireRole("Admin", "SuperAdmin", "Maintainer")
+	adminRole := middleware.RequireRole("Maintainer", "Owner", "Admin")
 	accountTypeGroup.Post("", adminRole, accountTypeHandler.CreateAccountType)
 	accountTypeGroup.Post("/", adminRole, accountTypeHandler.CreateAccountType)
 	accountTypeGroup.Patch("/:id", adminRole, accountTypeHandler.UpdateAccountType)

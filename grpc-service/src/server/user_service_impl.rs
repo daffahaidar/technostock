@@ -143,12 +143,12 @@ impl UserService for UserServiceImpl {
         let role = match req.role.as_str() {
             "Member" => shared_core::domain::entities::user::Role::Member,
             "Admin" => shared_core::domain::entities::user::Role::Admin,
-            "SuperAdmin" => shared_core::domain::entities::user::Role::SuperAdmin,
+            "Owner" => shared_core::domain::entities::user::Role::Owner,
             "Maintainer" => shared_core::domain::entities::user::Role::Maintainer,
             "User" => shared_core::domain::entities::user::Role::User,
             other => {
                 return Err(Status::invalid_argument(format!(
-                    "Unknown role '{}'. Expected one of: Maintainer, Admin, SuperAdmin, Member, User",
+                    "Unknown role '{}'. Expected one of: Maintainer, Owner, Admin, Member, User",
                     other
                 )))
             }

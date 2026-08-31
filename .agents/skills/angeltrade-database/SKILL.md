@@ -163,7 +163,7 @@ Konsekuensinya:
 | `duration_months = 0` | Lifetime |
 | `end_date = NULL` | Lifetime |
 | `quota = NULL` | Tanpa batas |
-| Role | `Admin`, `SuperAdmin`, `User`, `Maintainer`, `Member` (CHECK constraint) |
+| Role | `Maintainer`, `Owner`, `Admin`, `Member`, `User` (CHECK constraint) |
 | Status user | `Active`, `Suspended` (CHECK constraint) |
 | Status langganan | `Active`, `Expired`, `Cancelled` — **konstanta Go saja**, tanpa CHECK |
 | Status transaksi | `pending`, `settlement`, `failed`, `expired` (huruf kecil) — konstanta Go saja. Kolom punya `default:'PENDING'` yang tidak pernah terpakai |

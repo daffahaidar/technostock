@@ -46,7 +46,7 @@ frontend, plus route gateway bila dipanggil browser.
 ## Aturan lintas stack
 
 - **Otorisasi wajib di backend.** `proxy.ts` hanya UX.
-- **Endpoint admin** memakai `RequireRole("Admin", "SuperAdmin", "Maintainer")`
+- **Endpoint admin** memakai `RequireRole("Maintainer", "Owner", "Admin")`
   (Go) atau cek `Role` di usecase (Rust).
 - **Uang & kuota:** reservasi atomik, idempoten, lepas kuota saat gagal. Rujukan
   kanonik: `main-service/usecases/user_subscription_usecase.go → BuySubscription`.

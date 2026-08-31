@@ -40,9 +40,9 @@ type MemberResponse struct {
 }
 
 func (u *MemberUseCase) GetMembers() ([]MemberResponse, error) {
-	// 1. Fetch all users excluding Admin and Maintainer via gRPC
+	// 1. Fetch all users excluding staff (Maintainer, Owner, Admin) via gRPC
 	grpcResp, err := u.authClient.GetClient().GetAllUsers(context.Background(), &pb.GetAllUsersRequest{
-		ExcludeRoles: []string{"Admin", "SuperAdmin", "Maintainer"},
+		ExcludeRoles: []string{"Maintainer", "Owner", "Admin"},
 	})
 	if err != nil {
 		return nil, err

@@ -124,7 +124,7 @@ OAuth.
 | `phone` | `VARCHAR(20)` | ✓ | — | |
 | `email` | `VARCHAR(255)` | ✗ | — | **UNIQUE** |
 | `password_hash` | `TEXT` | ✓ | — | Nullable sejak migrasi OAuth — user GitHub/Google tidak punya password |
-| `role` | `VARCHAR(50)` | ✗ | — | CHECK: `Admin`, `SuperAdmin`, `User`, `Maintainer`, `Member` |
+| `role` | `VARCHAR(50)` | ✗ | — | CHECK: `Maintainer`, `Owner`, `Admin`, `Member`, `User` |
 | `status` | `VARCHAR(20)` | ✗ | `'Active'` | CHECK: `Active`, `Suspended` |
 | `github_id` | `BIGINT` | ✓ | — | **UNIQUE** |
 | `google_id` | `VARCHAR(255)` | ✓ | — | **UNIQUE** |
@@ -321,7 +321,7 @@ harga akhir tidak pernah negatif.
 
 | Domain | Nilai valid | Ditegakkan di |
 |---|---|---|
-| Role user | `Admin`, `SuperAdmin`, `User`, `Maintainer`, `Member` | CHECK constraint DB |
+| Role user | `Maintainer`, `Owner`, `Admin`, `Member`, `User` | CHECK constraint DB |
 | Status user | `Active`, `Suspended` | CHECK constraint DB |
 | Status langganan | `Active`, `Expired`, `Cancelled` | Konstanta Go saja |
 | Status transaksi | `pending`, `settlement`, `failed`, `expired` | Konstanta Go saja |
@@ -330,7 +330,7 @@ harga akhir tidak pernah negatif.
 
 ## Migrasi
 
-### auth-service — 13 migrasi sqlx
+### auth-service — 14 migrasi sqlx
 
 | Versi | Perubahan |
 |---|---|
@@ -347,11 +347,13 @@ harga akhir tidak pernah negatif.
 | `20260418000000` | **Pemisahan schema** — pindahkan tabel ke schema `users` dan `message` |
 | `20260823055723` | Tambah role `Member` ke CHECK constraint |
 | `20260823163501` | Tambah `users.discord_username` |
+| `20260831060000` | Role `SuperAdmin` → `Owner`: constraint dilepas, baris lama di-`UPDATE`, constraint dipasang lagi |
 
 ### realtime-service — 11 migrasi sqlx
 
-Sebelas file pertama **identik byte-per-byte** dengan milik auth-service. Dua
-migrasi terakhir (`20260823055723`, `20260823163501`) tidak ada di sini.
+Sebelas file pertama **identik byte-per-byte** dengan milik auth-service. Tiga
+migrasi terakhir (`20260823055723`, `20260823163501`, `20260831060000`) tidak
+ada di sini — `users.users` milik auth-service, jadi migrasinya cukup di sana.
 
 ### Cara migrasi diterapkan
 
@@ -408,12 +410,21 @@ Artinya: semua pesan dari semua "group" masuk ke satu tabel yang sama, dan
 `GET /api/v1/chat/history` mengembalikan riwayat global tanpa filter group.
 Fitur multi-group memerlukan kolom baru plus migrasi.
 
-### Role `SuperAdmin`
+### Role `Owner`
 
-Enum `Role` di Rust (`shared-core` dan `realtime-service`) kini memuat
-`SuperAdmin`, cocok dengan CHECK constraint DB dan dengan
-`RequireRole("Admin", "SuperAdmin", "Maintainer")` di Go. Sebelumnya varian ini
-tidak ada di Rust sehingga baris user `SuperAdmin` gagal di-decode sqlx.
+`SuperAdmin` diganti `Owner` lewat migrasi
+`20260831060000_rename_superadmin_to_owner.sql`: constraint dilepas, baris lama
+di-`UPDATE` ke `Owner`, constraint dipasang lagi dengan daftar baru
+(`Maintainer`, `Owner`, `Admin`, `Member`, `User`).
+
+Enum `Role` di Rust (`shared-core` dan `realtime-service`) memuat kelimanya
+dengan urutan yang sama, cocok dengan CHECK constraint DB dan dengan
+`RequireRole("Maintainer", "Owner", "Admin")` di Go. `Owner` dimaksudkan untuk
+menyetujui tindakan Admin, tapi fiturnya belum ada — sampai itu dibuat,
+wewenangnya sama persis dengan `Admin`.
+
+JWT yang terlanjur terbit dengan role `SuperAdmin` tidak lagi cocok dengan
+lapisan otorisasi mana pun; user tersebut harus login ulang.
 
 Nilai role yang dikirim lewat gRPC harus PascalCase persis — `UpdateUserRole`
 menolak nilai tak dikenal dengan `Status::invalid_argument` alih-alih

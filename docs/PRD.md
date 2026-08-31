@@ -64,26 +64,32 @@ file logo). Font `Geist` (next/font/google).
 
 ## 2. Persona & Role
 
-Role tersimpan di `users.users.role`. Enum Rust:
-`Maintainer | Admin | SuperAdmin | Member | User`
+Role tersimpan di `users.users.role`. Enum Rust, urut dari wewenang tertinggi:
+`Maintainer | Owner | Admin | Member | User`
 ([`shared-core/src/domain/entities/user.rs`](../shared-core/src/domain/entities/user.rs)),
-cocok dengan CHECK constraint DB. `SuperAdmin` diperlakukan setara `Admin` di
-seluruh lapisan otorisasi (Rust, Go, dan `proxy.ts`).
+cocok dengan CHECK constraint DB dan dengan
+[`frontend/src/constants/roles.ts`](../frontend/src/constants/roles.ts).
 
-| Persona                        | Role                   | Landing dashboard       | Yang bisa dilakukan hari ini                                                         |
-| ------------------------------ | ---------------------- | ----------------------- | ------------------------------------------------------------------------------------ |
-| **Pengunjung / calon pembeli** | `User`                 | `/`                     | Lihat landing + pricing, sign up, checkout, bayar                                    |
-| **Member berbayar**            | `Member`               | `/forum/dashboard`      | Lihat sisa masa aktif langganan. Menu "Market News" ada tapi halamannya belum dibuat |
-| **Admin bisnis**               | `Admin` / `SuperAdmin` | `/admin/dashboard`      | Kelola tipe akun, plan, voucher, dan member (promote/extend/revoke/ban)              |
-| **Maintainer / internal**      | `Maintainer`           | `/maintainer/dashboard` | Akses forum chat (satu-satunya role yang bisa), dashboard masih stub                 |
+| Persona                        | Role         | Landing dashboard       | Yang bisa dilakukan hari ini                                                         |
+| ------------------------------ | ------------ | ----------------------- | ------------------------------------------------------------------------------------ |
+| **Pengunjung / calon pembeli** | `User`       | `/`                     | Lihat landing + pricing, sign up, checkout, bayar                                    |
+| **Member berbayar**            | `Member`     | `/forum/dashboard`      | Lihat sisa masa aktif langganan. Menu "Market News" ada tapi halamannya belum dibuat |
+| **Admin bisnis**               | `Admin`      | `/admin/dashboard`      | Kelola tipe akun, plan, voucher, dan member (promote/extend/revoke/ban)              |
+| **Owner**                      | `Owner`      | `/admin/dashboard`      | Sama dengan `Admin` — lihat catatan di bawah                                         |
+| **Maintainer / internal**      | `Maintainer` | `/maintainer/dashboard` | Semua yang bisa dilakukan Admin, plus forum chat dan update/hapus user               |
+
+> **`Owner` belum punya fitur pembedanya.** Peran ini dimaksudkan untuk
+> menyetujui tindakan Admin, tapi alur approval-nya belum dibangun — lihat
+> F13 di [§4.9](#49-approval-owner). Sampai itu ada, `Owner` hanya nama lain
+> dari `Admin` di setiap pengecekan otorisasi.
 
 Proteksi route ada di [`frontend/src/proxy.ts`](../frontend/src/proxy.ts):
-`/admin` → `Admin`/`SuperAdmin`; `/maintainer` → `Maintainer`; `/forum` →
-`Maintainer`, `Admin`, `SuperAdmin`, `Member`; `/user` → semua yang login. Otorisasi backend Go memakai
-`RequireRole("Admin", "SuperAdmin", "Maintainer")`.
+`/admin` → `Maintainer`/`Owner`/`Admin`; `/maintainer` → `Maintainer`; `/forum` →
+`Maintainer`, `Owner`, `Admin`, `Member`; `/user` → semua yang login. Otorisasi
+backend Go memakai `RequireRole("Maintainer", "Owner", "Admin")`.
 
-> Admin dan Maintainer diperlakukan "sudah punya akses penuh" di UI pricing —
-> mereka tidak perlu membeli.
+> Staf (Maintainer, Owner, Admin) diperlakukan "sudah punya akses penuh" di UI
+> pricing — mereka tidak perlu membeli.
 
 ---
 
@@ -256,6 +262,21 @@ Status: ✅ jalan · 🟡 sebagian · ⛔ belum ada · ⏸️ on-hold.
 | F12.12 | Chat dapat diakses lewat gateway `:8080`                 | ⛔     | `/api/v1/chat/*` tidak ter-route                                               |
 | F12.13 | Multi-group / channel                                    | ⛔     | `group_id` tidak pernah dipersist                                              |
 
+### 4.9 Approval Owner
+
+Role `Owner` sudah ada di DB, backend, dan frontend (menggantikan `SuperAdmin`),
+tetapi seluruh alur approval-nya belum dibangun.
+
+| ID    | Requirement                                                        | Status | Bukti                                                     |
+| ----- | ------------------------------------------------------------------ | ------ | --------------------------------------------------------- |
+| F13.1 | Role `Owner` ada di DB, Rust, Go, dan frontend                     | ✅     | Migrasi `20260831060000`, enum `Role`, `constants/roles.ts` |
+| F13.2 | Tindakan Admin tertentu tertahan menunggu persetujuan `Owner`      | ⛔     | Belum ada konsep "pending action" di skema mana pun       |
+| F13.3 | `Owner` punya antrean approval dan bisa setuju/tolak               | ⛔     | Belum ada halaman maupun endpoint                         |
+| F13.4 | Jejak audit siapa menyetujui apa                                   | ⛔     | Belum ada tabel audit                                     |
+
+Sampai F13.2–F13.4 dikerjakan, `Owner` punya wewenang yang sama persis dengan
+`Admin` — daftar role di setiap pengecekan otorisasi memuat keduanya.
+
 ---
 
 ## 5. Requirement Non-Fungsional
@@ -349,7 +370,7 @@ Dicatat agar tidak ada yang mengira fitur ini ada.
 | ~~R1~~ | ~~`status-content.tsx` hard-code `http://localhost:8002`~~          | **DITUTUP** — kini lewat `NEXT_PUBLIC_API_URL` + `ENDPOINT.MAIN_SERVICE.TRANSACTION_SYNC`                                                                   | `frontend/src/app/checkout/status/status-content.tsx` |
 | ~~R2~~ | ~~Midtrans terkunci mode Sandbox~~                                  | **DITUTUP** — env `MIDTRANS_ENV`                                                                                                                            | `main-service/config/config.go`                       |
 | R3     | Signature webhook tidak diverifikasi                                | Endpoint webhook publik; mitigasi hanya `CheckTransaction` ke Midtrans                                                                                      | idem                                                  |
-| ~~R4~~ | ~~`SuperAdmin` tidak ada di enum Rust~~                             | **DITUTUP** — varian `Role::SuperAdmin` ditambahkan di `shared-core` & `realtime-service`, dan diperlakukan setara `Admin` di otorisasi Rust dan `proxy.ts` | `shared-core/.../user.rs`                             |
+| ~~R4~~ | ~~`SuperAdmin` tidak selaras antara DB, Go, dan enum Rust~~         | **DITUTUP** — role diganti `Owner` dan diselaraskan di DB (migrasi `20260831060000`), Rust, Go, dan `frontend/src/constants/roles.ts`                       | `shared-core/.../user.rs`                             |
 | ~~R5~~ | ~~`UpdateUserRole` mendowngrade role tak dikenal secara diam-diam~~ | **DITUTUP** — kini `Status::invalid_argument`                                                                                                               | `user_service_impl.rs`                                |
 | ~~R6~~ | ~~URL gambar chat memakai hostname internal~~                       | **DITUTUP** — env `MINIO_PUBLIC_URL` (fallback ke perilaku lama)                                                                                            | `storage_service.rs`                                  |
 | R7     | Tidak ada test dan tidak ada CI                                     | Setiap perubahan berisiko regresi diam-diam                                                                                                                 | Seluruh repo                                          |
@@ -382,7 +403,7 @@ Status resmi ada di
 
 1. Perbaiki R1 — checkout status tidak berfungsi di luar dev.
 2. Jadikan environment Midtrans konfigurabel + verifikasi signature (R2, R3).
-3. Selaraskan `SuperAdmin` antara DB, Go, dan enum Rust (R4, R5).
+3. Bangun alur approval `Owner` (F13.2–F13.4) — rolenya sudah ada, fiturnya belum.
 4. Isi halaman placeholder: dashboard admin (metrik), profil user.
 5. Halaman `/user/*` yang sudah ada di menu tapi belum dibuat.
 6. Paginasi daftar user & member (F6.7, F11.6).

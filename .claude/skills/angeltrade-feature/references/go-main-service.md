@@ -348,7 +348,7 @@ Edit `main-service/routes/subscription_routes.go`:
    ```
 
 Aturan route:
-- `adminRole := middleware.RequireRole("Admin", "SuperAdmin", "Maintainer")`
+- `adminRole := middleware.RequireRole("Maintainer", "Owner", "Admin")`
   dideklarasikan **sekali** di blok account-type dan dipakai ulang di bawahnya
   — urutan deklarasi penting.
 - Endpoint tanpa auth → daftarkan di `publicGroup` (`api.Group("/public")`).

@@ -1,14 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { ROLE_DASHBOARDS } from "@/constants/roles";
 
 const AUTH_SERVICE_URL = process.env.SERVER_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
-const ROLE_DASHBOARDS: Record<string, string> = {
-  Maintainer: "/maintainer/dashboard",
-  Admin: "/admin/dashboard",
-  SuperAdmin: "/admin/dashboard",
-  Member: "/forum/dashboard",
-  User: "/",
-};
 
 function decodeJwt(token: string): Record<string, unknown> | null {
   try {

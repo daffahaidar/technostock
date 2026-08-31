@@ -127,7 +127,7 @@ Router: [`main-service/routes/subscription_routes.go`](../main-service/routes/su
 Semua path di bawah relatif terhadap `/api/v1`; **via gateway pakai prefix
 `/api/v1/main`** (contoh: `/api/v1/main/account-types`).
 
-Peran `adminRole` = `Admin`, `SuperAdmin`, atau `Maintainer`.
+Peran `adminRole` = `Maintainer`, `Owner`, atau `Admin`.
 
 ### Account type
 

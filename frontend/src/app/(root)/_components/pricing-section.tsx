@@ -10,13 +10,14 @@ import { useGetPublicPricing } from "@/app/admin/subscriptions/plans/_queries/pu
 import { useGetActiveSubscription } from "@/app/admin/subscriptions/plans/_queries/active-subscription";
 import type { PricingItem } from "@/app/admin/subscriptions/plans/_schemas/pricing";
 import { authClient } from "@/app/auth/sign-in/_handlers/client";
+import { isFullAccessRole } from "@/constants/roles";
 
 export default function PricingSection({ compact = false }: { compact?: boolean }) {
   const router = useRouter();
   
   const { data: sessionData } = authClient.useSession();
   const typedUser = sessionData?.user as { role?: string } | undefined;
-  const isFullAccess = ["admin", "superadmin", "maintainer"].includes(typedUser?.role?.toLowerCase() || "");
+  const isFullAccess = isFullAccessRole(typedUser?.role);
   const token = sessionData?.session?.token || "";
 
   const { pricingData } = useGetPublicPricing();

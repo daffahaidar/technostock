@@ -4,10 +4,13 @@ use chrono::{DateTime, Utc};
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, sqlx::Type)]
 #[sqlx(type_name = "varchar", rename_all = "PascalCase")]
+/// Urut dari wewenang tertinggi ke terendah. `Owner` bertugas menyetujui
+/// tindakan Admin (fiturnya belum ada), jadi untuk sekarang wewenangnya sama
+/// dengan `Admin` di semua pengecekan.
 pub enum Role {
     Maintainer,
+    Owner,
     Admin,
-    SuperAdmin,
     Member,
     User,
 }

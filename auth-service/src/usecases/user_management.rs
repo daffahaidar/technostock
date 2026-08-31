@@ -17,9 +17,9 @@ impl<R: UserRepository> CreateUserUseCase<R> {
     }
 
     pub async fn execute(&self, requester_role: Role, dto: CreateUserDto) -> Result<UserResponseDto, AppError> {
-        // Check permissions: Only Admin and Maintainer can create users
+        // Check permissions: Maintainer, Owner, dan Admin boleh membuat user
         match requester_role {
-            Role::Admin | Role::SuperAdmin | Role::Maintainer => {},
+            Role::Maintainer | Role::Owner | Role::Admin => {},
             _ => return Err(AppError::Forbidden),
         }
 
@@ -146,9 +146,9 @@ impl<R: UserRepository> UpdateUserStatusUseCase<R> {
     }
 
     pub async fn execute(&self, requester_role: Role, user_id: Uuid, dto: UpdateUserStatusDto) -> Result<UserResponseDto, AppError> {
-        // Check permissions: Admin and Maintainer can suspend users
+        // Check permissions: Maintainer, Owner, dan Admin boleh men-suspend user
         match requester_role {
-            Role::Admin | Role::SuperAdmin | Role::Maintainer => {},
+            Role::Maintainer | Role::Owner | Role::Admin => {},
             _ => return Err(AppError::Forbidden),
         }
 
