@@ -22,6 +22,7 @@ export default function MemberTable() {
 
   return (
     <AgTable
+      stateId="member-table"
       rowData={membersData?.data || []}
       loading={isMembersDataLoading}
       columnDefs={MemberColumn}

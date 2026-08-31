@@ -23,6 +23,7 @@ export default function AccountTypeTable() {
 
   return (
     <AgTable
+      stateId="account-type-table"
       rowData={(accountTypesData?.results as Record<string, unknown>[]) || []}
       columnDefs={AccountTypeColumn}
       loading={isAccountTypesDataLoading}

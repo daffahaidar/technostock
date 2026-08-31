@@ -60,6 +60,7 @@ export default function VoucherTable() {
   return (
     <div className="size-full">
       <AgTable
+        stateId="voucher-table"
         rowData={data?.results || []}
         columnDefs={VoucherColumn}
         loading={isVouchersDataLoading}

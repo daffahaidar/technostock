@@ -23,6 +23,7 @@ export default function SubscriptionPlanTable() {
 
   return (
     <AgTable
+      stateId="plan-table"
       rowData={(planSubscriptionData?.results as Record<string, unknown>[]) || []}
       columnDefs={SubscriptionPlanColumn}
       loading={isPlanSubscriptionDataLoading}

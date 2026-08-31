@@ -7,9 +7,9 @@ import {
   themeQuartz,
   colorSchemeDark,
 } from "ag-grid-community";
-import type { ColDef, GridOptions } from "ag-grid-community";
+import type { ColDef, GridOptions, GridState, StateUpdatedEvent } from "ag-grid-community";
 
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -21,6 +21,8 @@ interface AgTableProps<T> {
   loading?: boolean;
   loadingOverlayComponent?: GridOptions<T>["loadingOverlayComponent"];
   noRowsOverlayComponent?: GridOptions<T>["noRowsOverlayComponent"];
+  /** Unique ID to save/restore the table state (columns, filters, sort) to localStorage */
+  stateId?: string;
 }
 
 export default function AgTable<T>({
@@ -30,6 +32,7 @@ export default function AgTable<T>({
   loading,
   loadingOverlayComponent,
   noRowsOverlayComponent,
+  stateId,
 }: AgTableProps<T>) {
 
   const myTheme = themeQuartz.withPart(colorSchemeDark).withParams({
@@ -54,6 +57,27 @@ export default function AgTable<T>({
     };
   }, []);
 
+  const initialState = useMemo<GridState | undefined>(() => {
+    if (typeof window !== "undefined" && stateId) {
+      const savedState = localStorage.getItem(`ag-state-${stateId}`);
+      if (savedState) {
+        try {
+          return JSON.parse(savedState) as GridState;
+        } catch (e) {
+          console.error("Failed to parse grid state", e);
+        }
+      }
+    }
+    return undefined;
+  }, [stateId]);
+
+  const onStateUpdated = useCallback((params: StateUpdatedEvent) => {
+    if (stateId) {
+      localStorage.setItem(`ag-state-${stateId}`, JSON.stringify(params.state));
+    }
+    gridOptions?.onStateUpdated?.(params);
+  }, [stateId, gridOptions]);
+
   return (
     <div className="size-full">
       <AgGridReact
@@ -67,6 +91,8 @@ export default function AgTable<T>({
         loading={loading}
         loadingOverlayComponent={loadingOverlayComponent}
         noRowsOverlayComponent={noRowsOverlayComponent}
+        initialState={initialState}
+        onStateUpdated={onStateUpdated}
         {...gridOptions}
       />
     </div>
