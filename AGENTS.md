@@ -104,13 +104,14 @@ Per service (tanpa Docker) — `grpc-service` harus jalan **lebih dulu**:
 cd grpc-service     && cargo run   # :8080 + :50051
 cd auth-service     && cargo run   # :8000
 cd main-service     && go run ./cmd/api/main.go   # :8002
-cd frontend         && npm run dev # :3000
+cd frontend         && pnpm dev    # :3000
 cd realtime-service && cargo run   # :8001 (opsional, chat on-hold)
 ```
 
 Setiap folder service Rust/Go punya Makefile dengan target seragam:
 `dev, start, build, build-dev, test, test-verbose, fmt, check, clean, help`
-(+ `migrate` bila punya migrations). Frontend: `npm run dev|build|start|lint`.
+(+ `migrate` bila punya migrations). Frontend memakai **pnpm**:
+`pnpm dev|build|start|lint`.
 
 Verifikasi sebelum menyatakan selesai:
 
@@ -118,7 +119,7 @@ Verifikasi sebelum menyatakan selesai:
 |---|---|
 | Rust | `cd <service> && cargo check` (`cargo clippy` **tidak** dikonfigurasi) |
 | Go | `cd main-service && go vet ./... && go build ./...` |
-| Frontend | `cd frontend && npx tsc --noEmit && npm run lint` |
+| Frontend | `cd frontend && pnpm exec tsc --noEmit && pnpm lint && pnpm build` |
 
 Setup lengkap per OS: [docs/setup.md](docs/setup.md).
 

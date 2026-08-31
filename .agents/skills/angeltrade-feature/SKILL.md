@@ -62,7 +62,7 @@ frontend, plus route gateway bila dipanggil browser.
 - [ ] Otorisasi ada di backend, bukan hanya frontend
 - [ ] Raw SQL memakai prefix schema (`main.`, `users.`, `message.`)
 - [ ] Endpoint browser dapat ditembus lewat gateway `:8080`
-- [ ] Compile bersih: `cargo check` / `go vet ./... && go build ./...` / `npx tsc --noEmit && npm run lint && npm run build`
+- [ ] Compile bersih: `cargo check` / `go vet ./... && go build ./...` / `pnpm exec tsc --noEmit && pnpm lint && pnpm build`
 - [ ] Makro `sqlx::query!` di `realtime-service` berubah → `cargo sqlx prepare` + commit `.sqlx/*.json`
 - [ ] Kolom baru pada `User` → ditambahkan juga ke `USER_COLUMNS` dan semua tempat `User { ... }` dikonstruksi
 - [ ] RPC baru → `main-service/pb/*.go` diregenerate dan di-commit

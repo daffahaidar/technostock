@@ -145,7 +145,7 @@ Verifikasi perubahan:
 |---|---|
 | Rust | `cd <service> && cargo check` (clippy tidak dikonfigurasi) |
 | Go | `cd main-service && go vet ./... && go build ./...` |
-| Frontend | `cd frontend && npx tsc --noEmit && npm run lint` |
+| Frontend | `cd frontend && pnpm exec tsc --noEmit && pnpm lint && pnpm build` |
 
 ## Ke mana selanjutnya
 

@@ -37,7 +37,7 @@ Urutan penting — `grpc-service` harus jalan **lebih dulu** (menyediakan gRPC
 cd grpc-service     && cargo run   # :8080 + :50051
 cd auth-service     && cargo run   # :8000
 cd main-service     && go run ./cmd/api/main.go   # :8002
-cd frontend         && npm run dev # :3000
+cd frontend         && pnpm dev    # :3000
 cd realtime-service && cargo run   # :8001 (opsional, chat on-hold)
 ```
 
@@ -61,7 +61,7 @@ maupun `shared-core/`, dan **tidak ada** target lint/clippy di mana pun.
 |---|---|
 | Rust | `cd <service> && cargo check` — clippy tidak dikonfigurasi |
 | Go | `cd main-service && go vet ./... && go build ./...` |
-| Frontend | `cd frontend && npx tsc --noEmit && npm run lint` |
+| Frontend | `cd frontend && pnpm exec tsc --noEmit && pnpm lint && pnpm build` |
 | Compose | `make validate` |
 
 ## Peta compose & Dockerfile
@@ -171,6 +171,7 @@ dari compose — sisanya harus datang dari `./grpc-service/.env`.
 | Podman Windows: `unknown file mode ?rw-rw-rw-` saat build | `.claude/`/`.agents/` berisi junction. Root `.dockerignore` sudah mengecualikannya — jangan hapus baris itu |
 | `entrypoint.sh`: `bad interpreter: /bin/sh^M` | Checkout CRLF. `.gitattributes` sudah memaksa LF — periksa konfigurasi git lokal |
 | Chat `/api/v1/chat/*` mengembalikan HTML frontend | Belum ter-route di gateway. Arahkan `NEXT_PUBLIC_WS_API_URL` / `NEXT_PUBLIC_MESSAGE_API_URL` langsung ke `:8001`. Lihat `docs/operations.md` Isu 1 |
+| Windows: `http://localhost:3000`/`:8080` tidak bisa dibuka dari browser walau container jalan | Relay `localhost` WSL (mode NAT) menerima koneksi lalu memutusnya. Buat `%USERPROFILE%\.wslconfig` isi `[wsl2]` + `networkingMode=mirrored`, lalu `wsl --shutdown` + `podman machine start`. Cek: `podman machine ssh curl -s http://127.0.0.1:<port>` jalan tapi dari Windows tidak → ini penyebabnya |
 | Gambar chat tidak muncul di browser | Set `MINIO_PUBLIC_URL` ke URL yang bisa dibuka browser (mis. `http://localhost:9000`) |
 
 ## Hal yang perlu diingat
@@ -184,5 +185,7 @@ dari compose — sisanya harus datang dari `./grpc-service/.env`.
   `node:lts-alpine`, `alpine:latest`, `quay.io/minio/minio` (tanpa tag). Yang
   dipin: `postgres:17-alpine`, `redis:7-alpine`, `rabbitmq:3-management`,
   `apache/kafka:3.9.0`, `cargo-watch 8.4.1`.
-- `frontend/package.json` memakai `npm install`, bukan `npm ci`, meski
-  `package-lock.json` ada.
+- Frontend memakai **pnpm** (`pnpm-lock.yaml`, versi dipin lewat field
+  `packageManager` + `corepack enable` di Dockerfile). Image dev & prod memakai
+  `pnpm install --frozen-lockfile`, jadi lockfile yang basi menggagalkan build
+  alih-alih diam-diam meng-install versi lain.

@@ -15,7 +15,8 @@ container (direkomendasikan) maupun manual.
 
 ### Manual
 
-- [Node.js](https://nodejs.org/) v20+ & npm
+- [Node.js](https://nodejs.org/) v20+ & [pnpm](https://pnpm.io/) 10+
+  (`corepack enable` sudah cukup — versinya dipin di `frontend/package.json`)
 - [Rust](https://rustup.rs/) 1.75+ & Cargo
 - [Go](https://go.dev/) 1.21+
 - [sqlx-cli](https://github.com/launchbadge/sqlx/tree/main/sqlx-cli) —
@@ -117,6 +118,19 @@ Daftar perintah lengkap ada di [operations.md](operations.md).
   compile Rust: `podman machine set --memory 8192` (default 2 GB terlalu kecil).
 - Rootless Podman menghormati `mem_limit`, jadi limit memori di compose tetap
   berlaku.
+- **Windows:** bila container jalan tapi `http://localhost:3000` tidak bisa
+  dibuka dari browser, relay `localhost` WSL-nya yang bermasalah (koneksi
+  diterima lalu diputus). Buat `%USERPROFILE%\.wslconfig`:
+
+  ```ini
+  [wsl2]
+  networkingMode=mirrored
+  ```
+
+  lalu `wsl --shutdown` dan `podman machine start`. Mode mirrored membuat WSL
+  memakai network stack Windows langsung, tanpa relay. Untuk mengembalikan:
+  hapus file itu lalu `wsl --shutdown` lagi.
+
 
 ### Catatan `make` di Windows
 
@@ -168,7 +182,7 @@ cd realtime-service && cargo run
 cd main-service && go mod download && go run ./cmd/api/main.go
 
 # Terminal 5 — frontend :3000
-cd frontend && npm install && npm run dev
+cd frontend && pnpm install && pnpm dev
 ```
 
 Untuk hot-reload: `cargo watch -c -x run` (Rust), `air` (Go).
@@ -183,13 +197,17 @@ mekanismenya ada di [database.md → Migrasi](database.md#migrasi).
 
 ```bash
 cd frontend
-npm install
-npm run build     # output standalone
-npm start         # menyalin public/ + .next/static, lalu menjalankan server.js
+pnpm install
+pnpm build        # output standalone
+pnpm start        # menyalin public/ + .next/static, lalu menjalankan server.js
 ```
 
-`npm run dev` membaca `.env.development`; `npm run build`/`npm start` membaca
+`pnpm dev` membaca `.env.development`; `pnpm build`/`pnpm start` membaca
 `.env.production`.
+
+Frontend memakai **pnpm**, bukan npm. Lockfile-nya `pnpm-lock.yaml`; jangan
+jalankan `npm install` di `frontend/` karena akan membuat `package-lock.json`
+kedua yang tidak dipakai Docker.
 
 ---
 
@@ -276,6 +294,7 @@ minio server ~/minio-data --console-address ":9001"   # terminal terpisah
 
 # Toolchain
 sudo apt install nodejs npm golang-go protobuf-compiler build-essential pkg-config libssl-dev
+corepack enable   # menyediakan pnpm sesuai versi di frontend/package.json
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh && source $HOME/.cargo/env
 cargo install sqlx-cli --no-default-features --features postgres
 ```

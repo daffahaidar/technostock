@@ -457,9 +457,14 @@ Dead code lama (`use-query.ts`, `use-mutate.ts`, `externalBackend`,
 ## Verifikasi
 
 ```bash
-cd frontend && npx tsc --noEmit && npm run lint && npm run build
+cd frontend && pnpm exec tsc --noEmit && pnpm lint && pnpm build
 ```
 
-`npm run build` sekalian menangkap pelanggaran batas Server/Client Component
+`pnpm build` sekalian menangkap pelanggaran batas Server/Client Component
 yang lolos dari `tsc`. Tidak ada test runner di repo (`jest`/`vitest`/
-`playwright` tidak terpasang). `npm run dev` tidak memakai `--turbopack`.
+`playwright` tidak terpasang). `pnpm dev` tidak memakai `--turbopack`.
+
+Package manager-nya **pnpm** (`pnpm-lock.yaml`, versi dipin lewat field
+`packageManager`). Karena node_modules pnpm bersifat strict, paket yang
+di-import kode **wajib** ada di `package.json` — tidak ada lagi hoisting yang
+menutupi dependensi tak terdaftar.

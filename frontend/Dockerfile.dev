@@ -2,15 +2,20 @@ FROM node:lts-alpine
 
 WORKDIR /app
 
+# corepack membaca field "packageManager" di package.json, jadi versi pnpm di
+# container selalu sama dengan yang dipakai di host.
+ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
+RUN corepack enable
+
 # Copy package files first for better layer caching
-COPY package.json package-lock.json ./
+COPY package.json pnpm-lock.yaml ./
 
 # Install all dependencies (including devDependencies)
-RUN npm install
+RUN pnpm install --frozen-lockfile
 
 # Copy the rest of the source code
 COPY . .
 
 EXPOSE 3000
 
-CMD ["npm", "run", "dev"]
+CMD ["pnpm", "dev"]
